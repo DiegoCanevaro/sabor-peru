@@ -324,7 +324,7 @@ function setSlot(holder, key) {                       // cambia el modelo de un 
 // ================= ESCENARIO SEGÚN EL MUNDO =================
 // Mundo 1: restaurante menú de mercado limeño · Mundo 2: chifa (paredes rojas, faroles de papel, letrero lacado)
 const THEME = (LEVEL.world || 1) === 2 ? {
-  floorA: '#f1e6cf', floorB: '#8f2f28', tile: '#f6efe0', tileLine: '#d6c7a8', band: '#c9a227', wall: '#a51b20',
+  floorA: '#f1e6cf', floorB: '#8f2f28', tile: '#f6efe0', tileLine: '#d6c7a8', band: '#c9a227', wall: '#8e1218',
   brick: '#6e2a22', brickLine: '#4d1a14', capCol: '#c9a227'
 } : {
   floorA: '#ece2cc', floorB: '#c4785a', tile: '#f4f1e8', tileLine: '#c9c3b2', band: '#2f6fb3', wall: '#f0be4a',
@@ -342,6 +342,51 @@ function chifaSignTex() {
     c.fillText(dish, w / 2, 170);
     c.fillStyle = '#f4d35e'; c.font = 'bold 40px Georgia, serif'; c.fillText('S/ 15.00', w / 2, 240);
   });
+}
+const IS_CHIFA = (LEVEL.world || 1) === 2;
+const GOLD = () => M('#c9a227', { metalness: 0.55, roughness: 0.35 });
+// Mesas del chifa: madera lacada roja con canto dorado, cubierta de madera oscura y un panel con marco dorado al frente
+function chifaCounter(lw, ld, rot) {
+  const g = new THREE.Group(), inner = new THREE.Group(); inner.rotation.y = rot; g.add(inner);
+  const lac = M('#7a1a14', { roughness: 0.32 }), panel = M('#9a261d', { roughness: 0.3 });
+  const body = mesh(new THREE.BoxGeometry(lw - 0.06, 0.86, ld - 0.06), lac); body.position.y = 0.45; inner.add(body);
+  const plinth = mesh(new THREE.BoxGeometry(lw - 0.14, 0.06, ld - 0.14), M('#2a0f0b')); plinth.position.y = 0.03; inner.add(plinth);
+  const trim = mesh(new THREE.BoxGeometry(lw + 0.02, 0.05, ld + 0.02), GOLD()); trim.position.y = 0.895; inner.add(trim);
+  const top = mesh(new THREE.BoxGeometry(lw, 0.08, ld), M('#3a1f14', { roughness: 0.45 })); top.position.y = 0.96; inner.add(top);
+  // panel frontal con marco dorado
+  const pw = lw * 0.72, ph = 0.5, z = ld / 2 - 0.025;
+  const pn = mesh(new THREE.BoxGeometry(pw, ph, 0.02), panel, false); pn.position.set(0, 0.47, z); inner.add(pn);
+  [[0, 0.47 + ph / 2, pw + 0.04, 0.035], [0, 0.47 - ph / 2, pw + 0.04, 0.035]].forEach(([x, y, w, h]) => { const b = mesh(new THREE.BoxGeometry(w, h, 0.03), GOLD(), false); b.position.set(x, y, z + 0.01); inner.add(b); });
+  [-1, 1].forEach(sx => { const b = mesh(new THREE.BoxGeometry(0.035, ph, 0.03), GOLD(), false); b.position.set(sx * pw / 2, 0.47, z + 0.01); inner.add(b); });
+  const knob = mesh(new THREE.SphereGeometry(0.045, 10, 8), GOLD(), false); knob.position.set(0, 0.47, z + 0.04); inner.add(knob);
+  return g;
+}
+// letrero en diagonal con un carácter dorado (福 = fortuna), como en la entrada de los chifas
+function charTex(ch, bg, fg, w, h, size) {
+  return canvasTex(w || 256, h || 256, (c, cw, chh) => {
+    c.fillStyle = bg; c.fillRect(0, 0, cw, chh);
+    c.strokeStyle = fg; c.lineWidth = 8; c.strokeRect(12, 12, cw - 24, chh - 24);
+    c.fillStyle = fg; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = 'bold ' + (size || 170) + 'px "Microsoft YaHei","PingFang SC","Noto Sans CJK SC","Noto Serif CJK SC",serif';
+    if (ch.length === 1) c.fillText(ch, cw / 2, chh / 2 + 8);
+    else [...ch].forEach((k, i, a) => c.fillText(k, cw / 2, chh * (i + 0.5) / a.length + 6));
+  });
+}
+// gato de la suerte (maneki-neko) que saluda con la pata
+function luckyCat() {
+  const g = new THREE.Group(), white = M('#fbf7ee', { roughness: 0.5 });
+  const body = mesh(new THREE.SphereGeometry(0.26, 16, 12), white); body.scale.set(1, 1.1, 0.9); body.position.y = 0.28; g.add(body);
+  const head = mesh(new THREE.SphereGeometry(0.22, 16, 12), white); head.scale.set(1.1, 0.95, 1); head.position.y = 0.66; g.add(head);
+  [-1, 1].forEach(sx => { const ear = mesh(new THREE.ConeGeometry(0.07, 0.12, 4), white); ear.position.set(sx * 0.13, 0.86, 0); g.add(ear);
+    const eye = mesh(new THREE.SphereGeometry(0.025, 8, 6), M('#1d1d1d')); eye.position.set(sx * 0.08, 0.68, 0.2); g.add(eye); });
+  const nose = mesh(new THREE.SphereGeometry(0.02, 8, 6), M('#e88a8a')); nose.position.set(0, 0.62, 0.22); g.add(nose);
+  const collar = mesh(new THREE.TorusGeometry(0.17, 0.025, 6, 18), M('#c0392b')); collar.rotation.x = Math.PI / 2; collar.position.y = 0.48; g.add(collar);
+  const bell = mesh(new THREE.SphereGeometry(0.04, 10, 8), GOLD()); bell.position.set(0, 0.45, 0.17); g.add(bell);
+  const coin = mesh(new THREE.BoxGeometry(0.16, 0.24, 0.03), GOLD()); coin.position.set(-0.06, 0.28, 0.24); g.add(coin);
+  const paw = new THREE.Group(); paw.position.set(0.2, 0.5, 0.06); g.add(paw);
+  const arm = mesh(new THREE.CapsuleGeometry(0.055, 0.18, 4, 8), white); arm.position.y = 0.12; paw.add(arm);
+  g.userData.paw = paw;
+  return g;
 }
 // faroles de papel rojos con borla dorada
 function lantern3() {
@@ -376,7 +421,15 @@ function buildWorld() {
   const X0 = X3(GX) - 0.05, X1 = X3(GX + COLS * CS) + 0.05, Z0 = Z3(GY) - 0.05, ZF = Z3(GY + ROWS * CS), Z1 = ZF + 0.35;
   const FW = X1 - X0, FD = Z1 - Z0;
   // piso de losetas terracota y crema
-  const floorTex = canvasTex(256, 256, (c, w, h) => {
+  const floorTex = IS_CHIFA ? canvasTex(256, 256, (c, w, h) => {
+    // baldosas rojas con rombos crema y punto dorado, como el piso de muchos chifas
+    c.fillStyle = '#8c2a22'; c.fillRect(0, 0, w, h);
+    c.fillStyle = '#dcc39a'; c.beginPath(); c.moveTo(w / 2, 22); c.lineTo(w - 22, h / 2); c.lineTo(w / 2, h - 22); c.lineTo(22, h / 2); c.closePath(); c.fill();
+    c.fillStyle = '#8c2a22'; c.beginPath(); c.moveTo(w / 2, 62); c.lineTo(w - 62, h / 2); c.lineTo(w / 2, h - 62); c.lineTo(62, h / 2); c.closePath(); c.fill();
+    c.fillStyle = '#c9a227'; c.beginPath(); c.arc(w / 2, h / 2, 16, 0, 7); c.fill();
+    for (let i = 0; i < 600; i++) { c.fillStyle = 'rgba(40,10,5,' + Math.random() * 0.08 + ')'; c.fillRect(Math.random() * w, Math.random() * h, rnd(1, 4), rnd(1, 4)); }
+    c.strokeStyle = 'rgba(30,8,4,.55)'; c.lineWidth = 4; c.strokeRect(0, 0, w, h);
+  }, [FW / 1.9, FD / 1.9]) : canvasTex(256, 256, (c, w, h) => {
     c.fillStyle = THEME.floorA; c.fillRect(0, 0, w, h);
     c.fillStyle = THEME.floorB; c.fillRect(0, 0, w / 2, h / 2); c.fillRect(w / 2, h / 2, w / 2, h / 2);
     for (let i = 0; i < 700; i++) { c.fillStyle = 'rgba(70,40,15,' + Math.random() * 0.07 + ')'; c.fillRect(Math.random() * w, Math.random() * h, rnd(1, 5), rnd(1, 5)); }
@@ -386,7 +439,13 @@ function buildWorld() {
   const floor = mesh(new THREE.PlaneGeometry(FW, FD), new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.85 }), false);
   floor.rotation.x = -Math.PI / 2; floor.position.set((X0 + X1) / 2, 0, (Z0 + Z1) / 2); scene3.add(floor);
   // paredes: zócalo de mayólica blanca con franja azul y pared pintada de amarillo
-  const tileTex = canvasTex(128, 128, (c, w, h) => {
+  const tileTex = IS_CHIFA ? canvasTex(128, 128, (c, w, h) => {
+    // zócalo de paneles de madera oscura con moldura dorada
+    c.fillStyle = '#4a1c12'; c.fillRect(0, 0, w, h);
+    c.fillStyle = '#5c2416'; c.fillRect(10, 10, w - 20, h - 20);
+    c.strokeStyle = '#b8902a'; c.lineWidth = 3; c.strokeRect(16, 16, w - 32, h - 32);
+    c.strokeStyle = '#2a0e08'; c.lineWidth = 4; c.strokeRect(0, 0, w, h);
+  }, [FW / 1.6, 1]) : canvasTex(128, 128, (c, w, h) => {
     c.fillStyle = THEME.tile; c.fillRect(0, 0, w, h);
     c.strokeStyle = THEME.tileLine; c.lineWidth = 3; c.strokeRect(0, 0, w, h); c.beginPath(); c.moveTo(w / 2, 0); c.lineTo(w / 2, h); c.moveTo(0, h / 2); c.lineTo(w, h / 2); c.stroke();
   }, [FW / 0.8, 2]);
@@ -405,10 +464,29 @@ function buildWorld() {
   const board = mesh(new THREE.PlaneGeometry(4.2, 2.6), new THREE.MeshStandardMaterial({ map: isChifa ? chifaSignTex() : menuBoardTex(), roughness: isChifa ? 0.45 : 0.9 }), false);
   board.position.set(-3.4, 2.75, Z0 + 0.05); scene3.add(board);
   if (isChifa) {
+    // rombo con 福 (fortuna) junto al letrero, rollos verticales con 吉祥 (buena suerte) y una ventana luna con celosía
+    const fu = mesh(new THREE.PlaneGeometry(1.15, 1.15), new THREE.MeshStandardMaterial({ map: charTex('福', '#c0161c', '#f4d35e'), roughness: 0.5 }), false);
+    fu.rotation.z = Math.PI / 4; fu.position.set(-0.4, 2.85, Z0 + 0.06); scene3.add(fu);
+    [[-7.3, '吉祥'], [6.2, '如意']].forEach(([x, txt]) => {
+      const sc = mesh(new THREE.PlaneGeometry(0.75, 2.0), new THREE.MeshStandardMaterial({ map: charTex(txt, '#a51218', '#f4d35e', 128, 340, 96), roughness: 0.6 }), false);
+      sc.position.set(x, 2.7, Z0 + 0.06); scene3.add(sc);
+      [1.7, 3.7].forEach(y => { const rod = mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.9, 8), M('#3a1f14'), false); rod.rotation.z = Math.PI / 2; rod.position.set(x, y, Z0 + 0.1); scene3.add(rod); });
+    });
+    const latTex = canvasTex(256, 256, (c, w, h) => {
+      c.fillStyle = '#f6e3b0'; c.fillRect(0, 0, w, h);
+      c.strokeStyle = '#3a1f14'; c.lineWidth = 10;
+      for (let i = 0; i <= 8; i++) { const k = i * w / 8; c.beginPath(); c.moveTo(k, 0); c.lineTo(k, h); c.moveTo(0, k); c.lineTo(w, k); c.stroke(); }
+      c.lineWidth = 7; for (let i = -8; i <= 8; i++) { c.beginPath(); c.moveTo(i * w / 4, 0); c.lineTo(i * w / 4 + w, h); c.stroke(); }
+    });
+    const moon = mesh(new THREE.CircleGeometry(1.0, 40), new THREE.MeshStandardMaterial({ map: latTex, roughness: 0.8, emissive: '#5a3a10', emissiveIntensity: 0.4 }), false);
+    moon.rotation.y = Math.PI / 2; moon.position.set(X0 + 0.04, 2.75, -1.2); scene3.add(moon);
+    const ring = mesh(new THREE.TorusGeometry(1.0, 0.09, 10, 40), GOLD(), false); ring.rotation.y = Math.PI / 2; ring.position.set(X0 + 0.08, 2.75, -1.2); scene3.add(ring);
+    // gato de la suerte sobre las alacenas
+    const cat = luckyCat(); cat.scale.setScalar(1.15); cat.position.set(9.0, 2.41, Z0 + 0.28); scene3.add(cat); V3.cat = cat;
     // faroles de papel colgados a lo largo de la pared del fondo
     for (let i = 0; i < 8; i++) {
       const x = X0 + 1.4 + i * (FW - 2.8) / 7;
-      if (Math.abs(x - board.position.x) < 2.6 || Math.abs(x - 1.4) < 0.9) continue;          // sin tapar el letrero ni el reloj
+      if (Math.abs(x - board.position.x) < 2.6 || Math.abs(x - 1.4) < 0.9 || Math.abs(x + 0.4) < 0.9 || Math.abs(x + 7.3) < 0.7 || Math.abs(x - 6.2) < 0.7 || Math.abs(x - 9.0) < 0.8) continue;   // sin tapar letreros ni el reloj
       const l = lantern3(); l.position.set(x, WH - 0.75, Z0 + 0.6); scene3.add(l);
     }
   } else {
@@ -421,19 +499,31 @@ function buildWorld() {
   // refrigerador en la esquina, repisa con frascos, alacenas y un reloj
   // esquinas del perímetro: encimeras de decoración (no se usan)
   [[0, 0], [COLS - 1, 0], [0, ROWS - 1], [COLS - 1, ROWS - 1]].forEach(([c, r]) => {
-    const k = KK('kitchencounter_straight_B'); k.scale.set(CS / U3 / 2, 1, CS / U3 / 2.04);
+    const k = IS_CHIFA ? chifaCounter(CS / U3, CS / U3, 0) : KK('kitchencounter_straight_B'); if (!IS_CHIFA) k.scale.set(CS / U3 / 2, 1, CS / U3 / 2.04);
     k.position.set(X3(cellX(c) + CS / 2), 0, Z3(cellY(r) + CS / 2)); scene3.add(k);
   });
   // muro bajo de ladrillo al frente (como en la referencia de Overcooked)
-  const brick = canvasTex(256, 64, (c, w, h) => {
+  const brick = IS_CHIFA ? canvasTex(256, 64, (c, w, h) => {
+    // baranda lacada con greca dorada
+    c.fillStyle = '#7a1a14'; c.fillRect(0, 0, w, h); c.strokeStyle = '#c9a227'; c.lineWidth = 4;
+    c.beginPath(); for (let x = 0; x < w; x += 32) { c.moveTo(x, 50); c.lineTo(x, 14); c.lineTo(x + 24, 14); c.lineTo(x + 24, 38); c.lineTo(x + 10, 38); c.lineTo(x + 10, 26); } c.stroke();
+    c.fillStyle = '#c9a227'; c.fillRect(0, 0, w, 5); c.fillRect(0, h - 6, w, 6);
+  }, [(X1 - X0) / 2, 1]) : canvasTex(256, 64, (c, w, h) => {
     c.fillStyle = THEME.brick; c.fillRect(0, 0, w, h); c.strokeStyle = THEME.brickLine; c.lineWidth = 3;
     for (let row = 0; row < 4; row++) { const y = row * 16; c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); for (let x = (row % 2) * 16; x < w; x += 32) { c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + 16); c.stroke(); } }
   }, [(X1 - X0) / 2, 1]);
   const lowWall = mesh(new THREE.BoxGeometry(X1 - X0 + 0.3, 1.15, 0.3), new THREE.MeshStandardMaterial({ map: brick, roughness: 0.9 }));
   lowWall.position.set((X0 + X1) / 2, 0.575, ZF + 0.18); scene3.add(lowWall);
   const cap = mesh(new THREE.BoxGeometry(X1 - X0 + 0.4, 0.12, 0.42), M(THEME.capCol)); cap.position.set((X0 + X1) / 2, 1.2, ZF + 0.18); scene3.add(cap);
-  const sh = KK('shelf_papertowel_decorated'); sh.position.set(4.6, 2.2, Z0); scene3.add(sh);
-  [['kitchencabinet', 7.6], ['kitchencabinet', 9.6]].forEach(([n, x]) => { const k = KK(n); k.position.set(x, -0.6, Z0); scene3.add(k); });
+  if (!IS_CHIFA) {
+    const sh = KK('shelf_papertowel_decorated'); sh.position.set(4.6, 2.2, Z0); scene3.add(sh);
+    [['kitchencabinet', 7.6], ['kitchencabinet', 9.6]].forEach(([n, x]) => { const k = KK(n); k.position.set(x, -0.6, Z0); scene3.add(k); });
+  } else {
+    // repisa lacada con frascos y el gato de la suerte
+    const shelf = mesh(new THREE.BoxGeometry(3.4, 0.12, 0.5), M('#5a160f', { roughness: 0.35 })); shelf.position.set(8.8, 2.35, Z0 + 0.25); scene3.add(shelf);
+    const lip = mesh(new THREE.BoxGeometry(3.42, 0.05, 0.06), GOLD()); lip.position.set(8.8, 2.33, Z0 + 0.5); scene3.add(lip);
+    [['jar_A_medium', 7.5], ['jar_B_small', 8.0], ['jar_C_medium', 10.1]].forEach(([n, x]) => { const j = KK(n, 0.9); j.position.set(x, 2.41, Z0 + 0.25); scene3.add(j); });
+  }
   const clock3 = mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.08, 24), M('#fbfbf5'), false);
   clock3.rotation.x = Math.PI / 2; clock3.position.set(1.4, 3.1, Z0 + 0.06); scene3.add(clock3);
   const rim3 = mesh(new THREE.TorusGeometry(0.42, 0.05, 8, 24), M('#7a3b2b'), false); rim3.position.set(1.4, 3.1, Z0 + 0.1); scene3.add(rim3);
@@ -448,21 +538,21 @@ function buildWorld() {
       const m = mesh(new THREE.PlaneGeometry(z1 - z0, b - a), mat, false);
       m.rotation.y = -Math.PI / 2; m.position.set(X1, (a + b) / 2, (z0 + z1) / 2); scene3.add(m);
     };
-    const t = tileTex.clone(); t.needsUpdate = true; t.repeat.set((z1 - z0) / 0.8, (Math.min(y1, TILE_H) - y0) / 0.8);
+    const t = tileTex.clone(); t.needsUpdate = true; t.repeat.set((z1 - z0) / (IS_CHIFA ? 1.6 : 0.8), (Math.min(y1, TILE_H) - y0) / (IS_CHIFA ? 1.6 : 0.8));
     part(y0, Math.min(y1, TILE_H), new THREE.MeshStandardMaterial({ map: t, roughness: 0.4 }));
     part(Math.max(y0, TILE_H), y1, M(THEME.wall, { roughness: 0.95 }));
     if (y0 < TILE_H && y1 > TILE_H) { const b = mesh(new THREE.BoxGeometry(0.06, 0.16, z1 - z0), M(THEME.band)); b.position.set(X1 - 0.03, TILE_H, (z0 + z1) / 2); scene3.add(b); }
   };
   seg(Z0, zA, 0, WH); seg(zB, Z1, 0, WH); seg(zA, zB, 0, H0); seg(zA, zB, H1, WH);
   // marco de madera, interior oscuro y cartel
-  const frameM = M('#7a3b2b', { roughness: 0.7 });
+  const frameM = IS_CHIFA ? GOLD() : M('#7a3b2b', { roughness: 0.7 });
   [[zA, H0, H1], [zB, H0, H1]].forEach(([z]) => { const f = mesh(new THREE.BoxGeometry(0.3, H1 - H0 + 0.2, 0.16), frameM); f.position.set(X1, (H0 + H1) / 2, z); scene3.add(f); });
   const top3 = mesh(new THREE.BoxGeometry(0.3, 0.16, zB - zA + 0.16), frameM); top3.position.set(X1, H1 + 0.08, (zA + zB) / 2); scene3.add(top3);
   const inside = new THREE.Mesh(new THREE.BoxGeometry(1.4, H1 - H0, zB - zA), new THREE.MeshStandardMaterial({ color: '#3a2414', side: THREE.BackSide, roughness: 1 }));
   inside.position.set(X1 + 0.7, (H0 + H1) / 2, (zA + zB) / 2); scene3.add(inside);
   const signTex = canvasTex(512, 128, (c, w, h) => {
-    c.fillStyle = '#2f6fb3'; c.fillRect(0, 0, w, h); c.strokeStyle = '#fbf6ea'; c.lineWidth = 8; c.strokeRect(8, 8, w - 16, h - 16);
-    c.fillStyle = '#fbf6ea'; c.font = '66px Kitchen, Arial'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('PEDIDOS', w / 2 - 30, h / 2 + 4); c.font = 'bold 60px Arial'; c.fillText('➜', w - 80, h / 2 + 2);
+    c.fillStyle = IS_CHIFA ? '#8a1a16' : '#2f6fb3'; c.fillRect(0, 0, w, h); c.strokeStyle = IS_CHIFA ? '#c9a227' : '#fbf6ea'; c.lineWidth = 8; c.strokeRect(8, 8, w - 16, h - 16);
+    c.fillStyle = IS_CHIFA ? '#f4d35e' : '#fbf6ea'; c.font = '66px Kitchen, Arial'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('PEDIDOS', w / 2 - 30, h / 2 + 4); c.font = 'bold 60px Arial'; c.fillText('➜', w - 80, h / 2 + 2);
   });
   const sign = mesh(new THREE.PlaneGeometry(2.6, 0.65), new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.6 }), false);
   sign.rotation.y = -Math.PI / 2; sign.position.set(X1 - 0.04, H1 + 0.75, (zA + zB) / 2); scene3.add(sign);
@@ -476,6 +566,7 @@ function facingOf(s) { return { down: 0, right: Math.PI / 2, left: -Math.PI / 2,
 function counter3(s, model) {
   const rot = facingOf(s), side = Math.abs(Math.sin(rot)) > 0.5;
   const lw = (side ? s.h : s.w) / U3, ld = (side ? s.w : s.h) / U3;
+  if (IS_CHIFA) return chifaCounter(lw, ld, rot);
   const c = KK(model || 'kitchencounter_straight_A');
   c.scale.set(lw / 2, 1, ld / 2.04); c.rotation.y = rot;
   return c;
@@ -823,6 +914,7 @@ function draw() {
     updChef(V3.player, player, dt, pWork);
     updChef(V3.helper, helper, dt, helper && helper.work);
     updSent(dt);
+    if (V3.cat) V3.cat.userData.paw.rotation.z = 0.3 + Math.sin(V3.t * 4) * 0.45;
     updSteam(dt);
     setHighlight(started && !gameOver ? near : null);
     renderer3.render(scene3, cam3);

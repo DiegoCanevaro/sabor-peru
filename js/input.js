@@ -4,7 +4,7 @@ const KEYMAP = { ArrowUp: 'up', w: 'up', W: 'up', ArrowDown: 'down', s: 'down', 
 const isAct = k => k === ' ' || k === 'e' || k === 'E';
 window.addEventListener('keydown', e => {
   if (KEYMAP[e.key]) { keys[KEYMAP[e.key]] = true; e.preventDefault(); }
-  else if (isAct(e.key) && started && !gameOver) { keys.act = true; if (!e.repeat) manualInteract(); e.preventDefault(); }
+  else if (isAct(e.key) && started && !gameOver && !paused) { keys.act = true; if (!e.repeat) manualInteract(); e.preventDefault(); }
   else if ((e.key === 'b' || e.key === 'B') && started) setBot(!bot);
 });
 window.addEventListener('keyup', e => { if (KEYMAP[e.key]) keys[KEYMAP[e.key]] = false; if (isAct(e.key)) keys.act = false; });
@@ -16,7 +16,7 @@ document.querySelectorAll('#dpad button').forEach(b => {
   b.addEventListener('mousedown', on); b.addEventListener('mouseup', off); b.addEventListener('mouseleave', off);
 });
 const actBtn = document.getElementById('actBtn');
-const actOn = e => { if (started && !gameOver) { keys.act = true; manualInteract(); } e.preventDefault(); };
+const actOn = e => { if (started && !gameOver && !paused) { keys.act = true; manualInteract(); } e.preventDefault(); };
 const actOff = e => { keys.act = false; e.preventDefault(); };
 actBtn.addEventListener('touchstart', actOn); actBtn.addEventListener('touchend', actOff); actBtn.addEventListener('touchcancel', actOff);
 actBtn.addEventListener('mousedown', actOn); actBtn.addEventListener('mouseup', actOff); actBtn.addEventListener('mouseleave', actOff);

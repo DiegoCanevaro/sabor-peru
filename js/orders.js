@@ -46,7 +46,8 @@ function openDishes() { const l = waitingList().map(c => c.dish), q = nextQueued
 function targetDish() { const w = waitingList()[0]; if (w) return w.dish; const q = nextQueued(); return q ? q.dish : null; }
 // un segundo espera a que no quede ninguna entrada por servir (en espera o por llegar); si un cliente se va enojado, ya no bloquea
 const entradaPending = () => customers.some(c => c.dish.course === 'entrada' && (c.state === 'waiting' || c.state === 'queued'));
-const servable = c => c.state === 'waiting' && (c.dish.course !== 'segundo' || !entradaPending());
+// se puede entregar a quien ya espera y también a los pedidos que aún no llegan (no urgentes: ticket en gris)
+const servable = c => (c.state === 'waiting' || c.state === 'queued') && (c.dish.course !== 'segundo' || !entradaPending());
 const servableList = () => customers.filter(servable);
 const plateDone = plate => servableList().some(c => isDone(c.dish, plate));
 // el plato está completo para un segundo, pero todavía faltan entradas
@@ -55,9 +56,11 @@ const fitsOpen = plate => openDishes().some(D => fits(D, plate));
 function canPlace(plate, part) { return openDishes().some(D => fits(D, plate) && canAdd(D, plate, part)); }
 // entrega: el plato sirve al primer cliente servible cuyo pedido completa (entradas en orden libre, segundos al final)
 function serve(plate) {
-  const c = servableList().find(c => isDone(c.dish, plate));
+  const list = servableList();
+  // primero a quien ya está esperando; si nadie espera ese plato, se adelanta un pedido que aún no llega
+  const c = list.find(c => c.state === 'waiting' && isDone(c.dish, plate)) || list.find(c => isDone(c.dish, plate));
   if (!c) return false;
-  const bonus = Math.round(c.patience / c.max * 50);
+  const bonus = c.state === 'queued' ? 50 : Math.round(c.patience / c.max * 50);
   score += 100 + bonus; served++;
   c.state = 'happy'; c.doneAt = clock; lastResolve = clock;
   plateReturns.push(clock + PLATE_RETURN);       // el plato volverá limpio

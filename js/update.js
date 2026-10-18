@@ -8,7 +8,7 @@ function workedStations() {
 }
 
 function update(dt) {
-  if (!started || gameOver) return;
+  if (!started || gameOver || paused) return;
   clock += dt;
   const dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
   if (dx || dy) { const l = Math.hypot(dx, dy); tryMove(player, dx / l * SPEED * dt, dy / l * SPEED * dt); }
