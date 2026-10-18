@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sabor Perú - Kevin: Cebiche de Pota (3D)</title>
+  <link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style3d.css">
+  <link rel="stylesheet" href="css/mobile.css">
+</head>
+
+<body>
+  <div id="gameWrap">
+    <div id="hud">
+      <span id="scoreDisplay">⭐ 0</span>
+      <span id="customerDisplay"></span>
+      <button id="botBtn" class="small">🤖 Ayudante: OFF (B)</button>
+    </div>
+    <div id="tickets"></div>
+    <canvas id="c" width="900" height="560"></canvas>
+
+    <div id="startOverlay" class="overlay show">
+      <h1>🦑 Kevin: Cebiche de Pota</h1>
+      <p><b>Comida de la calle.</b> Atiende a 3 clientes entre los carritos cebicheros. Cada plato lleva <b>cebiche</b> y <b>camote</b>.</p>
+      <p>Corta en las <b>tablas</b> la <b>pota</b>, la <b>cebolla roja</b> (en pluma) y el <b>ají limo</b>. Echa todo al <b>bowl</b> con el
+        <b>limón</b> y mezcla. El <b>camote</b> se cuece en la olla.</p>
+      <p>La <b>olla</b> trabaja sola. En las <b>tablas</b> y el <b>bowl</b> debes <b>mantener presionado</b> Espacio/E.</p>
+      <p><b>Mover:</b> WASD / flechas &nbsp; <b>Interactuar:</b> Espacio o E &nbsp; <b>Ayudante (IA):</b> B &nbsp; <b>Pausa:</b> P</p>
+      <div class="btnRow"><a class="gamebtn alt" href="niveles.html">← Niveles</a><button id="startBtn"
+          class="gamebtn">¡Empezar!</button></div>
+    </div>
+
+    <div id="overlay" class="overlay">
+      <h1 id="overlayTitle"></h1>
+      <p id="overlaySubtitle"></p>
+      <button id="recipeBtn" class="gamebtn alt">📖 Ver receta real</button>
+      <div id="recipeCard" style="display:none"></div>
+      <div class="btnRow"><a class="gamebtn alt" href="niveles.html">Elegir nivel</a><button id="restartBtn"
+          class="gamebtn">Jugar de nuevo</button></div>
+    </div>
+  </div>
+
+  <div id="touchControls">
+    <div id="dpad">
+      <span></span><button data-k="up">▲</button><span></span>
+      <button data-k="left">◀</button><span></span><button data-k="right">▶</button>
+      <span></span><button data-k="down">▼</button><span></span>
+    </div>
+    <button id="actBtn">ACCIÓN</button>
+  </div>
+  <div id="hint">WASD/flechas: mover · Espacio/E: interactuar (mantén presionado en tabla y bowl) · P: pausa · B:
+    ayudante · Una sola cosa en las manos a la vez</div>
+
+  <script src="js/menu.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/recipes-data.js"></script>
+  <script src="js/dishes.js"></script>
+  <script src="js/levels/level-kevin-pota.js"></script>
+  <script src="js/plate.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/stations.js"></script>
+  <script src="js/movement.js"></script>
+  <script src="js/orders.js"></script>
+  <script src="js/interact.js"></script>
+  <script src="js/helper.js"></script>
+  <script src="js/update.js"></script>
+  <script src="js/vendor/three.min.js"></script>
+  <script src="js/vendor/GLTFLoader.js"></script>
+  <script src="js/3d/assets-kaykit.js"></script>
+  <script src="js/3d/labels3d.js"></script>
+  <script src="js/3d/render3d.js"></script>
+  <script src="js/3d/street3d.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/pause.js"></script>
+  <script src="js/mobile.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>

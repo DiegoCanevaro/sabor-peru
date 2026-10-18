@@ -235,6 +235,73 @@ Object.assign(ITEM3, {
   // chaufa recién salteado (en un tazón)
   chaufa: () => bowlWith('#c98b3c', g => chaufaMound(g, 0.1, 0.17))
 });
+// Kevin: cebiche de pota
+Object.assign(ITEM3, {
+  // pota (calamar gigante): manto blanco rosado con aletas y tentáculos
+  pota: () => {
+    const g = new THREE.Group(), skin = M('#f1d7d0', { roughness: 0.45 });
+    const body = mesh(new THREE.CylinderGeometry(0.03, 0.13, 0.5, 14), skin); body.rotation.z = Math.PI / 2; body.position.set(0.05, 0.12, 0); g.add(body);
+    [-1, 1].forEach(sz => { const fin = mesh(new THREE.ConeGeometry(0.1, 0.18, 3), skin); fin.rotation.set(sz * Math.PI / 2, 0, -Math.PI / 2); fin.position.set(0.28, 0.12, sz * 0.07); g.add(fin); });
+    for (let i = 0; i < 5; i++) { const t = mesh(new THREE.CylinderGeometry(0.018, 0.01, 0.3, 6), M('#e9b8ad')); t.rotation.z = Math.PI / 2 + (i - 2) * 0.12; t.position.set(-0.32, 0.08, (i - 2) * 0.035); g.add(t); }
+    return g;
+  },
+  // pota cortada en cuadritos blancos
+  pota_cortada: () => {
+    const g = new THREE.Group();
+    for (let i = 0; i < 10; i++) { const b = mesh(new THREE.BoxGeometry(0.08, 0.05, 0.08), M('#f6efe6', { roughness: 0.35 })); b.position.set(rnd(-0.14, 0.14), 0.03 + rnd(0, 0.03), rnd(-0.12, 0.12)); b.rotation.y = rnd(0, 1.5); g.add(b); }
+    return g;
+  },
+  // limones verdes (uno partido)
+  limon: () => {
+    const g = new THREE.Group();
+    const a = mesh(new THREE.SphereGeometry(0.1, 14, 10), M('#5c9b2e', { roughness: 0.4 })); a.scale.set(1, 0.9, 1); a.position.set(-0.08, 0.09, 0); g.add(a);
+    const half = mesh(new THREE.SphereGeometry(0.1, 14, 10, 0, 6.3, 0, 1.57), M('#5c9b2e', { roughness: 0.4 })); half.rotation.x = Math.PI; half.position.set(0.1, 0.1, 0.02); g.add(half);
+    const face = mesh(new THREE.CircleGeometry(0.095, 14), M('#d6e98a')); face.rotation.x = -Math.PI / 2; face.position.set(0.1, 0.101, 0.02); g.add(face);
+    return g;
+  },
+  // cebolla roja entera
+  cebolla_roja: () => {
+    const g = new THREE.Group();
+    const o = mesh(new THREE.SphereGeometry(0.15, 16, 12), M('#8a2a55', { roughness: 0.4 })); o.scale.y = 0.9; o.position.y = 0.14; g.add(o);
+    const tip = mesh(new THREE.ConeGeometry(0.04, 0.1, 8), M('#b88a5a')); tip.position.y = 0.32; g.add(tip);
+    return g;
+  },
+  // cebolla roja en pluma (tiras finas)
+  cebolla_pluma: () => {
+    const g = new THREE.Group();
+    for (let i = 0; i < 12; i++) { const r = mesh(new THREE.TorusGeometry(0.09, 0.012, 4, 12, Math.PI * 0.9), M(i % 3 ? '#a8376b' : '#e7c6d8')); r.rotation.set(Math.PI / 2, 0, rnd(0, 6)); r.position.set(rnd(-0.08, 0.08), 0.02 + i * 0.006, rnd(-0.06, 0.06)); g.add(r); }
+    return g;
+  },
+  // ají limo: pequeño y rojo
+  aji_limo: () => {
+    const g = new THREE.Group();
+    [[-0.05, 0.2], [0.07, -0.3]].forEach(([x, r]) => {
+      const pts = [[0, 0], [0.03, 0.04], [0.045, 0.1], [0.04, 0.16], [0, 0.18]].map(([a, b]) => new THREE.Vector2(a, b));
+      const p = mesh(new THREE.LatheGeometry(pts, 10), M('#d9271c', { roughness: 0.35 })); p.rotation.set(0, r, Math.PI / 2); p.position.set(x + 0.09, 0.05, x); g.add(p);
+      const st3 = mesh(new THREE.CylinderGeometry(0.012, 0.015, 0.05, 6), M('#3f7a2a')); st3.rotation.z = Math.PI / 2; st3.position.set(x - 0.11, 0.05, x); g.add(st3);
+    });
+    return g;
+  },
+  aji_limo_picado: () => {
+    const g = new THREE.Group();
+    for (let i = 0; i < 14; i++) { const b = mesh(new THREE.BoxGeometry(0.03, 0.015, 0.03), M(i % 4 ? '#d9271c' : '#f2d24a')); b.position.set(rnd(-0.09, 0.09), 0.01, rnd(-0.07, 0.07)); b.rotation.y = rnd(0, 2); g.add(b); }
+    return g;
+  },
+  // camote: piel morada; cocido: rodajas anaranjadas
+  camote: () => { const g = new THREE.Group(); const c = lumpy(0.13, 1.8, 0.85, 1, '#8a3a4a', 0.05); c.position.y = 0.11; g.add(c); return g; },
+  camote_cocido: () => {
+    const g = new THREE.Group();
+    for (let i = 0; i < 3; i++) { const s3 = mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.06, 16), [M('#8a3a4a'), M('#f08a2a'), M('#f08a2a')]); s3.position.set(-0.11 + i * 0.11, 0.05 + i * 0.01, 0); s3.rotation.z = -0.25; g.add(s3); }
+    return g;
+  },
+  // cebiche recién mezclado (en el bowl, con su leche de tigre)
+  cebiche: () => bowlWith('#efe9da', g => cebicheMound(g, 0.14, 0.16))
+});
+function cebicheMound(g, y, r) {
+  for (let i = 0; i < 12; i++) { const b = mesh(new THREE.BoxGeometry(0.07, 0.045, 0.07), M('#f8f2ea', { roughness: 0.3 })); const a = rnd(0, 6.28), k = rnd(0, r); b.position.set(Math.cos(a) * k, y + rnd(0, 0.06), Math.sin(a) * k); b.rotation.y = rnd(0, 2); g.add(b); }
+  for (let i = 0; i < 7; i++) { const o = mesh(new THREE.TorusGeometry(0.06, 0.01, 4, 10, Math.PI * 0.9), M('#a8376b')); o.rotation.set(Math.PI / 2, 0, rnd(0, 6)); o.position.set(rnd(-r, r) * 0.7, y + 0.06, rnd(-r, r) * 0.7); g.add(o); }
+  for (let i = 0; i < 6; i++) { const c = mesh(new THREE.BoxGeometry(0.025, 0.012, 0.025), M(i % 2 ? '#d9271c' : '#4f9a32')); c.position.set(rnd(-r, r) * 0.7, y + 0.08, rnd(-r, r) * 0.7); g.add(c); }
+}
 // montículo de arroz chaufa: arroz dorado por el sillao, trocitos de pollo y cebolla china
 function chaufaMound(g, y, r) {
   const d = mesh(new THREE.SphereGeometry(r, 18, 10, 0, 6.3, 0, 1.45), M('#c98b3c', { roughness: 0.9 }));
@@ -289,6 +356,18 @@ function plateModel(parts) {
     }
   }
   if (has('chaufa')) chaufaMound(g, y0, 0.26);      // servido en forma de cúpula, como en el chifa
+  // cebiche de pota: hoja de lechuga, el cebiche con su leche de tigre y el camote al costado
+  if (has('cebiche') || has('camote')) {
+    const lettuce = mesh(new THREE.SphereGeometry(0.2, 12, 6, 0, 6.3, 0, 0.7), M('#6fae3b', { side: THREE.DoubleSide, flatShading: true }));
+    lettuce.scale.set(1, 0.3, 0.85); lettuce.position.set(-0.06, y0 - 0.02, 0); if (has('cebiche')) g.add(lettuce);
+  }
+  if (has('cebiche')) {
+    const juice = mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.02, 20), M('#efe9da', { roughness: 0.2 })); juice.position.set(-0.06, y0 + 0.01, 0); g.add(juice);
+    cebicheMound(g, y0 + 0.03, 0.15);
+  }
+  if (has('camote')) {
+    for (let i = 0; i < 2; i++) { const s3 = mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.05, 16), [M('#8a3a4a'), M('#f08a2a'), M('#f08a2a')]); s3.position.set(0.2, y0 + 0.03 + i * 0.03, 0.12 - i * 0.07); s3.rotation.z = -0.2; g.add(s3); }
+  }
   if (has('arroz')) {
     const d = mesh(new THREE.SphereGeometry(0.15, 14, 8, 0, 6.3, 0, 1.4), M('#fbfaf3', { roughness: 0.95 }));
     d.position.set(-0.17, y0, -0.1); g.add(d);
@@ -417,6 +496,7 @@ function menuBoardTex() {
   });
 }
 function buildWorld() {
+  if (typeof IS_CALLE !== 'undefined' && IS_CALLE) { buildStreet(); return; }      // niveles Kevin: la calle (street3d.js)
   // la cocina queda cerrada por las encimeras del perímetro (stations.js): las paredes van justo detrás
   const X0 = X3(GX) - 0.05, X1 = X3(GX + COLS * CS) + 0.05, Z0 = Z3(GY) - 0.05, ZF = Z3(GY + ROWS * CS), Z1 = ZF + 0.35;
   const FW = X1 - X0, FD = Z1 - Z0;
@@ -567,6 +647,7 @@ function counter3(s, model) {
   const rot = facingOf(s), side = Math.abs(Math.sin(rot)) > 0.5;
   const lw = (side ? s.h : s.w) / U3, ld = (side ? s.w : s.h) / U3;
   if (IS_CHIFA) return chifaCounter(lw, ld, rot);
+  if (typeof IS_CALLE !== 'undefined' && IS_CALLE) return cartCounter(lw, ld, rot);
   const c = KK(model || 'kitchencounter_straight_A');
   c.scale.set(lw / 2, 1, ld / 2.04); c.rotation.y = rot;
   return c;
@@ -819,7 +900,7 @@ function updStations(dt) {
         if (s.state === 'chopping' && s.worked) s3.slot.rotation.y = Math.sin(V3.t * 25) * 0.05;
         break;
       case 'bowl':
-        setSlot(s3.slot, s.state === 'done' ? (s.n === 1 ? 'masa1' : 'masa') : s.items.length ? 'set|' + s.items.join(',') : null);
+        setSlot(s3.slot, s.state === 'done' ? (s.out === 'masa' ? (s.n === 1 ? 'masa1' : 'masa') : s.out) : s.items.length ? 'set|' + s.items.join(',') : null);
         s3.slot.rotation.y += s.state === 'mashing' && s.worked ? dt * 6 : 0;
         break;
       case 'pan':
@@ -875,7 +956,7 @@ function stationOverlay(s) {
       break;
     }
     case 'board': if (s.state === 'chopping') { prog(s.t / T.board); hint(); } if (s.state === 'done') ready(); break;
-    case 'bowl': if (s.state === 'mashing') { prog(s.t / T.bowl); hint(); } if (s.state === 'done') pill('¡LISTO! ×' + s.n + (s.n === 1 ? ' capa' : ' capas'), c.x, c.y, '#2f8a3b', '#ffffff', 11); break;
+    case 'bowl': if (s.state === 'mashing') { prog(s.t / T.bowl); hint(); } if (s.state === 'done') pill(s.out === 'masa' ? '¡LISTO! ×' + s.n + (s.n === 1 ? ' capa' : ' capas') : '¡LISTO!', c.x, c.y, '#2f8a3b', '#ffffff', 11); break;
     case 'pan': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.pan, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'wok': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.wok, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'blender': {

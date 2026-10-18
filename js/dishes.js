@@ -35,6 +35,17 @@ const DISHES = {
     ticket: { slots: [{ i: '🍚', t: ['🍲'] }, { i: '🥔', t: ['🍲', '🔪'] }, { i: '🍗', t: ['🍲', '🔪', '🍳'] }, { g: ['🌶️'], t: '🥤' }] },
     recipe: RECIPES.aji
   },
+  // Kevin: comida de la calle (niveles independientes de los mundos)
+  cebiche_pota: {
+    id: 'cebiche_pota', level: 0, name: 'Cebiche de Pota', short: 'Cebiche', icon: '🦑', course: 'segundo',
+    kind: 'set', parts: ['cebiche', 'camote'],
+    partName: { cebiche: 'Cebiche de pota', camote: 'Camote' },
+    patience: 115,
+    uses: ['pota', 'pota_cortada', 'limon', 'cebolla_roja', 'cebolla_pluma', 'aji_limo', 'aji_limo_picado', 'camote', 'camote_cocido', 'cebiche'],
+    blend: null,
+    ticket: { slots: [{ g: ['🦑', '🧅', '🌶️', '🍋'], t: '🥣' }, { i: '🍠', t: ['🍲'] }] },
+    recipe: RECIPES.cebiche_pota
+  },
   // Mundo 2 (chifa)
   chaufa: {
     id: 'chaufa', level: 4, name: 'Arroz Chaufa', short: 'Chaufa', icon: '🍛', course: 'segundo',

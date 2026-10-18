@@ -69,6 +69,53 @@ const LABEL_ICONS = {
     c.fillStyle = '#c0392b'; c.fillRect(-26, 28, 52, 8);
     lblShine(c, -28, 2, 6, 18, 0);
   },
+  // pota: calamar gigante blanco rosado con aletas y tentáculos
+  pota(c) {
+    lblShadow(c, 72, 76);
+    c.strokeStyle = LBL_INK; c.lineWidth = 7; c.lineCap = 'round';
+    [-24, -10, 4, 18].forEach((dy, i) => { c.beginPath(); c.moveTo(-40, 20 + dy * 0.4); c.bezierCurveTo(-60, 30 + dy, -74, 46 + dy, -86, 40 + dy); c.stroke();
+      c.strokeStyle = '#e9b8ad'; c.lineWidth = 3; c.stroke(); c.strokeStyle = LBL_INK; c.lineWidth = 7; });
+    lblShape(c, '#f1d7d0', c => { c.moveTo(-44, 6); c.bezierCurveTo(-20, -22, 40, -40, 66, -46); c.lineTo(70, 22); c.bezierCurveTo(40, 30, -20, 40, -44, 30); c.closePath(); });
+    lblShape(c, '#e9c1b8', c => { c.moveTo(56, -44); c.lineTo(92, -70); c.lineTo(80, -10); c.closePath(); }, 6);
+    lblShape(c, '#e9c1b8', c => { c.moveTo(62, 20); c.lineTo(96, 40); c.lineTo(70, -6); c.closePath(); }, 6);
+    c.fillStyle = LBL_INK; c.beginPath(); c.arc(-28, 14, 6, 0, 7); c.fill();
+    lblShine(c, 4, -14, 26, 6, -0.3);
+  },
+  // limones verdes, uno partido por la mitad
+  limon(c) {
+    lblShadow(c, 64, 76);
+    lblShape(c, '#5c9b2e', c => c.ellipse(-26, 6, 46, 40, -0.2, 0, 7));
+    lblShine(c, -40, -12, 14, 7, -0.4);
+    lblShape(c, '#5c9b2e', c => c.ellipse(34, 18, 42, 40, 0, 0, 7));
+    lblShape(c, '#e5f0a6', c => c.ellipse(34, 18, 32, 30, 0, 0, 7), 4);
+    c.strokeStyle = '#a8c95a'; c.lineWidth = 3; for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4; c.beginPath(); c.moveTo(34, 18); c.lineTo(34 + Math.cos(a) * 28, 18 + Math.sin(a) * 26); c.stroke(); }
+  },
+  // cebolla roja: morada con capas y raíz
+  cebolla_roja(c) {
+    lblShadow(c, 70, 66);
+    lblShape(c, '#8a2a55', c => { c.moveTo(0, -78); c.bezierCurveTo(10, -54, 70, -40, 66, 10); c.bezierCurveTo(62, 56, -62, 56, -66, 10); c.bezierCurveTo(-70, -40, -10, -54, 0, -78); c.closePath(); });
+    c.strokeStyle = '#b5517f'; c.lineWidth = 4; [[-30, 0], [0, 0], [30, 0]].forEach(([x]) => { c.beginPath(); c.moveTo(x * 0.2, -66); c.quadraticCurveTo(x * 1.4, -10, x * 0.6, 48); c.stroke(); });
+    c.strokeStyle = '#d9b58a'; c.lineWidth = 4; [-10, 0, 10].forEach(x => { c.beginPath(); c.moveTo(x * 0.5, 50); c.lineTo(x, 66); c.stroke(); });
+    lblShine(c, -30, -16, 9, 20, -0.2);
+  },
+  // ají limo: dos ajicitos rojos
+  aji_limo(c) {
+    lblShadow(c, 64, 70);
+    [[-24, -0.5, '#d9271c'], [22, 0.35, '#e8a21c']].forEach(([x, r, col]) => {
+      c.save(); c.translate(x, 6); c.rotate(r);
+      lblShape(c, col, c => { c.moveTo(0, -52); c.bezierCurveTo(22, -46, 20, 10, 2, 60); c.bezierCurveTo(-16, 10, -22, -46, 0, -52); c.closePath(); });
+      lblShape(c, '#3f7a2a', c => { c.moveTo(-8, -52); c.quadraticCurveTo(0, -78, 12, -80); }, 8);
+      lblShine(c, -6, -20, 4, 14, 0);
+      c.restore();
+    });
+  },
+  // camote: piel morada con un corte anaranjado
+  camote(c) {
+    lblShadow(c, 62, 80);
+    lblShape(c, '#8a3a4a', c => { c.moveTo(-84, 10); c.bezierCurveTo(-70, -40, 40, -50, 74, -16); c.bezierCurveTo(90, 0, 70, 40, 30, 44); c.bezierCurveTo(-20, 50, -76, 44, -84, 10); c.closePath(); });
+    lblShape(c, '#f08a2a', c => c.ellipse(64, 12, 18, 30, 0.2, 0, 7), 6);
+    lblShine(c, -30, -18, 26, 7, -0.15);
+  },
   // huevos: dos huevos de cáscara marrón
   huevo(c) {
     lblShadow(c, 66, 74);

@@ -57,7 +57,7 @@ function drawStation(s) {
       base('🥣');
       s.items.forEach((it, i) => emoji(ICON[it], s.x + 56 + i * 16, cy + 2, 14));
       if (s.state === 'mashing') { prog(s.t / T.bowl); hint(); }
-      if (s.state === 'done') { emoji('🟨', cx + 20, cy + 2, 20); label('¡lista! ×' + s.n, cx, s.y + 12, '#8fe39a', 11); }
+      if (s.state === 'done') { emoji(s.out === 'masa' ? '🟨' : ICON[s.out], cx + 20, cy + 2, 20); label('¡lista!' + (s.n > 1 ? ' ×' + s.n : ''), cx, s.y + 12, '#8fe39a', 11); }
       break;
     case 'blender': {
       base('🥤');

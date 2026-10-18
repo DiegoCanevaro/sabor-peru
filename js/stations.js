@@ -25,6 +25,35 @@ function stationExtra(spec) {
     case 'blender': return { state: 'idle', t: 0, items: [], out: null, label: 'Licuadora' };
   }
 }
+// Carritos de la calle (layout 'calle'): el 3D los usa para poner ruedas y toldos. { c0, c1, r, side: 'top'|'bottom', awning }
+const CARTS = [];
+const idCount = {};
+const uid = base => { idCount[base] = (idCount[base] || 0) + 1; return idCount[base] === 1 ? base : base + idCount[base]; };
+if (LEVEL.layout === 'calle') {
+  // Calle con carritos cebicheros a ambos lados de la pista (inspirado en Overcooked); el cruce peatonal queda al centro.
+  //   carrito de arriba a la izquierda: cajas · arriba a la derecha: ollas · abajo a la izquierda: tablas
+  //   abajo a la derecha: bowl, platos y basura · a la derecha: carrito de salida · al centro: dos mesitas de apoyo
+  let mn = 0, pn = 0;
+  const place = (spec, c, r, face) => {
+    if (spec.startsWith('crate:')) { const it = spec.slice(6); st.push(cellSt('crate_' + it, 'crate', c, r, face, { item: it, emoji: CRATE_INFO[it][0], label: CRATE_INFO[it][1] })); return; }
+    if (spec === 'table' || spec === 'plates') { st.push(cellSt('mesa' + (++mn), 'table', c, r, face, { item: null, label: 'Mesa', plates: spec === 'plates' })); return; }
+    if (spec === 'trash') { st.push(cellSt('trash', 'trash', c, r, face, { label: 'Basura' })); return; }
+    st.push(cellSt(spec === 'pot' ? 'pot' + (++pn) : uid(spec), spec, c, r, face, stationExtra(spec)));
+  };
+  const cart = (c0, r, face, specs, awning) => {
+    CARTS.push({ c0, c1: c0 + specs.length - 1, r, side: face === 'down' ? 'top' : 'bottom', awning });
+    specs.forEach((sp, i) => place(sp, c0 + i, r, face));
+  };
+  const specs = LEVEL.left.concat(LEVEL.right || []);
+  const heat = specs.filter(sp => sp === 'pot' || sp === 'pan' || sp === 'wok'), prep = specs.filter(sp => !heat.includes(sp));
+  const pad = (list, n) => list.concat(Array(Math.max(0, n - list.length)).fill('table'));
+  cart(1, 1, 'down', LEVEL.crates.map(it => 'crate:' + it), 'red');
+  cart(8, 1, 'down', pad(heat, 4), 'blue');
+  cart(1, 6, 'up', pad(prep.filter(sp => sp !== 'bowl'), 5), 'blue');
+  cart(8, 6, 'up', (prep.includes('bowl') ? ['bowl'] : []).concat(['plates', 'plates', 'trash']), 'red');
+  st.push(cellSt('counter', 'counter', COLS - 1, 2, 'left', { label: 'MOSTRADOR' }, 3));
+  [[3, 3, 'right'], [3, 4, 'right'], [10, 3, 'left'], [10, 4, 'left']].forEach(([c, r, f]) => place('table', c, r, f));
+} else {
 {
   const used = new Set(), key = (c, r) => c + ',' + r;
   const put = (spec, kind, c, r, face, extra, tall) => { st.push(cellSt(spec, kind, c, r, face, extra, tall)); for (let i = 0; i < (tall || 1); i++) used.add(key(c, r + i)); };
@@ -37,7 +66,7 @@ function stationExtra(spec) {
   specs.filter(sp => HEAT.includes(sp)).forEach(sp => { put(sp === 'pot' ? 'pot' + (++pn) : sp, sp, 0, row++, 'right', stationExtra(sp)); });
   const prep = specs.filter(sp => !HEAT.includes(sp));
   const c0 = Math.round((COLS - prep.length) / 2);
-  prep.forEach((sp, i) => put(sp, sp, c0 + i, ISLAND_ROW, 'down', stationExtra(sp)));
+  prep.forEach((sp, i) => put(uid(sp), sp, c0 + i, ISLAND_ROW, 'down', stationExtra(sp)));
   // pared derecha: bandeja de salida (3 celdas) y basura
   put('counter', 'counter', COLS - 1, 2, 'left', { label: 'MOSTRADOR' }, 3);
   put('trash', 'trash', COLS - 1, ROWS - 2, 'left', { label: 'Basura' });
@@ -49,6 +78,7 @@ function stationExtra(spec) {
   for (let r = 1; r < ROWS - 1; r++) table(0, r, 'right');              // pared izquierda
   for (let r = 1; r < ROWS - 1; r++) table(COLS - 1, r, 'left');        // pared derecha
   for (let c = 2; c < COLS - 2; c++) table(c, ISLAND_ROW, 'down');      // isla
+}
 }
 
 const g = id => st.find(s => s.id === id);
@@ -67,7 +97,7 @@ const potN = type => POTS.reduce((n, p) => n + p.slots.filter(x => x.type === ty
 // (en los primeros niveles no se lavan)
 function plateSpot() {
   const out = st.find(s => s.kind === 'counter');
-  return st.filter(s => s.kind === 'table' && s.row === ROWS - 1 && !s.item)
+  return st.filter(s => s.kind === 'table' && !s.item && (LEVEL.layout === 'calle' ? s.plates : s.row === ROWS - 1))
     .sort((a, b) => Math.hypot(a.sx - out.sx, a.sy - out.sy) - Math.hypot(b.sx - out.sx, b.sy - out.sy))[0] || null;
 }
 for (let i = 0; i < (LEVEL.plates || 2); i++) { const t = plateSpot(); if (t) t.item = { type: 'plate', parts: [] }; }

@@ -55,19 +55,20 @@ function interact(s, p, want) {
       if (!h && s.state === 'done') { p.held = { type: s.product }; s.state = 'empty'; s.product = null; return true; }
       return false;
     case 'bowl':     // hold: 2 papas cocidas + ají -> masa de 2 porciones
-      if (h && BOWL_NEED[h.type] && s.state === 'idle' && nOf(s.items, h.type) < BOWL_NEED[h.type]) {
+      if (h && s.state === 'idle' && bowlAccepts(s.items, h.type)) {
         s.items.push(h.type); p.held = null;
-        if (bowlFull(s.items)) { s.state = 'mashing'; s.t = 0; }
+        const m = bowlMatch(s.items);
+        if (m) { s.state = 'mashing'; s.t = 0; s.out = m.out; s.portions = m.n; }
         return true;
       }
       // con un plato en la mano: se pone una capa directamente desde el bowl (gasta la mitad)
-      if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, 'masa')) {
-        h.parts.push('masa'); s.n--;
+      if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, PART_OF_ITEM[s.out])) {
+        h.parts.push(PART_OF_ITEM[s.out]); s.n--;
         if (s.n <= 0) { s.state = 'idle'; s.items = []; }
         return true;
       }
       // con las manos vacías: se lleva toda la masa que queda
-      if (!h && s.state === 'done') { p.held = { type: 'masa', n: s.n }; s.state = 'idle'; s.items = []; s.n = 0; return true; }
+      if (!h && s.state === 'done') { p.held = { type: s.out, n: s.n }; s.state = 'idle'; s.items = []; s.n = 0; return true; }
       return false;
     case 'blender':  // hold: se licúa manteniendo la acción cuando el contenido coincide con una receta
       if (h && BLEND_ACCEPT.includes(h.type) && s.state === 'idle' && blendOK(s.items.concat(h.type))) {

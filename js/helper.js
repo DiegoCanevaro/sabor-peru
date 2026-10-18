@@ -13,7 +13,12 @@ function everyHeld() {
   return [mine, helper && helper.held, ...TABLES.map(t => t.item)].filter(Boolean);
 }
 function cnt(...types) { return everyHeld().filter(it => types.includes(it.type)).length; }
-const boardHas = p => { const Bd = g('board'); return (Bd.product === p && Bd.state !== 'empty') ? 1 : 0; };
+// puede haber más de una tabla (p. ej. en los carritos cebicheros)
+const boards = () => st.filter(s => s.kind === 'board');
+const freeBoard = () => boards().find(b => b.state === 'empty');
+const boardHas = p => boards().filter(b => b.product === p && b.state !== 'empty').length;
+// ¿al bowl le falta este ingrediente para la receta que se está armando?
+const bowlNeeds = t => { const Bw = byKind('bowl'); return !!Bw && Bw.state === 'idle' && bowlAccepts(Bw.items, t); };
 const count = (arr, x) => arr.filter(y => y === x).length;
 
 // ---- Mesa donde se arma el plato del pedido: la que ya tiene un plato compatible (la más avanzada)
@@ -33,14 +38,16 @@ function relevant(D, h) { return h.type === 'plate' ? (fits(D, h) || plateDone(h
 const relevantAny = h => h.type === 'plate' ? (fitsOpen(h) || plateDone(h)) : openDishes().some(D => D.uses.includes(h.type));
 // ¿Se puede usar ahora mismo? (si no, se deja en una mesa)
 function usable(D, h) {
-  const Bd = g('board'), Bw = byKind('bowl'), Bl = BL(), Pn = byKind('pan'), Wk = byKind('wok');
+  const Bd = freeBoard() || g('board'), Bw = byKind('bowl'), Bl = BL(), Pn = byKind('pan'), Wk = byKind('wok');
   const wokNeeds = t => !!Wk && Wk.state === 'idle' && !Wk.items.includes(t);
   const inPlate = () => { const A = planTable(D); return !!A && canAdd(D, A.item, PART_OF_ITEM[h.type]); };
   switch (h.type) {
     case 'pollo_raw': if (D.id === 'chaufa') return Bd.state === 'empty'; return !!freePot(h.type);      // chaufa: el pollo se corta crudo
     case 'papa_raw': case 'arroz_raw': return !!freePot(h.type);
     case 'papa_cooked': return D.id === 'causa' ? (Bw.state === 'idle' && nOf(Bw.items, h.type) < BOWL_NEED.papa_cooked) : Bd.state === 'empty';
-    case 'pollo_cooked': case 'palta': case 'cebolla_china': return Bd.state === 'empty';
+    case 'pollo_cooked': case 'palta': case 'cebolla_china': case 'pota': case 'cebolla_roja': case 'aji_limo': return !!freeBoard();
+    case 'pota_cortada': case 'cebolla_pluma': case 'aji_limo_picado': case 'limon': return bowlNeeds(h.type);
+    case 'camote': return !!freePot('camote');
     case 'cebolla_picada': case 'sillao': case 'huevo': case 'pollo_cuadros': return wokNeeds(h.type);
     case 'arroz_cooked': if (D.id === 'chaufa') return wokNeeds('arroz_cooked'); return inPlate();
     case 'aji':
@@ -60,7 +67,9 @@ function destination(D, h) {
     case 'pollo_raw': if (D.id === 'chaufa') return g('board'); return freePot(h.type) || POTS[0];
     case 'papa_raw': case 'arroz_raw': return freePot(h.type) || POTS[0];
     case 'papa_cooked': return D.id === 'causa' ? byKind('bowl') : g('board');
-    case 'pollo_cooked': case 'palta': case 'cebolla_china': return g('board');
+    case 'pollo_cooked': case 'palta': case 'cebolla_china': case 'pota': case 'cebolla_roja': case 'aji_limo': return freeBoard() || g('board');
+    case 'pota_cortada': case 'cebolla_pluma': case 'aji_limo_picado': case 'limon': return byKind('bowl');
+    case 'camote': return freePot('camote') || POTS[0];
     case 'cebolla_picada': case 'sillao': case 'huevo': case 'pollo_cuadros': return byKind('wok');
     case 'arroz_cooked': return D.id === 'chaufa' ? byKind('wok') : planTable(D);
     case 'aji': return D.id === 'causa' ? byKind('bowl') : BL();
@@ -74,9 +83,9 @@ function destination(D, h) {
 
 // Estación de "mantener" que conviene trabajar ahora (solo si lo que produce sirve a algún pedido abierto)
 function workTarget() {
-  const Bd = byKind('board'), Bw = byKind('bowl');
-  if (Bd && Bd.state === 'chopping' && relevantAny({ type: Bd.product })) return Bd;
-  if (Bw && Bw.state === 'mashing' && relevantAny({ type: 'masa' })) return Bw;
+  const Bd = boards().find(b => b.state === 'chopping' && relevantAny({ type: b.product })), Bw = byKind('bowl');
+  if (Bd) return Bd;
+  if (Bw && Bw.state === 'mashing' && relevantAny({ type: Bw.out })) return Bw;
   return null;
 }
 
@@ -167,6 +176,30 @@ PLANS.chaufa = function (D) {
   if (cebolla < 1 && Bd.state === 'empty') return { s: g('crate_cebolla_china') };
   if (huevo < 1) return { s: g('crate_huevo') };
   if (sillao < 1) return { s: g('crate_sillao') };
+  return null;
+};
+
+// Cebiche de pota: la pota, la cebolla y el ají limo se cortan en las tablas; todo va al bowl con el limón y se mezcla.
+// El camote se cuece en la olla. Al plato van el cebiche y el camote.
+PLANS.cebiche_pota = function (D) {
+  const A = planTable(D), Bw = byKind('bowl'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
+  const CUT = ['pota_cortada', 'cebolla_pluma', 'aji_limo_picado'];
+  if (Bw.state === 'done' && Bw.out === 'cebiche' && pl && !has('cebiche')) return { s: Bw };
+  const bd = boards().find(b => b.state === 'done' && CUT.includes(b.product) && bowlNeeds(b.product));
+  if (bd) return { s: bd };
+  const cam = potWith('camote'); if (cam && pl && !has('camote')) return { s: cam, want: 'camote' };
+  const camote = (has('camote') ? 1 : 0) + cnt('camote_cocido') + potN('camote') + cnt('camote');
+  if (camote < 1 && freePot('camote')) return { s: g('crate_camote') };
+  if (Bw.state !== 'idle' || has('cebiche') || cnt('cebiche') > 0) return null;      // ya hay un cebiche en camino
+  const inB = x => Bw.items.includes(x) ? 1 : 0;
+  const pota = inB('pota_cortada') + cnt('pota_cortada') + boardHas('pota_cortada') + cnt('pota');
+  const cebolla = inB('cebolla_pluma') + cnt('cebolla_pluma') + boardHas('cebolla_pluma') + cnt('cebolla_roja');
+  const aji = inB('aji_limo_picado') + cnt('aji_limo_picado') + boardHas('aji_limo_picado') + cnt('aji_limo');
+  const limon = inB('limon') + cnt('limon');
+  if (pota < 1 && freeBoard()) return { s: g('crate_pota') };
+  if (cebolla < 1 && freeBoard()) return { s: g('crate_cebolla_roja') };
+  if (aji < 1 && freeBoard()) return { s: g('crate_aji_limo') };
+  if (limon < 1) return { s: g('crate_limon') };
   return null;
 };
 

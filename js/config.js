@@ -20,37 +20,52 @@ const ICON = {
   papa_raw: '🥔', papa_cooked: '🥔', papa_sliced: '🥔', pollo_raw: '🍗', pollo_cooked: '🍗', pollo_shred: '🍗',
   arroz_raw: '🍚', arroz_cooked: '🍚', aji: '🌶️', palta: '🥑', palta_sliced: '🥑', queso: '🧀', leche: '🥛', galleta: '🍘',
   salsa: '🥣', salsa_aji: '🟠', masa: '🟨', guiso: '🍛', plate: '🍽️',
-  cebolla_china: '🌱', cebolla_picada: '🌱', sillao: '🍶', chaufa: '🍛', huevo: '🥚', pollo_cuadros: '🍗'
+  cebolla_china: '🌱', cebolla_picada: '🌱', sillao: '🍶', chaufa: '🍛', huevo: '🥚', pollo_cuadros: '🍗',
+  pota: '🦑', pota_cortada: '🦑', limon: '🍋', cebolla_roja: '🧅', cebolla_pluma: '🧅', aji_limo: '🌶️', aji_limo_picado: '🌶️',
+  camote: '🍠', camote_cocido: '🍠', cebiche: '🥣'
 };
 const NAME = {
   papa_raw: 'papa', papa_cooked: 'cocida', papa_sliced: 'rodajas', pollo_raw: 'pollo', pollo_cooked: 'cocido', pollo_shred: 'desmenuz.',
   arroz_raw: 'arroz', arroz_cooked: 'cocido', aji: 'ají', palta: 'palta', palta_sliced: 'láminas', queso: 'queso', leche: 'leche',
   galleta: 'galleta', salsa: 'salsa', salsa_aji: 'crema', masa: 'masa', guiso: 'guiso', plate: 'plato',
-  cebolla_china: 'cebolla', cebolla_picada: 'picada', sillao: 'sillao', chaufa: 'chaufa', huevo: 'huevo', pollo_cuadros: 'cuadros'
+  cebolla_china: 'cebolla', cebolla_picada: 'picada', sillao: 'sillao', chaufa: 'chaufa', huevo: 'huevo', pollo_cuadros: 'cuadros',
+  pota: 'pota', pota_cortada: 'cortada', limon: 'limón', cebolla_roja: 'cebolla', cebolla_pluma: 'pluma', aji_limo: 'ají limo', aji_limo_picado: 'picado',
+  camote: 'camote', camote_cocido: 'cocido', cebiche: 'cebiche'
 };
-const LABELED = ['papa_cooked', 'papa_sliced', 'pollo_cooked', 'pollo_shred', 'arroz_cooked', 'palta_sliced', 'salsa', 'salsa_aji', 'masa', 'guiso', 'cebolla_picada', 'chaufa', 'pollo_cuadros'];
+const LABELED = ['papa_cooked', 'papa_sliced', 'pollo_cooked', 'pollo_shred', 'arroz_cooked', 'palta_sliced', 'salsa', 'salsa_aji', 'masa', 'guiso', 'cebolla_picada', 'chaufa', 'pollo_cuadros', 'pota_cortada', 'cebolla_pluma', 'aji_limo_picado', 'camote_cocido', 'cebiche'];
 const CRATE_INFO = {
   papa_raw: ['🥔', 'Papas'], pollo_raw: ['🍗', 'Pollo'], aji: ['🌶️', 'Ají'], arroz_raw: ['🍚', 'Arroz'],
   palta: ['🥑', 'Paltas'], queso: ['🧀', 'Queso'], leche: ['🥛', 'Leche'], galleta: ['🍘', 'Galletas'],
-  cebolla_china: ['🌱', 'Cebolla china'], sillao: ['🍶', 'Sillao'], huevo: ['🥚', 'Huevos']
+  cebolla_china: ['🌱', 'Cebolla china'], sillao: ['🍶', 'Sillao'], huevo: ['🥚', 'Huevos'],
+  pota: ['🦑', 'Pota'], limon: ['🍋', 'Limones'], cebolla_roja: ['🧅', 'Cebolla'], aji_limo: ['🌶️', 'Ají limo'], camote: ['🍠', 'Camote']
 };
 // lo que se puede poner sobre el plato (producto -> parte) y cómo se dibuja cada parte
-const PART_OF_ITEM = { papa_sliced: 'papa', salsa: 'salsa', arroz_cooked: 'arroz', guiso: 'guiso', masa: 'masa', pollo_shred: 'relleno', palta_sliced: 'palta', chaufa: 'chaufa' };
-const PART_EMOJI = { papa: '🥔', salsa: '🥣', arroz: '🍚', guiso: '🍛', chaufa: '🍛' };
-const PART_POS = { arroz: [-.22, -.12], papa: [.22, -.12], salsa: [0, .1], guiso: [0, .1], chaufa: [0, 0] };
+const PART_OF_ITEM = { papa_sliced: 'papa', salsa: 'salsa', arroz_cooked: 'arroz', guiso: 'guiso', masa: 'masa', pollo_shred: 'relleno', palta_sliced: 'palta', chaufa: 'chaufa', cebiche: 'cebiche', camote_cocido: 'camote' };
+const PART_EMOJI = { papa: '🥔', salsa: '🥣', arroz: '🍚', guiso: '🍛', chaufa: '🍛', cebiche: '🦑', camote: '🍠' };
+const PART_POS = { arroz: [-.22, -.12], papa: [.22, -.12], salsa: [0, .1], guiso: [0, .1], chaufa: [0, 0], cebiche: [-.1, 0], camote: [.26, .1] };
 const LAYER_COL = { masa: '#f2c94c', relleno: '#d99a6c', palta: '#7fb54a' };
 const LAYER_NAME = { masa: 'Masa', relleno: 'Relleno', palta: 'Palta' };
 
 // ================= PROCESOS DE LAS ESTACIONES =================
-const POT_OUT = { papa_raw: 'papa_cooked', pollo_raw: 'pollo_cooked', arroz_raw: 'arroz_cooked' };   // olla (automática)
-const CHOP = { papa_cooked: 'papa_sliced', pollo_cooked: 'pollo_shred', palta: 'palta_sliced', cebolla_china: 'cebolla_picada', pollo_raw: 'pollo_cuadros' };
+const POT_OUT = { papa_raw: 'papa_cooked', pollo_raw: 'pollo_cooked', arroz_raw: 'arroz_cooked', camote: 'camote_cocido' };   // olla (automática)
+const CHOP = { papa_cooked: 'papa_sliced', pollo_cooked: 'pollo_shred', palta: 'palta_sliced', cebolla_china: 'cebolla_picada', pollo_raw: 'pollo_cuadros',
+  pota: 'pota_cortada', cebolla_roja: 'cebolla_pluma', aji_limo: 'aji_limo_picado' };
 // la tabla solo corta lo que algún plato del nivel necesita (p. ej. el pollo crudo en cuadros solo en el chifa)
 const chopOut = type => { const out = CHOP[type]; return out && LEVEL.dishes.some(d => DISHES[d].uses.includes(out)) ? out : null; };      // tabla (hold)
 // bowl (hold) -> masa de causa: 2 papas cocidas + 1 ají. Rinde 2 porciones: cada capa de masa gasta la mitad del bowl.
 const BOWL_NEED = { papa_cooked: 2, aji: 1 };
 const MASA_PORTIONS = 2;
 const nOf = (arr, x) => arr.filter(y => y === x).length;
-const bowlFull = items => Object.keys(BOWL_NEED).every(k => nOf(items, k) === BOWL_NEED[k]);
+// El bowl tiene varias recetas: la que se arma la deciden los ingredientes (solo cuentan las de los platos del nivel).
+//   masa de causa: 2 papas cocidas + ají amarillo (2 porciones) · cebiche: pota cortada + cebolla en pluma + ají limo picado + limón
+const BOWL_RECIPES = [
+  { need: BOWL_NEED, out: 'masa', n: MASA_PORTIONS },
+  { need: { pota_cortada: 1, cebolla_pluma: 1, aji_limo_picado: 1, limon: 1 }, out: 'cebiche', n: 1 }
+];
+const activeBowls = () => BOWL_RECIPES.filter(r => LEVEL.dishes.some(d => DISHES[d].uses.includes(r.out)));
+const bowlAccepts = (items, t) => activeBowls().some(r => (r.need[t] || 0) > nOf(items, t) && items.every(i => r.need[i]));
+const bowlMatch = items => activeBowls().find(r => Object.keys(r.need).every(k => nOf(items, k) === r.need[k]) && items.length === Object.values(r.need).reduce((a, b) => a + b, 0));
+const bowlFull = items => !!bowlMatch(items);
 const PAN_IN = ['pollo_shred', 'salsa_aji'];            // sartén (automática) -> guiso
 // wok del chifa (automático): arroz cocido + pollo crudo en cuadros + cebolla china picada + huevo + sillao (salsa de soya) -> arroz chaufa
 // el pollo se cocina en el mismo wok, por eso se corta crudo
