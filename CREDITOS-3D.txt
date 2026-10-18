@@ -1,0 +1,9 @@
+Sabor Perú - versión 3D
+
+Modelos de cocina (mesas, cajas, cocinas, olla, sartén, tabla, platos, refrigerador, alacenas, bancos):
+  KayKit : Restaurant Bits 1.0 — Kay Lousberg (www.kaylousberg.com)
+  Licencia CC0 (dominio público): uso libre personal y comercial. Crédito no obligatorio, pero se agradece.
+
+Motor 3D: Three.js r147 (licencia MIT) — https://threejs.org
+
+Comida peruana, licuadora, chefs, clientes, pizarra del menú, piso y paredes: hechos en código (js/3d/render3d.js).

@@ -1,0 +1,257 @@
+// ================= AYUDANTE (segundo jugador controlado por la IA) =================
+// Mira el estado de la cocina (incluido lo que lleva el jugador y lo que hay en las mesas) y hace lo que falta
+// para terminar el PRIMER PEDIDO DE LA COLA, sin repetir pasos que ya están en marcha.
+// Usa las mismas reglas que el jugador: mesas estándar, y mantener la acción en tabla y bowl (la licuadora va sola).
+let playerHeldKey = '', playerHeldTime = 0;
+function trackPlayerHeld(dt) {
+  const k = player.held ? player.held.type + (player.held.parts ? player.held.parts.join('.') : '') : '';
+  if (k !== playerHeldKey) { playerHeldKey = k; playerHeldTime = 0; } else playerHeldTime += dt;
+}
+// Si el jugador lleva el mismo objeto más de 4 s, el ayudante deja de contar con él.
+function everyHeld() {
+  const mine = (player.held && playerHeldTime < 4) ? player.held : null;
+  return [mine, helper && helper.held, ...TABLES.map(t => t.item)].filter(Boolean);
+}
+function cnt(...types) { return everyHeld().filter(it => types.includes(it.type)).length; }
+const boardHas = p => { const Bd = g('board'); return (Bd.product === p && Bd.state !== 'empty') ? 1 : 0; };
+const count = (arr, x) => arr.filter(y => y === x).length;
+
+// ---- Mesa donde se arma el plato del pedido: la que ya tiene un plato compatible (la más avanzada)
+function planTable(D) {
+  let best = null;
+  for (const t of TABLES) {
+    const p = t.item;
+    if (p && p.type === 'plate' && fits(D, p) && (!best || p.parts.length > best.item.parts.length)) best = t;
+  }
+  return best;
+}
+const buildSpot = () => freeTableNear(cellX(COLS / 2), cellY(ISLAND_ROW) + CS + STAND);      // dónde empieza un plato nuevo: la isla, cerca de las estaciones
+const parkSpot = () => freeTableNear(helper.x, helper.y);
+
+// ¿Sirve este objeto para ese pedido? (si no, va a la basura)
+function relevant(D, h) { return h.type === 'plate' ? (fits(D, h) || plateDone(h)) : D.uses.includes(h.type); }
+const relevantAny = h => h.type === 'plate' ? (fitsOpen(h) || plateDone(h)) : openDishes().some(D => D.uses.includes(h.type));
+// ¿Se puede usar ahora mismo? (si no, se deja en una mesa)
+function usable(D, h) {
+  const Bd = g('board'), Bw = byKind('bowl'), Bl = BL(), Pn = byKind('pan'), Wk = byKind('wok');
+  const wokNeeds = t => !!Wk && Wk.state === 'idle' && !Wk.items.includes(t);
+  const inPlate = () => { const A = planTable(D); return !!A && canAdd(D, A.item, PART_OF_ITEM[h.type]); };
+  switch (h.type) {
+    case 'pollo_raw': if (D.id === 'chaufa') return Bd.state === 'empty'; return !!freePot(h.type);      // chaufa: el pollo se corta crudo
+    case 'papa_raw': case 'arroz_raw': return !!freePot(h.type);
+    case 'papa_cooked': return D.id === 'causa' ? (Bw.state === 'idle' && nOf(Bw.items, h.type) < BOWL_NEED.papa_cooked) : Bd.state === 'empty';
+    case 'pollo_cooked': case 'palta': case 'cebolla_china': return Bd.state === 'empty';
+    case 'cebolla_picada': case 'sillao': case 'huevo': case 'pollo_cuadros': return wokNeeds(h.type);
+    case 'arroz_cooked': if (D.id === 'chaufa') return wokNeeds('arroz_cooked'); return inPlate();
+    case 'aji':
+      if (D.id === 'causa') return Bw.state === 'idle' && !Bw.items.includes('aji');
+      return !!D.blend && Bl.state === 'idle' && subMulti(Bl.items.concat('aji'), D.blend);
+    case 'queso': case 'leche': case 'galleta': return !!D.blend && Bl.state === 'idle' && subMulti(Bl.items.concat(h.type), D.blend);
+    case 'pollo_shred':
+      if (D.id === 'chaufa') return wokNeeds('pollo_shred');
+      return D.id === 'causa' ? inPlate() : (Pn.state === 'idle' && !Pn.items.includes('pollo_shred'));
+    case 'salsa_aji': return Pn.state === 'idle' && !Pn.items.includes('salsa_aji');
+    case 'plate': return plateDone(h) || (fits(D, h) && !planTable(D));
+    default: return inPlate();      // papa_sliced, arroz_cooked, guiso, salsa, masa, palta_sliced
+  }
+}
+function destination(D, h) {
+  switch (h.type) {
+    case 'pollo_raw': if (D.id === 'chaufa') return g('board'); return freePot(h.type) || POTS[0];
+    case 'papa_raw': case 'arroz_raw': return freePot(h.type) || POTS[0];
+    case 'papa_cooked': return D.id === 'causa' ? byKind('bowl') : g('board');
+    case 'pollo_cooked': case 'palta': case 'cebolla_china': return g('board');
+    case 'cebolla_picada': case 'sillao': case 'huevo': case 'pollo_cuadros': return byKind('wok');
+    case 'arroz_cooked': return D.id === 'chaufa' ? byKind('wok') : planTable(D);
+    case 'aji': return D.id === 'causa' ? byKind('bowl') : BL();
+    case 'queso': case 'leche': case 'galleta': return BL();
+    case 'pollo_shred': return D.id === 'chaufa' ? byKind('wok') : D.id === 'causa' ? planTable(D) : byKind('pan');
+    case 'salsa_aji': return byKind('pan');
+    case 'plate': return plateDone(h) ? g('counter') : (buildSpot() || g('trash'));
+    default: return planTable(D);
+  }
+}
+
+// Estación de "mantener" que conviene trabajar ahora (solo si lo que produce sirve a algún pedido abierto)
+function workTarget() {
+  const Bd = byKind('board'), Bw = byKind('bowl');
+  if (Bd && Bd.state === 'chopping' && relevantAny({ type: Bd.product })) return Bd;
+  if (Bw && Bw.state === 'mashing' && relevantAny({ type: 'masa' })) return Bw;
+  return null;
+}
+
+// Un plan por plato: qué hacer después (estación a visitar) o null si no hay nada útil que hacer ahora.
+const PLANS = {
+  huancaina(D) {
+    const A = planTable(D), Bd = g('board'), Bl = BL(), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
+    // recoger lo que ya terminó (solo si hay dónde ponerlo)
+    if (Bl.state === 'done' && Bl.out === 'salsa' && pl && !has('salsa')) return { s: Bl };
+    if (Bd.state === 'done' && Bd.product === 'papa_sliced' && pl && !has('papa')) return { s: Bd };
+    const pd = potWith('papa_raw'); if (pd && Bd.state === 'empty') return { s: pd };
+    // iniciar lo que falta
+    const papaSec = (has('papa') ? 1 : 0) + cnt('papa_sliced') + boardHas('papa_sliced') + cnt('papa_cooked') + potN('papa_raw') + cnt('papa_raw');
+    if (papaSec < 1 && freePot('papa_raw')) return { s: g('crate_papa_raw') };
+    const salsaSec = (has('salsa') ? 1 : 0) + cnt('salsa') + ((Bl.state === 'blending' || Bl.state === 'done') && Bl.out === 'salsa' ? 1 : 0);
+    if (salsaSec < 1 && Bl.state === 'idle') {
+      const need = D.blend.slice();                       // ingredientes que ya están dentro de la licuadora
+      Bl.items.forEach(i => need.splice(need.indexOf(i), 1));
+      everyHeld().map(it => it.type).forEach(i => { const k = need.indexOf(i); if (k >= 0) need.splice(k, 1); });   // y los que alguien lleva en la mano
+      if (need.length) return { s: g('crate_' + need[0]) };
+    }
+    return null;
+  },
+  causa(D) {
+    const A = planTable(D), Bw = byKind('bowl'), Bd = g('board'), pl = A ? A.item : null;
+    const L = pl ? pl.parts : [], next = pl ? D.parts[L.length] : undefined;
+    if (Bw.state === 'done' && next === 'masa') return { s: Bw };      // se lleva la masa (2 porciones): una capa ahora, otra después del relleno
+    if (Bd.state === 'done' && ((Bd.product === 'pollo_shred' && next === 'relleno') || (Bd.product === 'palta_sliced' && next === 'palta'))) return { s: Bd };
+    const papaDone = potWith('papa_raw'), polloDone = potWith('pollo_raw');
+    if (papaDone && Bw.state === 'idle' && nOf(Bw.items, 'papa_cooked') < BOWL_NEED.papa_cooked) return { s: papaDone, want: 'papa_raw' };
+    if (polloDone && Bd.state === 'empty') return { s: polloDone };
+    // una sola tanda de masa (2 papas + 1 ají) alcanza para las dos capas
+    const masaBatch = L.includes('masa') || cnt('masa') > 0 || Bw.state === 'mashing' || Bw.state === 'done';
+    const bowlPapa = Bw.state === 'idle' ? nOf(Bw.items, 'papa_cooked') : 0;
+    const bowlAji = (Bw.state === 'idle' && Bw.items.includes('aji')) ? 1 : 0;
+    const papaSecured = masaBatch ? 2 : bowlPapa + cnt('papa_cooked') + potN('papa_raw') + cnt('papa_raw');
+    const ajiSecured = masaBatch ? 1 : bowlAji + cnt('aji');
+    const polloSecured = (L.includes('relleno') ? 1 : 0) + cnt('pollo_shred') + boardHas('pollo_shred') + cnt('pollo_cooked') + potN('pollo_raw') + cnt('pollo_raw');
+    const paltaSecured = (L.includes('palta') ? 1 : 0) + cnt('palta_sliced') + boardHas('palta_sliced') + cnt('palta');
+    if (papaSecured < 2 && freePot('papa_raw')) return { s: g('crate_papa_raw') };       // las 2 papas van a la misma olla
+    if (polloSecured < 1 && freePot('pollo_raw')) return { s: g('crate_pollo_raw') };
+    if (ajiSecured < 1 && Bw.state === 'idle') return { s: g('crate_aji') };
+    // la palta se corta al final, cuando la tabla ya quedó libre (el relleno ya está en el plato)
+    if (paltaSecured < 1 && L.length >= 2 && Bd.state === 'empty') return { s: g('crate_palta') };
+    return null;
+  },
+  aji(D) {
+    const A = planTable(D), Bd = g('board'), Bl = BL(), Pn = byKind('pan'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
+    if (Pn.state === 'done' && pl && !has('guiso')) return { s: Pn };
+    if (Bl.state === 'done' && Bl.out === 'salsa_aji' && Pn.state === 'idle' && !Pn.items.includes('salsa_aji')) return { s: Bl };
+    if (Bd.state === 'done') {
+      if (Bd.product === 'pollo_shred' && Pn.state === 'idle' && !Pn.items.includes('pollo_shred')) return { s: Bd };
+      if (Bd.product === 'papa_sliced' && pl && !has('papa')) return { s: Bd };
+    }
+    const arrozDone = potWith('arroz_raw'), papaDone = potWith('papa_raw'), polloDone = potWith('pollo_raw');
+    if (arrozDone && pl && !has('arroz')) return { s: arrozDone };
+    if (papaDone && Bd.state === 'empty') return { s: papaDone };
+    if (polloDone && Bd.state === 'empty') return { s: polloDone };
+    const arrozSecured = (has('arroz') ? 1 : 0) + cnt('arroz_cooked') + potN('arroz_raw') + cnt('arroz_raw');
+    const papaSecured = (has('papa') ? 1 : 0) + cnt('papa_sliced') + boardHas('papa_sliced') + cnt('papa_cooked') + potN('papa_raw') + cnt('papa_raw');
+    const guisoUnits = (has('guiso') ? 1 : 0) + cnt('guiso') + ((Pn.state === 'cooking' || Pn.state === 'done') ? 1 : 0);
+    const polloUnit = (Pn.items.includes('pollo_shred') ? 1 : 0) + cnt('pollo_shred') + boardHas('pollo_shred') + cnt('pollo_cooked') + potN('pollo_raw') + cnt('pollo_raw');
+    const cremaUnit = (Pn.items.includes('salsa_aji') ? 1 : 0) + cnt('salsa_aji') + ((Bl.state === 'blending' || Bl.state === 'done') && Bl.out === 'salsa_aji' ? 1 : 0);
+    if (arrozSecured < 1 && freePot('arroz_raw')) return { s: g('crate_arroz_raw') };
+    if (papaSecured < 1 && freePot('papa_raw')) return { s: g('crate_papa_raw') };
+    if (guisoUnits < 1 && polloUnit < 1 && freePot('pollo_raw')) return { s: g('crate_pollo_raw') };
+    if (guisoUnits < 1 && cremaUnit < 1 && Bl.state === 'idle' && count(Bl.items, 'aji') + cnt('aji') < 1) return { s: g('crate_aji') };
+    return null;
+  }
+};
+
+// Arroz chaufa: todo va al wok: arroz cocido (olla), pollo crudo cortado en cuadros (tabla), cebolla china picada (tabla),
+// huevo y sillao (directo). El chaufa listo va al plato.
+PLANS.chaufa = function (D) {
+  const A = planTable(D), Bd = g('board'), Wk = byKind('wok'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
+  if (Wk.state === 'done' && pl && !has('chaufa')) return { s: Wk };
+  if (Bd.state === 'done' && (Bd.product === 'pollo_cuadros' || Bd.product === 'cebolla_picada') && Wk.state === 'idle' && !Wk.items.includes(Bd.product)) return { s: Bd };
+  const arrozDone = potWith('arroz_raw');
+  if (arrozDone && Wk.state === 'idle' && !Wk.items.includes('arroz_cooked')) return { s: arrozDone, want: 'arroz_raw' };
+  if (Wk.state !== 'idle' || has('chaufa') || cnt('chaufa') > 0) return null;      // ya hay un chaufa en camino
+  const inW = x => Wk.items.includes(x) ? 1 : 0;
+  const arroz = inW('arroz_cooked') + cnt('arroz_cooked') + potN('arroz_raw') + cnt('arroz_raw');
+  const pollo = inW('pollo_cuadros') + cnt('pollo_cuadros') + boardHas('pollo_cuadros') + cnt('pollo_raw');
+  const cebolla = inW('cebolla_picada') + cnt('cebolla_picada') + boardHas('cebolla_picada') + cnt('cebolla_china');
+  const huevo = inW('huevo') + cnt('huevo'), sillao = inW('sillao') + cnt('sillao');
+  if (arroz < 1 && freePot('arroz_raw')) return { s: g('crate_arroz_raw') };          // el arroz primero: es lo que más tarda
+  if (pollo < 1 && Bd.state === 'empty') return { s: g('crate_pollo_raw') };           // la tabla se usa para el pollo y para la cebolla
+  if (cebolla < 1 && Bd.state === 'empty') return { s: g('crate_cebolla_china') };
+  if (huevo < 1) return { s: g('crate_huevo') };
+  if (sillao < 1) return { s: g('crate_sillao') };
+  return null;
+};
+
+function helperPlan() {
+  const D = targetDish(), h = helper.held;
+  if (!h) helper.trashNext = false;
+  if (h) {
+    if (helper.trashNext || !D) return { s: g('trash') };
+    if (h.type === 'plate') {
+      if (plateDone(h)) return { s: g('counter') };
+      if (fits(D, h)) return { s: planTable(D) ? (parkSpot() || g('trash')) : (buildSpot() || g('trash')) };
+      return { s: fitsOpen(h) ? (parkSpot() || g('trash')) : g('trash') };   // plato de otro pedido: se aparta; si no es de nadie, basura
+    }
+    if (!relevant(D, h)) return { s: g('trash') };              // no sirve para este pedido
+    if (!usable(D, h)) return { s: parkSpot() || g('trash') };   // sirve, pero todavía no: a una mesa
+    return { s: destination(D, h) };
+  }
+  if (!D) return null;
+  // 0) un plato completo (en cualquier mesa) se lleva al mostrador
+  const doneT = TABLES.find(t => t.item && t.item.type === 'plate' && plateDone(t.item));
+  if (doneT) return { s: doneT };
+  // 1) mantener la acción en tabla / bowl / licuadora si hay algo en proceso que sirve
+  const w = workTarget();
+  if (w) return { s: w, work: true };
+  // 2) aprovechar lo que quedó en las mesas
+  const parked = TABLES.find(t => t.item && t.item.type !== 'plate' && relevant(D, t.item) && usable(D, t.item));
+  if (parked) return { s: parked };
+  // 3) asegurar un plato para este pedido
+  // (los platos limpios están sobre las mesas: un plato vacío ya sirve para cualquier pedido)
+  // 4) la licuadora tiene algo que no sirve para este pedido: recuperar los ingredientes y tirarlos
+  const Bl = BL();
+  if (D.blend && Bl && Bl.state === 'idle' && Bl.items.length && !subMulti(Bl.items, D.blend)) return { s: Bl };
+  // 5) recoger lo que terminó e iniciar lo que falta, según el plato
+  return PLANS[D.id](D);
+}
+// Si nada puede avanzar (algo estorba en una estación), el ayudante lo retira para destrabar la cocina.
+function unblockPlan(idle) {
+  for (const s of st) {
+    if (s.kind === 'board' && s.state === 'done') return { s };
+    if (s.kind === 'pot' && s.slots.some(x => x.done)) return { s };
+    if ((s.kind === 'bowl' || s.kind === 'blender' || s.kind === 'pan' || s.kind === 'wok') && s.state === 'done') return { s };
+  }
+  // proceso a medias que nadie sigue (p. ej. una mezcla que no sirve): terminarlo manteniendo, luego se retira y se tira
+  for (const s of st) {
+    if (s.kind === 'board' && s.state === 'chopping') return { s, work: true };
+    if (s.kind === 'bowl' && s.state === 'mashing') return { s, work: true };
+  }
+  for (const t of TABLES) {
+    if (!t.item) continue;
+    const keep = relevantAny(t.item);
+    if (!keep || (idle > 10 && t.item.type !== 'plate')) return { s: t, thenTrash: true };
+  }
+  return null;
+}
+function botStep(dt) {
+  helper.work = null;
+  let plan = helperPlan();
+  if (plan || helper.held) helper.idle = 0;
+  else {
+    helper.idle += dt;
+    if (helper.idle > 4 && waitingList().length) plan = unblockPlan(helper.idle);
+  }
+  if (!plan) return;
+  const t = plan.s;
+  const dx = t.sx - helper.x, dy = t.sy - helper.y, d = Math.hypot(dx, dy);
+  if (d > 6) {
+    const m = Math.min(SPEED * dt, d), w = nextWaypoint(helper, t.sx, t.sy);
+    const wx = w.x - helper.x, wy = w.y - helper.y, wd = Math.hypot(wx, wy) || 1;
+    tryMove(helper, wx / wd * m, wy / wd * m);
+  }
+  else if (plan.work) helper.work = t;      // se queda manteniendo la acción
+  else {
+    helper.timer -= dt;
+    if (helper.timer <= 0) {
+      const ok = interact(t, helper, plan.want); helper.timer = 0.12;
+      if (ok && plan.thenTrash) helper.trashNext = true;       // lo que acaba de retirar de la mesa va a la basura
+      else if (ok && t.kind === 'trash') helper.trashNext = false;
+    }
+  }
+}
+function setBot(v) {
+  bot = v;
+  helper = bot ? { x: 450, y: 400, held: null, timer: 0, idle: 0, trashNext: false, work: null } : null;
+  const b = document.getElementById('botBtn');
+  b.textContent = '🤖 Ayudante: ' + (bot ? 'ON' : 'OFF') + ' (B)';
+  b.classList.toggle('on', bot);
+  if (started) showToast(bot ? 'Tu ayudante entró a la cocina' : 'El ayudante salió de la cocina');
+}

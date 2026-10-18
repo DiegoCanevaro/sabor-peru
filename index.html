@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sabor Perú</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="menu">
+<main class="menuCard title">
+  <div class="flagStripe"><i></i><i></i><i></i></div>
+  <div class="heroDishes" id="heroDishes"></div>
+  <h1 class="logo">Sabor Perú</h1>
+  <p class="tagline">Cocina platos peruanos contra el reloj</p>
+  <a class="gamebtn big" href="niveles.html">▶ Jugar</a>
+  <details class="howto">
+    <summary>¿Cómo se juega?</summary>
+    <ul>
+      <li><b>Mover:</b> WASD o flechas</li>
+      <li><b>Interactuar:</b> Espacio o E. En la tabla y el bowl mantenlo presionado; la olla, la sartén y la licuadora van solas.</li>
+      <li><b>Ayudante (IA):</b> B</li>
+      <li>Solo puedes llevar una cosa en las manos a la vez. Arma cada plato sobre un plato limpio y entrégalo antes de que el cliente se canse.</li>
+    </ul>
+  </details>
+</main>
+<script src="js/dish-icons.js"></script>
+<script>['huancaina', 'aji', 'causa'].forEach((d, i) => { const c = dishIcon(d, i === 1 ? 120 : 96); document.getElementById('heroDishes').appendChild(c); });</script>
+</body>
+</html>

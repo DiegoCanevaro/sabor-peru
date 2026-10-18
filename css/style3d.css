@@ -1,0 +1,4 @@
+/* Versión 3D: el canvas WebGL va debajo y el canvas 2D original (#c) encima como capa de interfaz */
+#stage { position: relative; border: 3px solid #8a5a2b; border-top: none; background: #2b180b; }
+#stage canvas { border: none; }
+#stage #c { position: absolute; inset: 0; background: transparent; pointer-events: none; }
