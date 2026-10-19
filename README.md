@@ -32,7 +32,9 @@ La pantalla de niveles abre las versiones 3D (`nivelX-Y-3d.html`, `kevin-*-3d.ht
 - `js/render.js`: dibujo 2D · `js/3d/`: dibujo 3D con Three.js (`street3d.js`: escenario de la calle de los Kevin)
 - `js/pause.js`: pausa
 - `js/mobile.js`, `css/mobile.css`: vista horizontal forzada y controles táctiles
-- `js/dish-icons.js`, `js/3d/labels3d.js`: ilustraciones de platos y etiquetas de las cajas
+- `js/icons.js`, `js/ing-images.js`: iconos de ingredientes y herramientas (etiquetas de cajas, tickets y pizarra). Las ilustraciones originales están en `assets/ingredientes/`
+- `js/howto.js`: pizarra con la receta en dibujo antes de jugar
+- `js/dish-icons.js`, `js/3d/labels3d.js`: ilustraciones de platos y etiquetas 3D de las cajas
 
 ## Créditos
 

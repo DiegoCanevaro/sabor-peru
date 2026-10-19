@@ -7,5 +7,6 @@ const LEVEL = {
   customers: 5, arrival: 24,
   crates: ['pota_cortada', 'cebolla_roja', 'aji_limo', 'limon', 'camote_cocido'],
   left: ['board', 'board', 'bowl'], right: [],
-  drinks: ['balde', 'cups']
+  drinks: ['balde', 'cups'],
+  intro: ['cebiche_pota', 'chicha']      // recetas que se muestran en la pizarra antes de jugar
 };

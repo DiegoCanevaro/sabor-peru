@@ -41,8 +41,9 @@ function startRound() { initCustomers(); started = true; }
 function setOrders(list) { ORDERS.length = 0; list.forEach(d => ORDERS.push(d)); initCustomers(); buildTickets(); }
 const waitingList = () => customers.filter(c => c.state === 'waiting');
 const nextQueued = () => customers.find(c => c.state === 'queued');
-// platos que se pueden estar preparando: los pedidos en espera y el que llegará después (para ir adelantando)
-function openDishes() { const l = waitingList().map(c => c.dish), q = nextQueued(); if (q) l.push(q.dish); return l; }
+// platos que se pueden estar preparando
+// (todos los pedidos pendientes, también los que aún no llegan: se pueden adelantar y entregar antes)
+function openDishes() { return customers.filter(c => c.state === 'waiting' || c.state === 'queued').map(c => c.dish); }
 // el ayudante prioriza siempre el primer pedido de la cola
 function targetDish() { const w = waitingList()[0]; if (w) return w.dish; const q = nextQueued(); return q ? q.dish : null; }
 // un segundo espera a que no quede ninguna entrada por servir (en espera o por llegar); si un cliente se va enojado, ya no bloquea

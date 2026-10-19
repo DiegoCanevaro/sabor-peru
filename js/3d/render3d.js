@@ -1063,6 +1063,7 @@ function draw() {
   // los letreros se dibujan con la tipografía Kitchen: se espera a que esté lista
   function start() {
     const go = () => { buildWorld(); V3.ready = true; };
-    if (document.fonts && document.fonts.load) document.fonts.load('40px Kitchen').then(go, go); else go();
+    const fonts = document.fonts && document.fonts.load ? document.fonts.load('40px Kitchen') : Promise.resolve();
+    Promise.all([fonts, typeof ICONS_READY !== 'undefined' ? ICONS_READY : null]).then(go, go);
   }
 })();

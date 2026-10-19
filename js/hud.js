@@ -2,11 +2,25 @@
 // Un ticket por cliente: plato, barra de espera y, estilo Overcooked, cada ingrediente con la herramienta que usa debajo.
 // Los ingredientes que se licúan juntos se agrupan en una pestaña con el icono de la licuadora.
 const tickEls = [];
+// Los iconos son las mismas ilustraciones de las etiquetas de las cajas (js/icons.js): así se reconoce qué caja usar.
+const hasIcons = typeof iconEl === 'function';
+function chip(id) { const s = document.createElement('span'); s.className = 'chip'; if (hasIcons) s.appendChild(iconEl('ing', id, 22)); else s.textContent = ICON[id] || '?'; return s; }
+function tool(id, px) { const s = document.createElement('span'); s.className = 'tool'; if (hasIcons) s.appendChild(iconEl('tool', id, px)); return s; }
 function ticketSlots(D) {
-  return D.ticket.slots.map(sl => {
-    if (sl.g) return '<div class="grp"><span class="gtab">' + sl.t + '</span>' + sl.g.map(e => '<span class="chip">' + e + '</span>').join('') + '</div>';
-    return '<div class="slot"><span class="chip">' + sl.i + '</span><div class="tools">' + sl.t.map(e => '<span>' + e + '</span>').join('') + '</div></div>';
-  }).join('');
+  const box = document.createElement('div'); box.className = 'slots';
+  D.ticket.slots.forEach(sl => {
+    if (sl.g) {
+      const g = document.createElement('div'); g.className = 'grp';
+      const tab = document.createElement('span'); tab.className = 'gtab'; tab.appendChild(tool(sl.t, 16)); g.appendChild(tab);
+      sl.g.forEach(id => g.appendChild(chip(id)));
+      box.appendChild(g);
+    } else {
+      const d = document.createElement('div'); d.className = 'slot'; d.appendChild(chip(sl.id));
+      const t = document.createElement('div'); t.className = 'tools'; sl.t.forEach(x => t.appendChild(tool(x, 18))); d.appendChild(t);
+      box.appendChild(d);
+    }
+  });
+  return box;
 }
 function buildTickets() {
   const box = document.getElementById('tickets');
@@ -15,8 +29,10 @@ function buildTickets() {
     const D = DISHES[ORDERS[i]];
     const d = document.createElement('div');
     d.className = 'ticket upcoming';
-    d.innerHTML = '<div class="card"><div class="tbar"><i></i></div><div class="dish">' + D.icon + '</div><div class="name">' + CUSTOMERS[i] + ' · ' + D.short + '</div><div class="course ' + D.course + '">' + ({ entrada: 'Entrada', segundo: 'Segundo', plato: 'Plato', bebida: 'Bebida' }[D.course] || '') + '</div></div>' +
-      '<div class="slots">' + ticketSlots(D) + '</div>';
+    d.innerHTML = '<div class="card"><div class="tbar"><i></i></div><div class="dish">' + (typeof dishIcon === 'function' && DISH_ICONS[D.id] ? '' : D.icon) + '</div><div class="name">' + CUSTOMERS[i] + ' · ' + D.short + '</div><div class="course ' + D.course + '">' + ({ entrada: 'Entrada', segundo: 'Segundo', plato: 'Plato', bebida: 'Bebida' }[D.course] || '') + '</div></div>' +
+      '';
+    d.appendChild(ticketSlots(D));
+    if (typeof dishIcon === 'function' && DISH_ICONS[D.id]) d.querySelector('.dish').appendChild(dishIcon(D.id, 44));
     box.appendChild(d);
     tickEls.push({ el: d, bar: d.querySelector('.tbar i'), cls: '', w: -1, col: '' });
   }

@@ -149,3 +149,16 @@ h1, .logo, .menuTop h1, .overlay h1, .world, .lvName, #recipeCard h2 {
 .menuTop h1 { font-size: 34px; }
 .logo { font-size: 66px; }
 @media (max-width: 600px) { .logo { font-size: 46px; } .menuTop h1 { font-size: 26px; } }
+
+/* tickets con ilustraciones (js/icons.js) */
+.ticket .dish canvas { display: block; margin: 0 auto; }
+.chip { overflow: hidden; }
+.chip canvas.icon, .tool canvas.icon { display: block; }
+.slot .tools .tool { display: block; margin: 0 auto; }
+.gtab .tool canvas { margin: 0 auto; }
+
+/* pizarra de receta antes de jugar (js/howto.js) */
+.howtoOverlay { justify-content: flex-start; padding-top: 14px; }
+.howtoOverlay canvas#howto { display: block; height: auto; border: none; background: transparent; border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+.howtoKeys { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: center; margin-top: 10px; font-size: 13px; color: #e8d3a2; }
+.howtoKeys b { display: inline-block; min-width: 22px; padding: 1px 6px; margin-right: 4px; border-radius: 4px; background: #f4e4c1; color: #2a1b0a; text-align: center; }
