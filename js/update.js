@@ -28,6 +28,8 @@ function update(dt) {
       case 'pan': if (s.state === 'cooking') { s.t += dt; if (s.t >= T.pan) s.state = 'done'; } break;
       case 'stew': if (s.state === 'cooking') { s.t += dt; if (s.t >= T.stew) s.state = 'done'; } break;
       case 'wok': if (s.state === 'cooking') { s.t += dt; if (s.t >= T.wok) s.state = 'done'; } break;
+      case 'skewer': if (s.state === 'chopping' && s.worked) { s.t += dt; if (s.t >= T.skewer) s.state = 'done'; } break;
+      case 'grill': s.slots.forEach(sl => { if (!sl.done) { sl.t += dt; if (sl.t >= T.grill) sl.done = true; } }); break;
       case 'fryer': if (s.state === 'frying') { s.t += dt; if (s.t >= T.fry) s.state = 'done'; } break;
       // mantener presionado: solo avanzan mientras alguien las trabaja
       case 'board': if (s.state === 'chopping' && s.worked) { s.t += dt; if (s.t >= T.board) s.state = 'done'; } break;

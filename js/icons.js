@@ -110,6 +110,16 @@ const LABEL_ICONS = {
     lblShape(c, '#4f8f2c', c => { for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * Math.PI * 2 / 5; c.lineTo(Math.cos(a) * 34, -50 + Math.sin(a) * 16); c.lineTo(Math.cos(a + 0.6) * 10, -50 + Math.sin(a + 0.6) * 6); } c.closePath(); }, 6);
     lblShape(c, '#4f8f2c', c => { c.moveTo(0, -56); c.quadraticCurveTo(4, -76, 16, -84); }, 9);
   },
+  // salsa anticuchera: tarro de vidrio con salsa roja de ají panca y tapa
+  salsa_anticuchera(c) {
+    lblShadow(c, 78, 62);
+    lblShape(c, '#8f2316', c => { c.moveTo(-54, -40); c.lineTo(54, -40); c.quadraticCurveTo(64, -40, 64, -26); c.lineTo(64, 66); c.quadraticCurveTo(64, 78, 52, 78); c.lineTo(-52, 78); c.quadraticCurveTo(-64, 78, -64, 66); c.lineTo(-64, -26); c.quadraticCurveTo(-64, -40, -54, -40); c.closePath(); });
+    lblShape(c, '#c43a22', c => c.rect(-48, -18, 96, 82), 0);
+    lblShape(c, '#f3e2b8', c => c.rect(-40, 8, 80, 34), 5);
+    c.fillStyle = '#8f2316'; c.font = 'bold 22px sans-serif'; c.textAlign = 'center'; c.fillText('PANCA', 0, 33);
+    lblShape(c, '#3b3b3b', c => c.rect(-58, -66, 116, 28), 7);
+    lblShine(c, -44, 10, 6, 22, 0);
+  },
   limon(c) {
     lblShadow(c, 64, 76);
     lblShape(c, '#5c9b2e', c => c.ellipse(-26, 6, 46, 40, -0.2, 0, 7));
@@ -249,6 +259,19 @@ const TOOL_ICONS = {
     [-1, 1].forEach(s => lblShape(c, '#8a3f1f', c => c.ellipse(s * 76, -12, 12, 8, s * 0.4, 0, 7), 6));
     lblShape(c, 'rgba(255,230,190,.55)', c => { c.moveTo(-74, 14); c.quadraticCurveTo(0, 30, 74, 14); c.lineTo(72, 22); c.quadraticCurveTo(0, 38, -72, 22); c.closePath(); }, 0);
     lblShine(c, -40, 20, 8, 18, 0.2);
+  },
+  grill(c) {      // parrilla de carretilla: bandeja de fierro con brasas y rejilla
+    lblShadow(c, 70, 86);
+    lblShape(c, '#4a4f55', c => { c.moveTo(-88, -20); c.lineTo(88, -20); c.lineTo(76, 56); c.lineTo(-76, 56); c.closePath(); });
+    lblShape(c, '#2a2a2a', c => c.ellipse(0, -20, 86, 20, 0, 0, 7), 6);
+    c.fillStyle = '#ff7a1a'; for (let i = 0; i < 9; i++) { c.beginPath(); c.arc(-60 + i * 15, -20 + (i % 2 ? 4 : -4), 7, 0, 7); c.fill(); }
+    c.strokeStyle = '#c9ccd0'; c.lineWidth = 4; for (let x = -70; x <= 70; x += 20) { c.beginPath(); c.moveTo(x, -34); c.lineTo(x + 6, -6); c.stroke(); }
+    lblShape(c, '#f7c948', c => { c.moveTo(-30, -40); c.quadraticCurveTo(-40, -70, -24, -92); c.quadraticCurveTo(-18, -66, -6, -60); c.quadraticCurveTo(0, -84, 14, -96); c.quadraticCurveTo(26, -66, 30, -40); c.closePath(); }, 5);
+  },
+  skewer(c) {     // palitos de caña para ensartar
+    lblShadow(c, 70, 70);
+    for (let i = 0; i < 5; i++) lblShape(c, '#d9b26a', c => { c.moveTo(-80, 40 - i * 14); c.lineTo(80, -10 - i * 14); c.lineTo(82, -4 - i * 14); c.lineTo(-78, 46 - i * 14); c.closePath(); }, 4);
+    [[-30, 18], [0, 8], [30, -2]].forEach(([x, y]) => lblShape(c, '#7a2a26', c => { c.roundRect ? c.roundRect(x - 14, y - 34, 28, 28, 6) : c.rect(x - 14, y - 34, 28, 28); }, 6));
   },
   fryer(c) {      // freidora: tina de acero con aceite y canastilla
     lblShadow(c, 74, 84);

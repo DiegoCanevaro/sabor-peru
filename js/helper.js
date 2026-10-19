@@ -51,6 +51,10 @@ function usable(D, h) {
     case 'carne': case 'tomate': return !!freeBoard();
     case 'carne_cubos': case 'tomate_juliana': case 'cebolla_juliana': return wokNeeds(h.type);
     case 'papa_baston': return !!Fr && Fr.state === 'idle';
+    case 'corazon': case 'rachi': case 'pancita': case 'choclo_cocido': return !!freeBoard();
+    case 'corazon_trozos': case 'rachi_trozos': case 'pancita_trozos': case 'salsa_anticuchera': return bowlNeeds(h.type);
+    case 'corazon_mar': case 'rachi_mar': case 'pancita_mar': return !!byKind('skewer') && byKind('skewer').state === 'empty';
+    case 'corazon_palito': case 'rachi_palito': case 'pancita_palito': return !!byKind('grill') && byKind('grill').slots.length < GRILL_CAP;
     case 'papa_cooked': return D.id === 'causa' ? (Bw.state === 'idle' && nOf(Bw.items, h.type) < BOWL_NEED.papa_cooked) : Bd.state === 'empty';
     case 'pollo_cooked': case 'palta': case 'cebolla_china': case 'cebolla_roja': case 'aji_limo': return !!freeBoard();
     case 'cebolla_cuadros': if (D.id === 'pollo_aji') return stewNeeds(h.type); return bowlNeeds(h.type);
@@ -79,6 +83,10 @@ function destination(D, h) {
     case 'carne': case 'tomate': return freeBoard() || g('board');
     case 'carne_cubos': case 'tomate_juliana': case 'cebolla_juliana': return byKind('wok');
     case 'papa_baston': return byKind('fryer');
+    case 'corazon': case 'rachi': case 'pancita': case 'choclo_cocido': return freeBoard() || g('board');
+    case 'corazon_trozos': case 'rachi_trozos': case 'pancita_trozos': case 'salsa_anticuchera': return byKind('bowl');
+    case 'corazon_mar': case 'rachi_mar': case 'pancita_mar': return byKind('skewer');
+    case 'corazon_palito': case 'rachi_palito': case 'pancita_palito': return byKind('grill');
     case 'papa_cooked': return D.id === 'causa' ? byKind('bowl') : freeBoard() || g('board');
     case 'pollo_cooked': case 'palta': case 'cebolla_china': case 'cebolla_roja': case 'aji_limo': return freeBoard() || g('board');
     case 'cebolla_cuadros': return D.id === 'pollo_aji' ? byKind('stew') : byKind('bowl');
@@ -100,6 +108,8 @@ function destination(D, h) {
 function workTarget() {
   const Bd = boards().find(b => b.state === 'chopping' && relevantAny({ type: b.product })), Bw = byKind('bowl');
   if (Bd) return Bd;
+  const Sk = byKind('skewer');
+  if (Sk && Sk.state === 'chopping' && relevantAny({ type: Sk.product })) return Sk;
   if (Bw && Bw.state === 'mashing' && relevantAny({ type: Bw.out })) return Bw;
   const m = Bw && Bw.state === 'idle' && bowlMatch(Bw.items), D = targetDish();
   if (m && D && D.uses.includes(m.out)) return Bw;      // p. ej. no mezclar sin ají si el pedido es con ají
@@ -228,6 +238,36 @@ PLANS.lomo_saltado = function (D) {
   return null;
 };
 
+// Carretilla de anticuchos (corazón, rachi o pancita): tabla -> bowl con salsa anticuchera -> palitos -> parrilla.
+// Al plato: lo asado y papa y choclo sancochados en rodajas (tabla).
+function parrillaPlan(D) {
+  const meat = D.meat, cut = meat + '_trozos', mar = meat + '_mar', pal = meat + '_palito', out = GRILL_OUT[pal], part = PART_OF_ITEM[out];
+  const A = planTable(D), Bw = byKind('bowl'), Sk = byKind('skewer'), Gr = byKind('grill'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
+  if (pl && !has(part) && Gr.slots.some(x => x.done && x.type === pal)) return { s: Gr, want: pal };
+  if (Sk.state === 'done' && Sk.product === pal && Gr.slots.length < GRILL_CAP) return { s: Sk };
+  if (Bw.state === 'done' && Bw.out === mar && Sk.state === 'empty') return { s: Bw };
+  const bd = boards().find(b => b.state === 'done' && b.product === cut && bowlNeeds(cut));
+  if (bd) return { s: bd };
+  for (const [sl, part2] of [['papa_sliced', 'papa'], ['choclo_rodajas', 'choclo']]) {
+    const b = boards().find(x => x.state === 'done' && x.product === sl);
+    if (b && pl && !has(part2)) return { s: b };
+  }
+  // ¿la carne de este pedido ya está en camino en alguna etapa?
+  const inBowl = (Bw.state === 'idle' && Bw.items.includes(cut)) || (Bw.state !== 'idle' && Bw.out === mar);
+  const meatSec = (has(part) ? 1 : 0) + cnt(out) + Gr.slots.filter(x => x.type === pal).length + cnt(pal) + (Sk.state !== 'empty' && Sk.product === pal ? 1 : 0)
+    + cnt(mar) + (inBowl ? 1 : 0) + cnt(cut) + boardHas(cut) + cnt(meat);
+  if (meatSec < 1 && freeBoard() && Bw.state === 'idle' && !Bw.items.some(i => i.endsWith('_trozos'))) return { s: g('crate_' + meat) };
+  // la salsa al bowl (una vez que la carne va camino al bowl y no hay otro macerado en marcha)
+  const needSalsa = Bw.state === 'idle' && !Bw.items.includes('salsa_anticuchera') && cnt('salsa_anticuchera') < 1 && (Bw.items.includes(cut) || cnt(cut) + boardHas(cut) + cnt(meat) > 0);
+  if (needSalsa) return { s: g('crate_salsa_anticuchera') };
+  const papa = (has('papa') ? 1 : 0) + cnt('papa_sliced') + boardHas('papa_sliced') + cnt('papa_cooked');
+  if (papa < 1 && freeBoard()) return { s: g('crate_papa_cooked') };
+  const choclo = (has('choclo') ? 1 : 0) + cnt('choclo_rodajas') + boardHas('choclo_rodajas') + cnt('choclo_cocido');
+  if (choclo < 1 && freeBoard()) return { s: g('crate_choclo_cocido') };
+  return null;
+}
+PLANS.anticuchos = parrillaPlan; PLANS.rachi = parrillaPlan; PLANS.pancita = parrillaPlan;
+
 // Arroz chaufa: todo va al wok: arroz cocido (olla), pollo crudo cortado en cuadros (tabla), cebolla china picada (tabla),
 // huevo y sillao (directo). El chaufa listo va al plato.
 PLANS.chaufa = function (D) {
@@ -314,13 +354,14 @@ function helperPlan() {
 // Si nada puede avanzar (algo estorba en una estación), el ayudante lo retira para destrabar la cocina.
 function unblockPlan(idle) {
   for (const s of st) {
-    if (s.kind === 'board' && s.state === 'done') return { s };
+    if ((s.kind === 'board' || s.kind === 'skewer') && s.state === 'done') return { s };
+    if (s.kind === 'grill' && s.slots.some(x => x.done)) return { s };
     if (s.kind === 'pot' && s.slots.some(x => x.done)) return { s };
     if ((s.kind === 'bowl' || s.kind === 'blender' || s.kind === 'pan' || s.kind === 'wok' || s.kind === 'stew' || s.kind === 'fryer') && s.state === 'done') return { s };
   }
   // proceso a medias que nadie sigue (p. ej. una mezcla que no sirve): terminarlo manteniendo, luego se retira y se tira
   for (const s of st) {
-    if (s.kind === 'board' && s.state === 'chopping') return { s, work: true };
+    if ((s.kind === 'board' || s.kind === 'skewer') && s.state === 'chopping') return { s, work: true };
     if (s.kind === 'bowl' && (s.state === 'mashing' || (s.state === 'idle' && bowlMatch(s.items)))) return { s, work: true };
     if (s.kind === 'balde' && s.state === 'done') return { s };
   }

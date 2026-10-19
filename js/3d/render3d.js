@@ -171,6 +171,21 @@ const ITEM3 = {
   tomate_juliana: () => { const g = new THREE.Group(); strips(g, 9, 0.02, 0.13, '#e0402e', 0.035); return g; },
   cebolla_juliana: () => { const g = new THREE.Group(); strips(g, 12, 0.02, 0.13, '#a8376b', 0.018); return g; },
   saltado: () => bowlWith('#6b3a1e', g => saltadoMix(g, 0.16, 0.13)),
+  // anticuchos, rachi y pancita
+  corazon: () => { const g = new THREE.Group(); const p = lumpy(0.2, 1.1, 1.0, 0.9, '#7a2340', 0.06); p.position.y = 0.18; g.add(p); const f = lumpy(0.12, 1.4, 0.4, 0.8, '#ead9b8', 0.04); f.position.set(0, 0.34, 0); g.add(f); return g; },
+  rachi: () => { const g = new THREE.Group(); for (let i = 0; i < 3; i++) { const p = lumpy(0.12, 1.4, 0.35, 1, '#ead8c2', 0.12); p.position.set(rnd(-0.1, 0.1), 0.05 + i * 0.04, rnd(-0.08, 0.08)); p.rotation.y = rnd(0, 3); g.add(p); } return g; },
+  pancita: () => { const g = new THREE.Group(); for (let i = 0; i < 3; i++) { const p = lumpy(0.12, 1.5, 0.3, 1, '#d9d4cb', 0.09); p.position.set(rnd(-0.1, 0.1), 0.05 + i * 0.035, rnd(-0.08, 0.08)); p.rotation.y = rnd(0, 3); g.add(p); } return g; },
+  corazon_trozos: () => { const g = new THREE.Group(); meatCubes(g, 9, 0.02, 0.13, '#7a2340'); return g; },
+  rachi_trozos: () => { const g = new THREE.Group(); strips(g, 10, 0.02, 0.13, '#ead8c2', 0.05); return g; },
+  pancita_trozos: () => { const g = new THREE.Group(); strips(g, 10, 0.02, 0.13, '#d9d4cb', 0.05); return g; },
+  corazon_mar: () => bowlWith('#8f2316', g => meatCubes(g, 6, 0.15, 0.1, '#7a2340')),
+  rachi_mar: () => bowlWith('#8f2316', g => strips(g, 7, 0.16, 0.1, '#d98a5a', 0.04)),
+  pancita_mar: () => bowlWith('#8f2316', g => strips(g, 7, 0.16, 0.1, '#c98a6a', 0.04)),
+  corazon_palito: () => skewer3('#9a2a30', 'cube'), rachi_palito: () => skewer3('#d98a5a', 'strip'), pancita_palito: () => skewer3('#c98a6a', 'strip'),
+  anticucho: () => skewer3('#4a1a14', 'cube'), rachi_asado: () => skewer3('#6b3016', 'strip'), pancita_asada: () => skewer3('#7a3a1e', 'strip'),
+  salsa_anticuchera: () => { const g = new THREE.Group(); const j = mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.3, 16), M('#8f2316', { roughness: 0.25 })); j.position.y = 0.15; g.add(j); const l = mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.06, 16), M('#3b3b3b')); l.position.y = 0.33; g.add(l); return g; },
+  choclo_cocido: () => { const g = new THREE.Group(); const c = lumpy(0.1, 1, 2.4, 1, '#f6eec8', 0.04); c.rotation.z = Math.PI / 2; c.position.y = 0.11; g.add(c); return g; },
+  choclo_rodajas: () => { const g = new THREE.Group(); for (let i = 0; i < 3; i++) { const r = mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.07, 14), [M('#f6eec8', { roughness: 0.8 }), M('#e8d98a'), M('#e8d98a')]); r.position.set(-0.1 + i * 0.1, 0.04, i % 2 * 0.06); r.rotation.z = Math.PI / 2; g.add(r); } return g; },
   choclo: () => { const g = new THREE.Group(); const c = lumpy(0.1, 1, 2.4, 1, '#f3e6b0', 0.04); c.rotation.z = Math.PI / 2; c.position.y = 0.11; g.add(c); return g; },
   arroz_cooked: () => bowlWith('#fbfaf3', g => { const d = mesh(new THREE.SphereGeometry(0.19, 14, 8, 0, 6.3, 0, 1.4), M('#fbfaf3', { roughness: 0.95 })); d.position.y = 0.1; g.add(d); }),
   arroz_raw: () => {
@@ -372,6 +387,16 @@ function saltadoMix(g, y, r) {
   strips(g, 5, y + 0.02, r * 0.8, '#e0402e', 0.035);
   strips(g, 6, y + 0.02, r * 0.8, '#a8376b', 0.018);
 }
+// palito de anticucho: caña con 3-4 trozos (cubos de corazón o tiras dobladas de rachi / pancita)
+function skewer3(col, shape) {
+  const g = new THREE.Group();
+  const stick = mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.62, 6), M('#d9b26a')); stick.rotation.z = Math.PI / 2; stick.position.y = 0.06; g.add(stick);
+  for (let i = 0; i < 4; i++) {
+    const p = shape === 'cube' ? mesh(new THREE.BoxGeometry(0.085, 0.085, 0.085), M(col, { roughness: 0.55 })) : lumpy(0.06, 0.9, 1, 1.3, col, 0.15);
+    p.position.set(-0.15 + i * 0.1, 0.06, 0); p.rotation.set(rnd(-0.3, 0.3), rnd(0, 1), rnd(-0.3, 0.3)); g.add(p);
+  }
+  return g;
+}
 function plateModel(parts) {
   const g = new THREE.Group();
   g.add(KK('plate', 0.8));
@@ -389,7 +414,7 @@ function plateModel(parts) {
       const o = mesh(new THREE.SphereGeometry(0.045, 10, 8), M('#2a1a2a', { roughness: 0.3 })); o.scale.set(1, 0.8, 1.2); o.position.set(0.06, y + 0.03, 0); g.add(o);
     }
   }
-  const alone = !has('arroz') && !has('guiso') && !has('pollo_aji') && !has('saltado');
+  const alone = !has('arroz') && !has('guiso') && !has('pollo_aji') && !has('saltado') && !has('anticucho') && !has('rachi_asado') && !has('pancita_asada');
   // papa a la huancaína: hoja de lechuga + rodajas, salsa por encima y, completa, huevo y aceituna
   if (has('papa')) {
     const pos = alone ? [0, 0] : [0.18, -0.1];
@@ -428,6 +453,12 @@ function plateModel(parts) {
     const d = mesh(new THREE.SphereGeometry(0.15, 14, 8, 0, 6.3, 0, 1.4), M('#fbfaf3', { roughness: 0.95 }));
     d.position.set(-0.17, y0, -0.1); g.add(d);
   }
+  // anticuchos / rachi / pancita: dos palitos, con papa y choclo en rodajas
+  ['anticucho', 'rachi_asado', 'pancita_asada'].forEach(k => {
+    if (!has(k)) return;
+    for (let i = 0; i < 2; i++) { const sk = ITEM3[k](); sk.position.set(-0.08, y0 + 0.02 + i * 0.05, 0.02 + i * 0.12); sk.rotation.y = 0.3; g.add(sk); }
+  });
+  if (has('choclo')) { const c = ITEM3.choclo_rodajas(); c.scale.setScalar(0.8); c.position.set(0.2, y0, 0.14); g.add(c); }
   // lomo saltado: el salteado con su jugo, y las papas fritas al costado
   if (has('saltado')) {
     const s = mesh(new THREE.SphereGeometry(0.18, 16, 8), M('#6b3a1e', { roughness: 0.3 }));
@@ -743,6 +774,17 @@ function ollaGuiso3(s) {
   g.userData.sauce = sauce;
   return g;
 }
+// parrilla: bandeja de fierro con borde y asas, brasas encendidas abajo y rejilla
+function grill3() {
+  const g = new THREE.Group(), iron = M('#3a3d42', { metalness: 0.6, roughness: 0.5 });
+  const base = mesh(new THREE.BoxGeometry(1.2, 0.22, 1.05), iron); base.position.y = 0.11; g.add(base);
+  const coalM = new THREE.MeshStandardMaterial({ color: '#3a1408', emissive: '#ff5a10', emissiveIntensity: 1, roughness: 0.9 });
+  const coal = mesh(new THREE.BoxGeometry(1.05, 0.04, 0.9), coalM, false); coal.position.y = 0.23; g.add(coal); g.userData.coal = coalM;
+  for (let i = 0; i < 8; i++) { const b = mesh(new THREE.CylinderGeometry(0.012, 0.012, 1.0, 5), M('#c9ccd0', { metalness: 0.7 })); b.rotation.x = Math.PI / 2; b.position.set(-0.5 + i * 0.143, 0.28, 0); g.add(b); }
+  [[0, 0.52, 1.2, 0.04], [0, -0.52, 1.2, 0.04]].forEach(([x, z, w, d]) => { const r = mesh(new THREE.BoxGeometry(w, 0.12, d), iron); r.position.set(x, 0.3, z); g.add(r); });
+  [-1, 1].forEach(k => { const h = mesh(new THREE.TorusGeometry(0.08, 0.018, 6, 10, Math.PI), M('#c9ccd0', { metalness: 0.7 })); h.position.set(k * 0.64, 0.28, 0); h.rotation.set(0, Math.PI / 2, -k * Math.PI / 2); g.add(h); });
+  return g;
+}
 // freidora: tina de acero con aceite dorado y canastilla de alambre con mango
 function fryer3() {
   const g = new THREE.Group(), steel = M('#b9c2c9', { metalness: 0.6, roughness: 0.35 });
@@ -834,6 +876,17 @@ function buildStations() {
         g.add(counter3(s)); g.add(stove3(s));
         const o = ollaGuiso3(s); o.position.y = 1.21; g.add(o); s3.extra.olla = o;
         s3.slot.position.y = 1.8; s3.slot.scale.setScalar(1.15); g.add(s3.slot); break;
+      }
+      case 'skewer': {     // tabla de palitos: un atado de cañas al costado
+        g.add(counter3(s));
+        const b = KK('cuttingboard', 1.0); b.position.y = TOP; b.rotation.y = facingOf(s) + Math.PI / 2; g.add(b);
+        for (let i = 0; i < 6; i++) { const st = mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.7, 5), M('#d9b26a')); st.rotation.set(0, 0.2, Math.PI / 2); st.position.set(0.05, TOP + 0.04 + (i % 2) * 0.025, 0.42 + i * 0.03); g.add(st); }
+        s3.slot.position.y = TOP + 0.17; s3.slot.scale.setScalar(1.6); g.add(s3.slot); break;
+      }
+      case 'grill': {      // parrilla de carretilla: bandeja de fierro sobre brasas, con hasta 3 palitos
+        g.add(counter3(s)); const p = grill3(); p.position.y = TOP; g.add(p); s3.extra.grill = p;
+        s3.extra.gslots = [0, 1, 2].map(i => { const h = new THREE.Group(); h.position.set(0, TOP + 0.36, -0.28 + i * 0.28); h.scale.setScalar(1.5); g.add(h); return h; });
+        break;
       }
       case 'fryer': {
         g.add(counter3(s)); const f = fryer3(); f.position.y = TOP; f.rotation.y = facingOf(s); g.add(f); s3.extra.fryer = f;
@@ -1029,6 +1082,16 @@ function updStations(dt) {
         if (s.state === 'cooking' && Math.random() < dt * 6) puff(g.position.x, 1.95, g.position.z);
         break;
       }
+      case 'skewer':
+        setSlot(s3.slot, s.state === 'chopping' ? s.input : s.state === 'done' ? s.product : null);
+        if (s.state === 'chopping' && s.worked) s3.slot.rotation.y = Math.sin(V3.t * 18) * 0.06;
+        break;
+      case 'grill': {
+        s3.extra.gslots.forEach((h, i) => { const sl = s.slots[i]; setSlot(h, sl ? (sl.done ? GRILL_OUT[sl.type] : sl.type) : null); });
+        if (s.slots.length && Math.random() < dt * (6 + s.slots.length * 4)) puff(g.position.x + rnd(-0.3, 0.3), TOP + 0.6, g.position.z + rnd(-0.3, 0.3), s.slots.every(x => x.done));
+        const coal = s3.extra.grill.userData.coal; coal.emissiveIntensity = 0.8 + Math.sin(V3.t * 7) * 0.2 + (s.slots.length ? 0.4 : 0);
+        break;
+      }
       case 'fryer': {
         setSlot(s3.slot, s.state === 'frying' ? s.item : s.state === 'done' ? FRY_OUT[s.item] : null);
         const bk = s3.extra.fryer.userData.basket, down = s.state === 'frying';
@@ -1102,6 +1165,15 @@ function stationOverlay(s) {
     case 'pan': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.pan, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'stew': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.stew, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'wok': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.wok, '#f4b83c', 9); if (s.state === 'done') ready(); break;
+    case 'skewer': if (s.state === 'chopping') { prog(s.t / T.skewer); hint(); } if (s.state === 'done') ready(); break;
+    case 'grill': {
+      if (!s.slots.length) break;
+      const cooking = s.slots.filter(x => !x.done), done = s.slots.length - cooking.length;
+      if (!cooking.length) { pill(s.slots.length > 1 ? '¡LISTO! ×' + s.slots.length : '¡LISTO!', c.x, c.y, '#2f8a3b', '#ffffff', 11); break; }
+      bar(bx, c.y - 5, 56, Math.min(...cooking.map(x => x.t)) / T.grill, '#f4b83c', 9);
+      if (done) pill(done + ' listo' + (done > 1 ? 's' : ''), c.x, c.y - 18, '#2f8a3b', '#ffffff', 9);
+      break;
+    }
     case 'fryer': if (s.state === 'frying') bar(bx, c.y - 5, 56, s.t / T.fry, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'balde': if (s.state === 'filling') bar(bx, c.y - 5, 56, s.t / T.balde, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'blender': {

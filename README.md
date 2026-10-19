@@ -20,6 +20,7 @@ Juego de cocina peruana estilo Overcooked que enseña recetas reales. Se juega e
 | | 1-5 | Lomo Saltado (wok y freidora) |
 | 2 · Chifa | 2-1 | Arroz Chaufa |
 | Kevin · Comida de la calle (carretilla cebichera) | K-9 | Cebiche de Pota con o sin ají + Chicha Morada |
+| | K-10 | Anticuchos, rachi y pancita (carretilla de noche: tabla → bowl con salsa anticuchera → palitos → parrilla) |
 
 La pantalla de niveles abre las versiones 3D (`nivelX-Y-3d.html`, `kevin-*-3d.html`). Las páginas 2D (`nivelX-Y.html`) usan la misma lógica y sirven para probar mecánicas.
 

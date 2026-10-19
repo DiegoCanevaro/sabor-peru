@@ -93,6 +93,24 @@ function interact(s, p, want) {
       if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, PART_OF_ITEM[s.out])) { h.parts.push(PART_OF_ITEM[s.out]); s.state = 'idle'; s.items = []; return true; }
       if (!h && s.state === 'done') { p.held = { type: s.out || 'chaufa' }; s.state = 'idle'; s.items = []; return true; }
       return false;
+    case 'skewer':   // palitos (mantener): la carne macerada se ensarta
+      if (h && s.state === 'empty' && SKEWER[h.type]) { s.state = 'chopping'; s.t = 0; s.input = h.type; s.product = SKEWER[h.type]; p.held = null; return true; }
+      if (!h && s.state === 'done') { p.held = { type: s.product }; s.state = 'empty'; s.product = null; return true; }
+      return false;
+    case 'grill': {  // parrilla (automática): hasta GRILL_CAP palitos a la vez
+      if (h && GRILL_OUT[h.type] && s.slots.length < GRILL_CAP) { s.slots.push({ type: h.type, t: 0, done: false }); p.held = null; return true; }
+      if (h && h.type === 'plate') {        // con el plato en la mano: el anticucho va directo al plato
+        const i = s.slots.findIndex(x => x.done && canPlace(h, PART_OF_ITEM[GRILL_OUT[x.type]]));
+        if (i < 0) return false;
+        h.parts.push(PART_OF_ITEM[GRILL_OUT[s.slots[i].type]]); s.slots.splice(i, 1); return true;
+      }
+      if (!h) {
+        const i = s.slots.findIndex(x => x.done && (!want || x.type === want));
+        if (i < 0) return false;
+        p.held = { type: GRILL_OUT[s.slots.splice(i, 1)[0].type] }; return true;
+      }
+      return false;
+    }
     case 'fryer':    // freidora (automática): papas en bastón -> papas fritas
       if (h && s.state === 'idle' && FRY_OUT[h.type]) { s.item = h.type; s.state = 'frying'; s.t = 0; p.held = null; return true; }
       if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, PART_OF_ITEM[FRY_OUT[s.item]])) { h.parts.push(PART_OF_ITEM[FRY_OUT[s.item]]); s.state = 'idle'; s.item = null; return true; }
@@ -132,7 +150,7 @@ function interact(s, p, want) {
 
 // ¿Hay algo que "mantener" en esta estación ahora mismo?
 function workable(s) {
-  if (s.kind === 'board') return s.state === 'chopping';
+  if (s.kind === 'board' || s.kind === 'skewer') return s.state === 'chopping';
   if (s.kind === 'bowl') return s.state === 'mashing' || (s.state === 'idle' && !!bowlMatch(s.items));
   if (s.kind === 'blender') return s.state === 'blending' || (s.state === 'idle' && !!blendMatch(s.items));
   return false;

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Sabor Perú - Kevin: Anticuchos, rachi y pancita</title>
+  <link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/mobile.css">
+</head>
+
+<body>
+  <div id="gameWrap">
+    <div id="hud">
+      <span id="scoreDisplay">⭐ 0</span>
+      <span id="customerDisplay"></span>
+      <button id="botBtn" class="small">🤖 Ayudante: OFF (B)</button>
+    </div>
+    <div id="tickets"></div>
+    <canvas id="c" width="900" height="560"></canvas>
+
+    <div id="startOverlay" class="overlay show">
+      <h1>🍢 Kevin: Anticuchos, rachi y pancita</h1>
+      <p><b>Carretilla anticuchera, de noche.</b> Atiende a 5 clientes: piden <b>anticuchos</b> (corazón), <b>rachi</b> o <b>pancita</b>.</p>
+      <p>Corta la carne en la <b>tabla</b>, macérala en el <b>bowl</b> con <b>salsa anticuchera</b>, ensártala en los <b>palitos</b> y ásala en la <b>parrilla</b>. Sírvela con <b>papa</b> y <b>choclo</b> en rodajas.</p>
+      <p>En las <b>tablas</b>, el <b>bowl</b> y los <b>palitos</b> debes <b>mantener presionado</b> Espacio/E.</p>
+      <p><b>Mover:</b> WASD / flechas &nbsp; <b>Interactuar:</b> Espacio o E &nbsp; <b>Ayudante (IA):</b> B &nbsp; <b>Pausa:</b> P</p>
+      <div class="btnRow"><a class="gamebtn alt" href="niveles.html">← Niveles</a><button id="startBtn"
+          class="gamebtn">¡Empezar!</button></div>
+    </div>
+
+    <div id="overlay" class="overlay">
+      <h1 id="overlayTitle"></h1>
+      <p id="overlaySubtitle"></p>
+      <button id="recipeBtn" class="gamebtn alt">📖 Ver receta real</button>
+      <div id="recipeCard" style="display:none"></div>
+      <div class="btnRow"><a class="gamebtn alt" href="niveles.html">Elegir nivel</a><button id="restartBtn"
+          class="gamebtn">Jugar de nuevo</button></div>
+    </div>
+  </div>
+
+  <div id="touchControls">
+    <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
+    <button id="actBtn">ACCIÓN</button>
+  </div>
+  <div id="hint">WASD/flechas: mover · Espacio/E: interactuar (mantén presionado en tabla y bowl) · P: pausa · B:
+    ayudante · Una sola cosa en las manos a la vez</div>
+
+  <script src="js/menu.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/recipes-data.js"></script>
+  <script src="js/dishes.js"></script>
+  <script src="js/levels/level-kevin-anticuchos.js"></script>
+  <script src="js/ing-images.js"></script>
+  <script src="js/tool-images.js"></script>
+  <script src="js/icons.js"></script>
+  <script src="js/dish-images.js"></script>
+  <script src="js/dish-icons.js"></script>
+  <script src="js/howto.js"></script>
+  <script src="js/plate.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/stations.js"></script>
+  <script src="js/movement.js"></script>
+  <script src="js/orders.js"></script>
+  <script src="js/interact.js"></script>
+  <script src="js/helper.js"></script>
+  <script src="js/update.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/hud.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/pause.js"></script>
+  <script src="js/fullscreen.js"></script>
+  <script src="js/mobile.js"></script>
+  <script src="js/main.js"></script>
+</body>
+
+</html>

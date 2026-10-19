@@ -4,6 +4,7 @@
 // Se usa cuando el nivel tiene layout: 'calle' (ver stations.js).
 // Depende de las utilidades de render3d.js (M, mesh, canvasTex, rnd, X3, Z3, scene3...).
 const IS_CALLE = LEVEL.layout === 'calle';
+const NIGHT = !!LEVEL.night;       // carretilla nocturna (anticuchos): cielo oscuro, focos cálidos y ventanas encendidas
 
 // Mesas de las carretillas: paneles blancos con juntas grises y cubierta de acero, como en la foto de referencia
 let _panelTex = null;
@@ -178,8 +179,30 @@ function facadeTex(wall, trim, kind) {
   });
 }
 
+// ventanas encendidas de noche (mapa de luz de la fachada: negro = apagado)
+function facadeGlowTex(kind) {
+  return canvasTex(512, 512, (c, w, h) => {
+    c.fillStyle = '#000'; c.fillRect(0, 0, w, h);
+    const lit = (x, y, ww, hh) => { if (Math.random() < 0.25) return; c.fillStyle = Math.random() < 0.5 ? '#ffcf7a' : '#ffe2a8'; c.fillRect(x, y, ww, hh); };
+    if (kind === 'balcon') { for (let i = 0; i < 6; i++) if (Math.random() < 0.7) { c.fillStyle = '#ffb85a'; c.fillRect(124 + i * 46, 86, 36, 150); } }
+    else { lit(70, 90, 120, 150); lit(320, 90, 120, 150); }
+    if (kind === 'bodega') { c.fillStyle = '#fff0d0'; c.fillRect(40, 290, 150, 60); c.fillStyle = '#ffcf7a'; c.fillRect(200, 320, 110, 192); }
+  });
+}
+// foco colgante (como los de las carretillas de noche): cable, bombilla que brilla y una luz cálida
+function hangingBulb(h, power) {
+  const g = new THREE.Group();
+  const wire = mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.6, 4), M('#222'), false); wire.position.y = h + 0.3; g.add(wire);
+  const bulb = mesh(new THREE.SphereGeometry(0.11, 12, 10), new THREE.MeshStandardMaterial({ color: '#fff6d8', emissive: '#ffd27a', emissiveIntensity: 2.2 }), false); bulb.position.y = h; g.add(bulb);
+  const light = new THREE.PointLight('#ffc670', power || 0.6, 5.5, 2); light.position.y = h - 0.1; g.add(light);
+  return g;
+}
 function buildStreet() {
-  scene3.background = new THREE.Color('#2a2622');
+  scene3.background = new THREE.Color(NIGHT ? '#0b1020' : '#2a2622');
+  if (NIGHT) {           // luz de luna azulada y muy poca luz ambiente: el resto lo ponen los focos
+    scene3.children.forEach(o => { if (o.isHemisphereLight) { o.intensity = 0.16; o.color.set('#8fa6ff'); o.groundColor.set('#2a1a10'); } });
+    sun3.intensity = 0.16; sun3.color.set('#9fb4ff');
+  }
   const Zsw = Z3(cellY(1)) - 0.02, Zsw2 = Z3(cellY(ROWS - 1)) + 0.02;     // bordes de las veredas
   // asfalto
   const asphalt = canvasTex(256, 256, (c, w, h) => {
@@ -212,7 +235,8 @@ function buildStreet() {
   const hw = 4.4, zF = Zsw - 3;
   houses.forEach(([wall, trim, kind], i) => {
     const x = -15.4 + i * hw + hw / 2;
-    const f = mesh(new THREE.BoxGeometry(hw, 4.6, 0.4), [M(trim), M(trim), M(trim), M(trim), new THREE.MeshStandardMaterial({ map: facadeTex(wall, trim, kind), roughness: 0.9 }), M(trim)]);
+    const front = new THREE.MeshStandardMaterial(Object.assign({ map: facadeTex(wall, trim, kind), roughness: 0.9 }, NIGHT ? { emissive: '#ffffff', emissiveMap: facadeGlowTex(kind), emissiveIntensity: 0.85 } : {}));
+    const f = mesh(new THREE.BoxGeometry(hw, 4.6, 0.4), [M(trim), M(trim), M(trim), M(trim), front, M(trim)]);
     f.position.set(x, 2.3, zF - 0.2); scene3.add(f);
     const corn = mesh(new THREE.BoxGeometry(hw, 0.2, 0.6), M(trim)); corn.position.set(x, 4.6, zF - 0.1); scene3.add(corn);
   });
@@ -229,6 +253,11 @@ function buildStreet() {
     [[x0 - 0.1, ct.c0 - 1], [x1 + 0.1, ct.c1 + 1]].forEach(([x, nc]) => { if (occupied(nc, ct.r)) return; const w = wheel3(); w.scale.setScalar(1.25); w.rotation.y = Math.PI / 2; w.position.set(x, 0.5, zc); scene3.add(w); });
     // sombrillas: detrás de las carretillas de arriba, delante (sobre la vereda) en las de abajo, sin tapar la mesa
     const n = Math.max(1, Math.round(len / 4.5));
+    // de noche no hay sombrillas: focos colgantes sobre cada carretilla
+    if (NIGHT) {
+      for (let i = 0; i < n + 1; i++) { const b = hangingBulb(2.5, 0.65); b.position.set(x0 + len * (i + 0.5) / (n + 1), 0, zc + (top ? -0.2 : 0.2)); scene3.add(b); }
+      return;
+    }
     for (let i = 0; i < n; i++) {
       const x = x0 + len * (i + 0.5) / n, u = top ? umbrella3(1.9, 2.9) : umbrella3(1.35, 1.9);
       u.position.set(x, 0.06, top ? zc - d / 2 - 0.9 : zc + d / 2 + 1.75); scene3.add(u);
@@ -256,8 +285,12 @@ function buildStreet() {
   const lamp = new THREE.Group();
   const lp = mesh(new THREE.CylinderGeometry(0.06, 0.09, 3.6, 10), M('#3a3a3a')); lp.position.y = 1.8; lamp.add(lp);
   const lh = mesh(new THREE.BoxGeometry(0.6, 0.12, 0.3), M('#3a3a3a')); lh.position.set(0.25, 3.55, 0); lamp.add(lh);
-  const bulb = mesh(new THREE.BoxGeometry(0.4, 0.05, 0.22), M('#fff2b3', { emissive: '#fff2b3', emissiveIntensity: 0.6 })); bulb.position.set(0.3, 3.48, 0); lamp.add(bulb);
+  const bulb = mesh(new THREE.BoxGeometry(0.4, 0.05, 0.22), M('#fff2b3', { emissive: '#fff2b3', emissiveIntensity: NIGHT ? 2.5 : 0.6 })); bulb.position.set(0.3, 3.48, 0); lamp.add(bulb);
   lamp.position.set(-0.1, 0.06, Zsw - 1.6); scene3.add(lamp);
+  if (NIGHT) {           // postes de luz encendidos (luz blanca-amarilla de alumbrado público)
+    const pl = new THREE.PointLight('#ffe9b0', 0.8, 9, 2); pl.position.set(0.3, 3.3, 0); lamp.add(pl);
+    [[-12, Zsw - 1.6], [12, Zsw - 1.6], [-6, Zsw2 + 1.6], [7, Zsw2 + 1.6]].forEach(([x, z]) => { const l2 = lamp.clone(); l2.position.set(x, 0.06, z); scene3.add(l2); });
+  }
   const man = mesh(new THREE.CircleGeometry(0.55, 24), new THREE.MeshStandardMaterial({ map: canvasTex(128, 128, (c, w, h) => {
     c.fillStyle = '#5a5650'; c.beginPath(); c.arc(64, 64, 62, 0, 7); c.fill(); c.strokeStyle = '#3e3b37'; c.lineWidth = 5;
     for (let r = 14; r < 60; r += 12) { c.beginPath(); c.arc(64, 64, r, 0, 7); c.stroke(); }

@@ -15,7 +15,9 @@ const LEVEL_LIST = [
   { id: '2-1', world: 2, file: 'nivel2-1-3d.html', icon: '🍛', dish: 'chaufa', servesDish: ['chaufa'], name: 'Arroz Chaufa',
     desc: 'Arroz, pollo en cuadros, huevo, cebolla china y sillao salteados en el wok.', serves: ['🍛'] },
   { id: 'K-9', world: 'kevin', file: 'kevin-pota-3d.html', icon: '🦑', dish: 'cebiche_pota', servesDish: ['cebiche_pota', 'cebiche_sin', 'chicha'], name: 'Cebiche de Pota',
-    desc: 'Carretilla cebichera: cebiche con o sin ají, con camote, y chicha morada del balde.', serves: ['🦑', '🍇'] }
+    desc: 'Carretilla cebichera: cebiche con o sin ají, con camote, y chicha morada del balde.', serves: ['🦑', '🍇'] },
+  { id: 'K-10', world: 'kevin', file: 'kevin-anticuchos-3d.html', icon: '🍢', dish: 'anticuchos', servesDish: ['anticuchos', 'rachi', 'pancita'], name: 'Anticuchos',
+    desc: 'Carretilla de noche: corazón, rachi o pancita macerados, en palito y a la parrilla; con papa y choclo.', serves: ['🍢'] }
 ];
 
 // El mejor puntaje de cada nivel se guarda en el navegador (puede no estar disponible: modo privado, etc.).

@@ -90,6 +90,24 @@ const DISHES = {
     howto: { rows: [{ ings: ['pota_cortada', 'limon'], tools: [] }, { ings: ['cebolla_roja'], tools: ['board'] }], merge: 'bowl', extras: [{ ings: ['camote_cocido'], tools: [] }] },
     recipe: RECIPES.cebiche_pota
   },
+  // Kevin: carretilla nocturna de anticuchos. Corazón, rachi o pancita: se cortan (tabla), se maceran con salsa
+  // anticuchera (bowl), se ensartan (palitos) y se asan (parrilla). Al plato con papa y choclo sancochados en rodajas.
+  ...['anticuchos:corazon:anticucho:Anticuchos:Anticuchos', 'rachi:rachi:rachi_asado:Rachi:Rachi', 'pancita:pancita:pancita_asada:Pancita:Pancita'].reduce((o, row) => {
+    const [id, meat, out, name, short] = row.split(':');
+    o[id] = {
+      id, level: 0, name, short, icon: '🍢', course: 'plato',
+      kind: 'set', parts: [out, 'papa', 'choclo'],
+      partName: { [out]: name, papa: 'Papa en rodajas', choclo: 'Choclo en rodajas' },
+      patience: 150, meat,
+      uses: [meat, meat + '_trozos', 'salsa_anticuchera', meat + '_mar', meat + '_palito', out, 'papa_cooked', 'papa_sliced', 'choclo_cocido', 'choclo_rodajas'],
+      blend: null,
+      ticket: { slots: [{ id: meat, t: ['board', 'bowl', 'skewer', 'grill'] }, { id: 'salsa_anticuchera', t: ['bowl'] }, { id: 'papa_cooked', t: ['board'] }, { id: 'choclo_cocido', t: ['board'] }] },
+      howto: { rows: [{ ings: ['corazon', 'rachi', 'pancita'], or: true, tools: ['board'] }, { ings: ['salsa_anticuchera'], tools: [] }], merge: 'bowl', after: ['skewer', 'grill'],
+        extras: [{ ings: ['papa_cooked'], tools: ['board'] }, { ings: ['choclo_cocido'], tools: ['board'] }] },
+      recipe: RECIPES.anticuchos
+    };
+    return o;
+  }, {}),
   // bebida: se entrega en su vaso, sin plato
   chicha: {
     id: 'chicha', level: 0, name: 'Chicha Morada', short: 'Chicha', icon: '🍇', course: 'bebida',

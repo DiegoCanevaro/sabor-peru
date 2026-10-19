@@ -39,7 +39,9 @@
   function title(text) {
     c.save(); c.textAlign = 'center'; c.textBaseline = 'middle';
     c.font = '44px Kitchen, "Courier New", monospace'; c.fillStyle = chalk + '.95)';
-    c.fillText(text, W / 2, 56);
+    const tw = c.measureText(text).width, maxW = W - 360;      // títulos largos: más chicos para no tapar el papelito
+    if (tw > maxW) c.font = Math.floor(44 * maxW / tw) + 'px Kitchen, "Courier New", monospace';
+    c.fillText(text, W / 2 - (tw > maxW ? 40 : 0), 56);
     c.strokeStyle = chalk + '.5)'; c.lineWidth = 3; c.beginPath(); c.moveTo(W / 2 - 200, 84); c.quadraticCurveTo(W / 2, 92, W / 2 + 200, 82); c.stroke();
     c.restore();
     // papelito "NUEVA RECETA" pegado en la esquina
@@ -74,8 +76,13 @@
   // una cadena: ingredientes → herramientas; devuelve el punto donde termina
   function chain(row, y) {
     let x = 70;
-    row.ings.forEach((id, i) => { ing(id, x + i * (ING - 6), y); });
-    x += (row.ings.length - 1) * (ING - 6) + ING / 2 + 6;
+    // or: los ingredientes son alternativas (uno u otro), con una "o" de tiza entre ellos
+    const step = row.or ? ING + 18 : ING - 6;
+    row.ings.forEach((id, i) => {
+      ing(id, x + i * step, y);
+      if (row.or && i) { c.save(); c.font = '18px Coolvetica, sans-serif'; c.fillStyle = chalk + '.85)'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('o', x + i * step - step / 2, y + 2); c.restore(); }
+    });
+    x += (row.ings.length - 1) * step + ING / 2 + 6;
     row.tools.forEach(t => { arrow(x, y, x + 44, y); x += 44 + TOOL / 2 + 4; tool(t, x, y); x += TOOL / 2 + 4; });
     if (row.optional) {
       c.save(); c.font = '15px Kitchen, sans-serif'; c.fillStyle = '#f4d35e'; c.textAlign = 'left'; c.textBaseline = 'middle';
@@ -87,13 +94,16 @@
   function section(id, y0) {
     const h = DISHES[id].howto, rows = h.rows, extras = h.extras || [];
     const n = rows.length + extras.length, yc = i => y0 + rowH * i + rowH / 2;
-    const xMerge = 560, xDish = 770, yRowsMid = (yc(0) + yc(rows.length - 1)) / 2, yDish = (yc(0) + yc(n - 1)) / 2;
+    const after = h.after || [], xMerge = after.length ? 470 - (after.length - 1) * 30 : 560, xDish = 770, yRowsMid = (yc(0) + yc(rows.length - 1)) / 2, yDish = (yc(0) + yc(n - 1)) / 2;
     const ends = rows.map((r, i) => [chain(r, yc(i)), yc(i)]);
     const extraEnds = extras.map((r, i) => [chain(r, yc(rows.length + i)), yc(rows.length + i)]);
     if (h.merge) {
       ends.forEach(([x, y]) => arrow(x + 4, y, xMerge - 46, yRowsMid + (y - yRowsMid) * 0.25));
       tool(h.merge, xMerge, yRowsMid, true);
-      arrow(xMerge + 46, yRowsMid, xDish - 70, yDish);
+      // pasos después de juntar (p. ej. ensartar y asar los anticuchos)
+      let xa = xMerge + 46;
+      after.forEach((t, i) => { const xt = xMerge + 100 + i * 90; arrow(xa, yRowsMid, xt - 34, yRowsMid); tool(t, xt, yRowsMid); xa = xt + 34; });
+      arrow(xa, yRowsMid, xDish - 70, yDish);
     } else ends.forEach(([x, y]) => arrow(x + 4, y, xDish - 70, yDish + (y - yDish) * 0.3));
     extraEnds.forEach(([x, y]) => arrow(x + 4, y, xDish - 70, yDish + (y - yDish) * 0.3));
     // el plato terminado
