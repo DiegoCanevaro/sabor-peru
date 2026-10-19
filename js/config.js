@@ -27,7 +27,7 @@ const ICON = {
 const NAME = {
   papa_raw: 'papa', papa_cooked: 'cocida', papa_sliced: 'rodajas', pollo_raw: 'pollo', pollo_cooked: 'cocido', pollo_shred: 'desmenuz.',
   arroz_raw: 'arroz', arroz_cooked: 'cocido', aji: 'ají', palta: 'palta', palta_sliced: 'láminas', queso: 'queso', leche: 'leche',
-  galleta: 'galleta', salsa: 'salsa', salsa_aji: 'crema', masa: 'masa', guiso: 'guiso', plate: 'plato',
+  galleta: 'galleta', salsa: 'salsa', salsa_aji: 'ají molido', masa: 'masa', guiso: 'guiso', plate: 'plato',
   cebolla_china: 'cebolla', cebolla_picada: 'picada', sillao: 'sillao', chaufa: 'chaufa', huevo: 'huevo', pollo_cuadros: 'cuadros',
   pota: 'pota', pota_cortada: 'cortada', limon: 'limón', cebolla_roja: 'cebolla', cebolla_pluma: 'pluma', aji_limo: 'ají limo', aji_limo_picado: 'picado',
   camote: 'camote', camote_cocido: 'cocido', cebiche: 'sin ají', cebiche_aji: 'con ají', cebolla_cuadros: 'cuadros', vaso: 'vaso', chicha: 'chicha', pollo_aji: 'pollo ají'
@@ -41,9 +41,9 @@ const CRATE_INFO = {
   pota_cortada: ['🦑', 'Pota'], camote_cocido: ['🍠', 'Camote']
 };
 // lo que se puede poner sobre el plato (producto -> parte) y cómo se dibuja cada parte
-const PART_OF_ITEM = { papa_sliced: 'papa', salsa: 'salsa', arroz_cooked: 'arroz', guiso: 'guiso', masa: 'masa', pollo_shred: 'relleno', palta_sliced: 'palta', chaufa: 'chaufa', cebiche: 'cebiche', cebiche_aji: 'cebiche_aji', camote_cocido: 'camote', pollo_aji: 'pollo_aji', papa_cooked: 'papa_entera' };
-const PART_EMOJI = { papa: '🥔', salsa: '🥣', arroz: '🍚', guiso: '🍛', chaufa: '🍛', cebiche: '🦑', cebiche_aji: '🦑', camote: '🍠', pollo_aji: '🍛', papa_entera: '🥔' };
-const PART_POS = { arroz: [-.22, -.12], papa: [.22, -.12], salsa: [0, .1], guiso: [0, .1], chaufa: [0, 0], cebiche: [-.1, 0], cebiche_aji: [-.1, 0], camote: [.26, .1], pollo_aji: [0, .12], papa_entera: [.22, -.12] };
+const PART_OF_ITEM = { papa_sliced: 'papa', salsa: 'salsa', arroz_cooked: 'arroz', guiso: 'guiso', masa: 'masa', pollo_shred: 'relleno', palta_sliced: 'palta', chaufa: 'chaufa', cebiche: 'cebiche', cebiche_aji: 'cebiche_aji', camote_cocido: 'camote', pollo_aji: 'pollo_aji' };
+const PART_EMOJI = { papa: '🥔', salsa: '🥣', arroz: '🍚', guiso: '🍛', chaufa: '🍛', cebiche: '🦑', cebiche_aji: '🦑', camote: '🍠', pollo_aji: '🍛' };
+const PART_POS = { arroz: [-.22, -.12], papa: [.22, -.12], salsa: [0, .1], guiso: [0, .1], chaufa: [0, 0], cebiche: [-.1, 0], cebiche_aji: [-.1, 0], camote: [.26, .1], pollo_aji: [0, .12] };
 const LAYER_COL = { masa: '#f2c94c', relleno: '#d99a6c', palta: '#7fb54a' };
 const LAYER_NAME = { masa: 'Masa', relleno: 'Relleno', palta: 'Palta' };
 
@@ -71,7 +71,7 @@ const bowlAccepts = (items, t) => activeBowls().some(r => (r.need[t] || 0) > nOf
 const bowlMatch = items => activeBowls().find(r => Object.keys(r.need).every(k => nOf(items, k) === r.need[k]) && items.length === Object.values(r.need).reduce((a, b) => a + b, 0));
 const bowlFull = items => !!bowlMatch(items);
 const PAN_IN = ['pollo_shred', 'salsa_aji'];            // sartén (automática) -> guiso
-// olla de barro (automática) -> pollo al ají: pollo crudo + cebolla en cuadros (tabla) + crema de ají amarillo (licuadora)
+// olla de barro (automática) -> pollo al ají: pollo crudo + cebolla en cuadros (tabla) + ají amarillo molido (licuadora)
 const STEW_IN = ['pollo_raw', 'cebolla_cuadros', 'salsa_aji'];
 // wok del chifa (automático): arroz cocido + pollo crudo en cuadros + cebolla china picada + huevo + sillao (salsa de soya) -> arroz chaufa
 // el pollo se cocina en el mismo wok, por eso se corta crudo
@@ -82,7 +82,7 @@ const WOK_IN = ['arroz_cooked', 'pollo_cuadros', 'cebolla_picada', 'huevo', 'sil
 const BLEND_ACCEPT = ['queso', 'aji', 'leche', 'galleta'];
 const BLEND_RECIPES = [
   { in: ['queso', 'aji', 'leche', 'galleta'], out: 'salsa' },   // salsa huancaína
-  { in: ['aji'], out: 'salsa_aji' }                             // crema de ají (1 solo ají)
+  { in: ['aji'], out: 'salsa_aji' }                             // ají molido (1 solo ají)
 ];
 const sortKey = a => a.slice().sort().join(',');
 function subMulti(items, full) {      // ¿items cabe dentro de full (contando repeticiones)?

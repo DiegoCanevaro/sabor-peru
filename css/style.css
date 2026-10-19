@@ -1,6 +1,6 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body {
-  margin: 0; padding: 0; background: #1a0f08; font-family: 'Courier New', monospace;
+  margin: 0; padding: 0; background: #1a0f08; font-family: 'Coolvetica', 'Helvetica Neue', Arial, sans-serif; letter-spacing: .3px;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   min-height: 100vh; color: #f4e4c1; user-select: none;
 }
@@ -140,7 +140,7 @@ canvas.dishIcon { background: transparent; border: 0; display: inline-block; }
 
 /* títulos con la tipografía del juego (css/fonts.css) */
 h1, .logo, .menuTop h1, .overlay h1, .world, .lvName, #recipeCard h2 {
-  font-family: 'Kitchen', 'Courier New', monospace; font-weight: normal; letter-spacing: 1px;
+  font-family: 'Kitchen', 'Coolvetica', sans-serif; font-weight: normal; letter-spacing: 1px;
 }
 .world { font-size: 20px; color: #f4b83c; }
 .lvName { font-size: 19px; }

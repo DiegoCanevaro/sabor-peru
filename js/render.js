@@ -1,7 +1,7 @@
 // ================= DIBUJO (canvas) =================
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 function emoji(e, x, y, size) { ctx.font = size + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#000'; ctx.fillText(e, x, y); }
-function label(t, x, y, col, size, align) { ctx.font = 'bold ' + (size || 11) + 'px "Courier New", monospace'; ctx.fillStyle = col || '#fff'; ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y); }
+function label(t, x, y, col, size, align) { ctx.font = Math.round((size || 11) * 1.12) + 'px Coolvetica, Arial, sans-serif'; ctx.fillStyle = col || '#fff'; ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y); }
 function bar(x, y, w, p, col, h) {
   h = h || 10;
   ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(x, y, w, h);

@@ -42,3 +42,4 @@ La pantalla de niveles abre las versiones 3D (`nivelX-Y-3d.html`, `kevin-*-3d.ht
 - Modelos de cocina: [KayKit Restaurant Bits](https://kaylousberg.com) de Kay Lousberg (CC0)
 - Motor 3D: [Three.js](https://threejs.org) r147 (MIT)
 - Tipografía de títulos: Kitchen Bold (Design Vector10, dafont). `fonts/Kitchen_Bold_tildes.otf` es la misma fuente con tildes y ñ añadidas.
+- Tipografía de subtítulos e información: Coolvetica (Typodermic Fonts, dafont), en `fonts/Coolvetica_Rg.otf`

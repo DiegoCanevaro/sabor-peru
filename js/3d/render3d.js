@@ -403,12 +403,7 @@ function plateModel(parts) {
     const d = mesh(new THREE.SphereGeometry(0.15, 14, 8, 0, 6.3, 0, 1.4), M('#fbfaf3', { roughness: 0.95 }));
     d.position.set(-0.17, y0, -0.1); g.add(d);
   }
-  // pollo al ají: presa de pollo en su salsa amarilla con cebolla, y la papa sancochada entera al costado
-  if (has('papa_entera')) {
-    for (let i = 0; i < 2; i++) {
-      const p = lumpy(0.1, 1.25, 0.8, 1, '#f1c840', 0.03); p.position.set(0.2 - i * 0.04, y0 + 0.06, -0.14 + i * 0.13); p.rotation.y = i * 1.3; g.add(p);
-    }
-  }
+  // pollo al ají: presa de pollo en su salsa amarilla con cebolla
   if (has('pollo_aji')) {
     const s = mesh(new THREE.SphereGeometry(0.18, 16, 8), M('#f0a52a', { roughness: 0.3 }));
     s.scale.set(1.15, 0.26, 0.9); s.position.set(-0.02, y0 + 0.02, 0.13); g.add(s);
@@ -1023,9 +1018,9 @@ function setHighlight(s) {
 const _v = new THREE.Vector3();
 function proj(x, y, z) { _v.set(x, y, z).project(cam3); return { x: (_v.x + 1) / 2 * W, y: (1 - _v.y) / 2 * H }; }
 function emoji(e, x, y, size) { ctx.font = size + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#000'; ctx.fillText(e, x, y); }
-function label(t, x, y, col, size, align) { ctx.font = 'bold ' + (size || 11) + 'px "Courier New", monospace'; ctx.fillStyle = col || '#fff'; ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y); }
+function label(t, x, y, col, size, align) { ctx.font = Math.round((size || 11) * 1.12) + 'px Coolvetica, Arial, sans-serif'; ctx.fillStyle = col || '#fff'; ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle'; ctx.fillText(t, x, y); }
 function pill(t, x, y, bg, fg, size) {
-  ctx.font = 'bold ' + (size || 11) + 'px "Courier New", monospace';
+  ctx.font = Math.round((size || 11) * 1.12) + 'px Coolvetica, Arial, sans-serif';
   const w = ctx.measureText(t).width + 12, h = (size || 11) + 8;
   ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - w / 2, y - h / 2, w, h, 6) : ctx.rect(x - w / 2, y - h / 2, w, h); ctx.fill();
   label(t, x, y + 1, fg, size);
@@ -1110,7 +1105,7 @@ function draw() {
   // los letreros se dibujan con la tipografía Kitchen: se espera a que esté lista
   function start() {
     const go = () => { buildWorld(); V3.ready = true; };
-    const fonts = document.fonts && document.fonts.load ? document.fonts.load('40px Kitchen') : Promise.resolve();
+    const fonts = document.fonts && document.fonts.load ? Promise.all([document.fonts.load('40px Kitchen'), document.fonts.load('20px Coolvetica')]) : Promise.resolve();
     Promise.all([fonts, typeof ICONS_READY !== 'undefined' ? ICONS_READY : null]).then(go, go);
   }
 })();

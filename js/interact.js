@@ -84,7 +84,7 @@ function interact(s, p, want) {
       }
       if (!h && s.state === 'done') { p.held = { type: 'chaufa' }; s.state = 'idle'; s.items = []; return true; }
       return false;
-    case 'pan':      // automática: arranca sola con pollo desmenuzado + crema de ají
+    case 'pan':      // automática: arranca sola con pollo desmenuzado + ají molido
       if (h && PAN_IN.includes(h.type) && s.state === 'idle' && !s.items.includes(h.type)) {
         s.items.push(h.type); p.held = null;
         if (s.items.length === PAN_IN.length) { s.state = 'cooking'; s.t = 0; }
@@ -92,7 +92,7 @@ function interact(s, p, want) {
       }
       if (!h && s.state === 'done') { p.held = { type: 'guiso' }; s.state = 'idle'; s.items = []; return true; }
       return false;
-    case 'stew':     // olla de barro (automática): arranca sola con pollo crudo + cebolla en cuadros + crema de ají
+    case 'stew':     // olla de barro (automática): arranca sola con pollo crudo + cebolla en cuadros + ají molido
       if (h && STEW_IN.includes(h.type) && s.state === 'idle' && !s.items.includes(h.type)) {
         s.items.push(h.type); p.held = null;
         if (s.items.length === STEW_IN.length) { s.state = 'cooking'; s.t = 0; }
