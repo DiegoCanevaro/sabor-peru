@@ -16,7 +16,8 @@ Juego de cocina peruana estilo Overcooked que enseña recetas reales. Se juega e
 | 1 · Cocina criolla (restaurante menú de mercado limeño) | 1-1 | Papa a la Huancaína |
 | | 1-2 | Causa Limeña |
 | | 1-3 | Ají de Gallina |
-| | 1-4 | Pollo al Ají (olla de barro) |
+| | 1-4 | Pollo al Ají |
+| | 1-5 | Lomo Saltado (wok y freidora) |
 | 2 · Chifa | 2-1 | Arroz Chaufa |
 | Kevin · Comida de la calle (carretilla cebichera) | K-9 | Cebiche de Pota con o sin ají + Chicha Morada |
 

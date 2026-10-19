@@ -102,6 +102,14 @@ const LABEL_ICONS = {
     });
   },
   // limones verdes, uno partido por la mitad
+  // tomate: rojo, redondo, con su estrellita verde
+  tomate(c) {
+    lblShadow(c, 70, 74);
+    lblShape(c, '#e0402e', c => { c.moveTo(0, -52); c.bezierCurveTo(70, -60, 92, 0, 70, 40); c.bezierCurveTo(48, 78, -48, 78, -70, 40); c.bezierCurveTo(-92, 0, -70, -60, 0, -52); c.closePath(); });
+    lblShine(c, -36, -16, 18, 10, -0.5);
+    lblShape(c, '#4f8f2c', c => { for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * Math.PI * 2 / 5; c.lineTo(Math.cos(a) * 34, -50 + Math.sin(a) * 16); c.lineTo(Math.cos(a + 0.6) * 10, -50 + Math.sin(a + 0.6) * 6); } c.closePath(); }, 6);
+    lblShape(c, '#4f8f2c', c => { c.moveTo(0, -56); c.quadraticCurveTo(4, -76, 16, -84); }, 9);
+  },
   limon(c) {
     lblShadow(c, 64, 76);
     lblShape(c, '#5c9b2e', c => c.ellipse(-26, 6, 46, 40, -0.2, 0, 7));
@@ -233,7 +241,7 @@ const TOOL_ICONS = {
     lblShape(c, '#4a4a4e', c => c.ellipse(0, -16, 80, 16, 0, 0, 7));
     lblShape(c, '#8a5a2b', c => { c.moveTo(76, -8); c.lineTo(100, 16); c.lineTo(92, 24); c.lineTo(68, 2); c.closePath(); }, 5);
   },
-  stew(c) {       // olla de barro (pollo al ají)
+  stew(c) {       // olla del guiso (pollo al ají)
     lblShadow(c, 70, 84);
     lblShape(c, '#a4502a', c => { c.moveTo(-60, -30); c.bezierCurveTo(-96, 0, -78, 66, 0, 66); c.bezierCurveTo(78, 66, 96, 0, 60, -30); c.closePath(); });
     lblShape(c, '#c4673a', c => c.ellipse(0, -30, 64, 16, 0, 0, 7));
@@ -241,6 +249,16 @@ const TOOL_ICONS = {
     [-1, 1].forEach(s => lblShape(c, '#8a3f1f', c => c.ellipse(s * 76, -12, 12, 8, s * 0.4, 0, 7), 6));
     lblShape(c, 'rgba(255,230,190,.55)', c => { c.moveTo(-74, 14); c.quadraticCurveTo(0, 30, 74, 14); c.lineTo(72, 22); c.quadraticCurveTo(0, 38, -72, 22); c.closePath(); }, 0);
     lblShine(c, -40, 20, 8, 18, 0.2);
+  },
+  fryer(c) {      // freidora: tina de acero con aceite y canastilla
+    lblShadow(c, 74, 84);
+    lblShape(c, '#b9c2c9', c => { c.moveTo(-80, -24); c.lineTo(80, -24); c.lineTo(72, 66); c.lineTo(-72, 66); c.closePath(); });
+    lblShape(c, '#e8b33a', c => c.ellipse(0, -24, 74, 14, 0, 0, 7), 5);
+    lblShape(c, '#8a9299', c => { c.moveTo(-44, -36); c.lineTo(36, -36); c.lineTo(30, 10); c.lineTo(-38, 10); c.closePath(); }, 5);
+    c.strokeStyle = '#5b636a'; c.lineWidth = 3; for (let i = -30; i < 30; i += 12) { c.beginPath(); c.moveTo(i, -34); c.lineTo(i - 2, 8); c.stroke(); }
+    lblShape(c, '#3b3b3b', c => { c.moveTo(34, -34); c.lineTo(92, -84); c.lineTo(100, -74); c.lineTo(44, -26); c.closePath(); }, 5);
+    lblShape(c, '#f2c94c', c => { c.rect(-30, -62, 10, 30); c.rect(-12, -66, 10, 34); c.rect(6, -60, 10, 28); }, 4);
+    lblShine(c, -54, 20, 7, 22, 0.1);
   },
   pan(c) {        // sartén
     lblShadow(c, 46, 80);

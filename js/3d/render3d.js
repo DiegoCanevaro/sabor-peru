@@ -162,6 +162,16 @@ const ITEM3 = {
   masa1: () => bowlWith('#f2c94c', g => { const m = mesh(new THREE.SphereGeometry(0.15, 14, 8, 0, 6.3, 0, 1.2), M('#f2c94c', { roughness: 0.5 })); m.scale.y = 0.6; m.position.y = 0.12; g.add(m); }),
   guiso: () => bowlWith('#eab73f', g => chickenBits(g, 7, 0.16, 0.12)),
   pollo_aji: () => bowlWith('#f0a52a', g => { polloAjiPieces(g, 0.14, 0.13); }),
+  // lomo saltado
+  carne: () => { const g = new THREE.Group(); const p = lumpy(0.2, 1.5, 0.5, 1, '#b8323a', 0.05); p.position.y = 0.1; g.add(p); const f = mesh(new THREE.BoxGeometry(0.5, 0.02, 0.06), M('#f3e2d4')); f.position.set(0, 0.17, 0.05); f.rotation.y = 0.3; g.add(f); return g; },
+  carne_cubos: () => { const g = new THREE.Group(); meatCubes(g, 9, 0.02, 0.13, '#b8323a'); return g; },
+  papa_baston: () => { const g = new THREE.Group(); sticks(g, 10, 0.02, 0.12, '#f6e3a1'); return g; },
+  papas_fritas: () => { const g = new THREE.Group(); sticks(g, 12, 0.02, 0.12, '#e9b63a'); return g; },
+  tomate: () => { const g = new THREE.Group(); const t = lumpy(0.17, 1, 0.85, 1, '#e0402e', 0.02); t.position.y = 0.15; g.add(t); const st = mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.03, 5), M('#4f8f2c')); st.position.y = 0.3; g.add(st); return g; },
+  tomate_juliana: () => { const g = new THREE.Group(); strips(g, 9, 0.02, 0.13, '#e0402e', 0.035); return g; },
+  cebolla_juliana: () => { const g = new THREE.Group(); strips(g, 12, 0.02, 0.13, '#a8376b', 0.018); return g; },
+  saltado: () => bowlWith('#6b3a1e', g => saltadoMix(g, 0.16, 0.13)),
+  choclo: () => { const g = new THREE.Group(); const c = lumpy(0.1, 1, 2.4, 1, '#f3e6b0', 0.04); c.rotation.z = Math.PI / 2; c.position.y = 0.11; g.add(c); return g; },
   arroz_cooked: () => bowlWith('#fbfaf3', g => { const d = mesh(new THREE.SphereGeometry(0.19, 14, 8, 0, 6.3, 0, 1.4), M('#fbfaf3', { roughness: 0.95 })); d.position.y = 0.1; g.add(d); }),
   arroz_raw: () => {
     const g = new THREE.Group();
@@ -347,6 +357,21 @@ function polloAjiPieces(g, y, r, ox, oz) {
     c.position.set((ox || 0) + Math.cos(a) * r, y + 0.02, (oz || 0) + Math.sin(a) * r * 0.8); c.rotation.y = a; g.add(c);
   }
 }
+// trozos para el lomo saltado
+function meatCubes(g, n, y, spread, col) {
+  for (let i = 0; i < n; i++) { const b = mesh(new THREE.BoxGeometry(0.075, 0.06, 0.075), M(col, { roughness: 0.6 })); b.position.set(rnd(-spread, spread), y + 0.03 + rnd(0, 0.03), rnd(-spread, spread)); b.rotation.set(rnd(-0.3, 0.3), rnd(0, 3), 0); g.add(b); }
+}
+function sticks(g, n, y, spread, col) {
+  for (let i = 0; i < n; i++) { const b = mesh(new THREE.BoxGeometry(0.035, 0.035, 0.2), M(col, { roughness: 0.5 })); b.position.set(rnd(-spread, spread), y + 0.02 + (i % 3) * 0.03, rnd(-spread * 0.6, spread * 0.6)); b.rotation.set(0, rnd(-0.8, 0.8), 0); g.add(b); }
+}
+function strips(g, n, y, spread, col, w) {
+  for (let i = 0; i < n; i++) { const b = mesh(new THREE.BoxGeometry(w, 0.02, 0.16), M(col, { roughness: 0.4 })); b.position.set(rnd(-spread, spread), y + 0.01 + rnd(0, 0.03), rnd(-spread * 0.6, spread * 0.6)); b.rotation.y = rnd(0, 3); g.add(b); }
+}
+function saltadoMix(g, y, r) {
+  meatCubes(g, 7, y - 0.02, r * 0.8, '#6e3a22');
+  strips(g, 5, y + 0.02, r * 0.8, '#e0402e', 0.035);
+  strips(g, 6, y + 0.02, r * 0.8, '#a8376b', 0.018);
+}
 function plateModel(parts) {
   const g = new THREE.Group();
   g.add(KK('plate', 0.8));
@@ -364,7 +389,7 @@ function plateModel(parts) {
       const o = mesh(new THREE.SphereGeometry(0.045, 10, 8), M('#2a1a2a', { roughness: 0.3 })); o.scale.set(1, 0.8, 1.2); o.position.set(0.06, y + 0.03, 0); g.add(o);
     }
   }
-  const alone = !has('arroz') && !has('guiso') && !has('pollo_aji');
+  const alone = !has('arroz') && !has('guiso') && !has('pollo_aji') && !has('saltado');
   // papa a la huancaína: hoja de lechuga + rodajas, salsa por encima y, completa, huevo y aceituna
   if (has('papa')) {
     const pos = alone ? [0, 0] : [0.18, -0.1];
@@ -403,6 +428,13 @@ function plateModel(parts) {
     const d = mesh(new THREE.SphereGeometry(0.15, 14, 8, 0, 6.3, 0, 1.4), M('#fbfaf3', { roughness: 0.95 }));
     d.position.set(-0.17, y0, -0.1); g.add(d);
   }
+  // lomo saltado: el salteado con su jugo, y las papas fritas al costado
+  if (has('saltado')) {
+    const s = mesh(new THREE.SphereGeometry(0.18, 16, 8), M('#6b3a1e', { roughness: 0.3 }));
+    s.scale.set(1.15, 0.22, 0.9); s.position.set(-0.02, y0 + 0.01, 0.13); g.add(s);
+    const sub = new THREE.Group(); saltadoMix(sub, y0 + 0.04, 0.13); sub.position.set(-0.02, 0, 0.13); g.add(sub);
+  }
+  if (has('papas_fritas')) { const f = new THREE.Group(); sticks(f, 9, y0, 0.08, '#e9b63a'); f.position.set(0.2, 0, -0.1); g.add(f); }
   // pollo al ají: presa de pollo en su salsa amarilla con cebolla
   if (has('pollo_aji')) {
     const s = mesh(new THREE.SphereGeometry(0.18, 16, 8), M('#f0a52a', { roughness: 0.3 }));
@@ -702,15 +734,25 @@ function wok3() {
   const loop = mesh(new THREE.TorusGeometry(0.08, 0.02, 6, 12), M('#2a2a2c', { metalness: 0.7 })); loop.position.set(-0.62, 0.3, 0); loop.rotation.x = Math.PI / 2; g.add(loop);
   return g;
 }
-// olla de barro (pollo al ají): panzona, de terracota, con dos asas y la salsa de ají adentro
-function ollaBarro3() {
+// olla del guiso (pollo al ají): la misma olla de las demás, con la salsa de ají adentro
+function ollaGuiso3(s) {
   const g = new THREE.Group();
-  const pts = [[0, 0], [0.3, 0.02], [0.52, 0.2], [0.6, 0.44], [0.53, 0.68], [0.44, 0.8], [0.48, 0.86], [0.44, 0.89]].map(([x, y]) => new THREE.Vector2(x, y));
-  g.add(mesh(new THREE.LatheGeometry(pts, 30), M('#7a3518', { roughness: 0.9, side: THREE.DoubleSide })));
-  const band = mesh(new THREE.TorusGeometry(0.6, 0.022, 6, 30), M('#e8c08a', { roughness: 0.8 })); band.rotation.x = Math.PI / 2; band.position.y = 0.46; g.add(band);
-  [-1, 1].forEach(k => { const h = mesh(new THREE.TorusGeometry(0.08, 0.025, 6, 12, Math.PI), M('#8a3f1f')); h.position.set(k * 0.53, 0.7, 0); h.rotation.set(0, k > 0 ? 0 : Math.PI, -k * 0.6); g.add(h); });
-  const sauce = mesh(new THREE.CylinderGeometry(0.43, 0.43, 0.02, 26), M('#f0a52a', { roughness: 0.3 })); sauce.position.y = 0.8; sauce.visible = false; g.add(sauce);
+  const p = KK('pot_large', 0.95); p.rotation.y = facingOf(s); g.add(p);
+  const sauce = mesh(new THREE.CylinderGeometry(0.53, 0.53, 0.03, 24), M('#f0a52a', { roughness: 0.3 }), false);
+  sauce.position.y = 0.64; sauce.visible = false; g.add(sauce);
   g.userData.sauce = sauce;
+  return g;
+}
+// freidora: tina de acero con aceite dorado y canastilla de alambre con mango
+function fryer3() {
+  const g = new THREE.Group(), steel = M('#b9c2c9', { metalness: 0.6, roughness: 0.35 });
+  const box = mesh(new THREE.BoxGeometry(1.0, 0.42, 0.8), steel); box.position.y = 0.21; g.add(box);
+  const oil = mesh(new THREE.BoxGeometry(0.86, 0.02, 0.66), M('#e8b33a', { roughness: 0.15, metalness: 0.1 })); oil.position.y = 0.42; g.add(oil);
+  const basket = new THREE.Group();
+  const wire = new THREE.MeshStandardMaterial({ color: '#7b848b', metalness: 0.7, roughness: 0.4, wireframe: true });
+  const bk = mesh(new THREE.BoxGeometry(0.5, 0.22, 0.42, 4, 2, 4), wire, false); bk.position.y = 0.11; basket.add(bk);
+  const hd = mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.5, 8), M('#2a2a2a')); hd.rotation.z = -1.1; hd.position.set(0.42, 0.3, 0); basket.add(hd);
+  basket.position.y = 0.36; g.add(basket); g.userData.basket = basket;
   return g;
 }
 function blender3() {
@@ -788,10 +830,14 @@ function buildStations() {
         const p = KK('pan_A', 1.0); p.position.y = 1.21; p.rotation.y = facingOf(s) + Math.PI; g.add(p);
         s3.slot.position.y = 1.3; s3.slot.scale.setScalar(1.3); g.add(s3.slot); break;
       }
-      case 'stew': {        // olla de barro sobre el fuego
+      case 'stew': {        // olla del guiso sobre el fuego
         g.add(counter3(s)); g.add(stove3(s));
-        const o = ollaBarro3(); o.position.y = 1.21; g.add(o); s3.extra.olla = o;
-        s3.slot.position.y = 1.96; s3.slot.scale.setScalar(1.15); g.add(s3.slot); break;
+        const o = ollaGuiso3(s); o.position.y = 1.21; g.add(o); s3.extra.olla = o;
+        s3.slot.position.y = 1.8; s3.slot.scale.setScalar(1.15); g.add(s3.slot); break;
+      }
+      case 'fryer': {
+        g.add(counter3(s)); const f = fryer3(); f.position.y = TOP; f.rotation.y = facingOf(s); g.add(f); s3.extra.fryer = f;
+        s3.slot.scale.setScalar(1.3); g.add(s3.slot); break;
       }
       case 'wok': {
         g.add(counter3(s)); g.add(stove3(s));
@@ -929,7 +975,6 @@ function updSteam(dt) {
 }
 
 // ================= ACTUALIZAR ESTACIONES CADA FRAME =================
-const CHOP_IN = Object.fromEntries(Object.entries(CHOP).map(([a, b]) => [b, a]));
 const BLEND_COL = { queso: '#f8f4e6', aji: '#f39a16', leche: '#f1e8d2', galleta: '#e8c98a', salsa: '#f3c13a', salsa_aji: '#ef7d1a' };
 function updBlender(s3, s) {
   const { jar, fill } = s3.extra.bl.userData;
@@ -968,7 +1013,7 @@ function updStations(dt) {
         break;
       }
       case 'board':
-        setSlot(s3.slot, s.state === 'chopping' ? CHOP_IN[s.product] : s.state === 'done' ? s.product : null);
+        setSlot(s3.slot, s.state === 'chopping' ? (s.input || CHOP_IN[s.product]) : s.state === 'done' ? s.product : null);
         if (s.state === 'chopping' && s.worked) s3.slot.rotation.y = Math.sin(V3.t * 25) * 0.05;
         break;
       case 'bowl':
@@ -979,9 +1024,17 @@ function updStations(dt) {
         const sauce = s3.extra.olla.userData.sauce;
         sauce.visible = s.state !== 'idle' || s.items.includes('salsa_aji');
         setSlot(s3.slot, s.state === 'idle' && s.items.length ? 'set|' + s.items.filter(x => x !== 'salsa_aji').join(',') : null);
-        if (s.state === 'done' && !s3.extra.oPiece) { s3.extra.oPiece = new THREE.Group(); polloAjiPieces(s3.extra.oPiece, 0, 0.16); s3.extra.oPiece.position.y = 1.98; s3.extra.oPiece.scale.setScalar(1.3); g.add(s3.extra.oPiece); }
+        if (s.state === 'done' && !s3.extra.oPiece) { s3.extra.oPiece = new THREE.Group(); polloAjiPieces(s3.extra.oPiece, 0, 0.16); s3.extra.oPiece.position.y = 1.86; s3.extra.oPiece.scale.setScalar(1.3); g.add(s3.extra.oPiece); }
         if (s3.extra.oPiece) s3.extra.oPiece.visible = s.state !== 'idle';
-        if (s.state === 'cooking' && Math.random() < dt * 6) puff(g.position.x, 2.15, g.position.z);
+        if (s.state === 'cooking' && Math.random() < dt * 6) puff(g.position.x, 1.95, g.position.z);
+        break;
+      }
+      case 'fryer': {
+        setSlot(s3.slot, s.state === 'frying' ? s.item : s.state === 'done' ? FRY_OUT[s.item] : null);
+        const bk = s3.extra.fryer.userData.basket, down = s.state === 'frying';
+        bk.position.y += ((down ? 0.22 : 0.36) - bk.position.y) * Math.min(1, dt * 8);
+        s3.slot.position.y = TOP + bk.position.y + 0.1;
+        if (down && Math.random() < dt * 10) puff(g.position.x + rnd(-0.3, 0.3), TOP + 0.5, g.position.z + rnd(-0.2, 0.2));
         break;
       }
       case 'pan':
@@ -998,7 +1051,7 @@ function updStations(dt) {
         break;
       }
       case 'wok': {
-        setSlot(s3.slot, s.state === 'done' ? 'chaufa' : s.items.length ? 'set|' + s.items.join(',') : null);
+        setSlot(s3.slot, s.state === 'done' ? (s.out || 'chaufa') : s.items.length ? 'set|' + s.items.join(',') : null);
         const toss = s.state === 'cooking';                      // salteado: el wok se mueve y saltan los ingredientes
         s3.extra.wok.rotation.z = toss ? Math.sin(V3.t * 9) * 0.08 : 0;
         s3.slot.position.y = 0.08 + (toss ? Math.abs(Math.sin(V3.t * 9)) * 0.12 : 0);
@@ -1049,6 +1102,7 @@ function stationOverlay(s) {
     case 'pan': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.pan, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'stew': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.stew, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'wok': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.wok, '#f4b83c', 9); if (s.state === 'done') ready(); break;
+    case 'fryer': if (s.state === 'frying') bar(bx, c.y - 5, 56, s.t / T.fry, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'balde': if (s.state === 'filling') bar(bx, c.y - 5, 56, s.t / T.balde, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'blender': {
       const c2 = proj(X3(s.x + s.w / 2), 3.0, Z3(s.y + s.h / 2)), b2 = c2.x - 28;

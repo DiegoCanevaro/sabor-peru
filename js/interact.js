@@ -51,13 +51,20 @@ function interact(s, p, want) {
       }
       return false;
     case 'board':    // hold: se coloca con un toque y se pica manteniendo la acción
-      if (h && s.state === 'empty' && chopOut(h.type)) { s.state = 'chopping'; s.t = 0; s.product = chopOut(h.type); p.held = null; return true; }
+      if (h && s.state === 'empty' && chopOut(h.type, p === helper ? targetDish() : null)) {
+        s.state = 'chopping'; s.t = 0; s.input = h.type; s.product = chopOut(h.type, p === helper ? targetDish() : null); p.held = null; return true;
+      }
       if (!h && s.state === 'done') { p.held = { type: s.product }; s.state = 'empty'; s.product = null; return true; }
       return false;
     case 'bowl':     // hold: 2 papas cocidas + ají -> masa de 2 porciones
       if (h && s.state === 'idle' && bowlAccepts(s.items, h.type)) {
         s.items.push(h.type); p.held = null;
         return true;      // la mezcla empieza al mantener la acción (update.js)
+      }
+      // algo más para una mezcla ya empezada (p. ej. el ají al cebiche): se añade y la mezcla vuelve a empezar
+      if (h && (s.state === 'mashing' || (s.state === 'done' && (s.n || 1) >= (s.portions || 1))) && bowlAccepts(s.items, h.type)) {
+        s.items.push(h.type); p.held = null; s.state = 'idle'; s.t = 0; s.out = null; s.n = 0;
+        return true;
       }
       // con un plato en la mano: se pone una capa directamente desde el bowl (gasta la mitad)
       if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, PART_OF_ITEM[s.out])) {
@@ -76,13 +83,20 @@ function interact(s, p, want) {
       // con las manos vacías y una mezcla que no es ninguna receta: recupera el último ingrediente (deshacer)
       if (!h && s.state === 'idle' && s.items.length && !blendMatch(s.items)) { p.held = { type: s.items.pop() }; return true; }
       return false;
-    case 'wok':      // automática: arranca sola cuando tiene los 4 ingredientes del chaufa
-      if (h && WOK_IN.includes(h.type) && s.state === 'idle' && !s.items.includes(h.type)) {
+    case 'wok':      // automática: arranca sola cuando tiene todo lo de una receta (chaufa o lomo saltado)
+      if (h && s.state === 'idle' && wokAccepts(s.items, h.type)) {
         s.items.push(h.type); p.held = null;
-        if (s.items.length === WOK_IN.length) { s.state = 'cooking'; s.t = 0; }
+        const m = wokMatch(s.items);
+        if (m) { s.state = 'cooking'; s.t = 0; s.out = m.out; }
         return true;
       }
-      if (!h && s.state === 'done') { p.held = { type: 'chaufa' }; s.state = 'idle'; s.items = []; return true; }
+      if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, PART_OF_ITEM[s.out])) { h.parts.push(PART_OF_ITEM[s.out]); s.state = 'idle'; s.items = []; return true; }
+      if (!h && s.state === 'done') { p.held = { type: s.out || 'chaufa' }; s.state = 'idle'; s.items = []; return true; }
+      return false;
+    case 'fryer':    // freidora (automática): papas en bastón -> papas fritas
+      if (h && s.state === 'idle' && FRY_OUT[h.type]) { s.item = h.type; s.state = 'frying'; s.t = 0; p.held = null; return true; }
+      if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, PART_OF_ITEM[FRY_OUT[s.item]])) { h.parts.push(PART_OF_ITEM[FRY_OUT[s.item]]); s.state = 'idle'; s.item = null; return true; }
+      if (!h && s.state === 'done') { p.held = { type: FRY_OUT[s.item] }; s.state = 'idle'; s.item = null; return true; }
       return false;
     case 'pan':      // automática: arranca sola con pollo desmenuzado + ají molido
       if (h && PAN_IN.includes(h.type) && s.state === 'idle' && !s.items.includes(h.type)) {
@@ -92,9 +106,9 @@ function interact(s, p, want) {
       }
       if (!h && s.state === 'done') { p.held = { type: 'guiso' }; s.state = 'idle'; s.items = []; return true; }
       return false;
-    case 'stew':     // olla de barro (automática): arranca sola con pollo crudo + cebolla en cuadros + ají molido
-      if (h && STEW_IN.includes(h.type) && s.state === 'idle' && !s.items.includes(h.type)) {
-        s.items.push(h.type); p.held = null;
+    case 'stew':     // olla del guiso (automática): arranca sola con pollo crudo + cebolla en cuadros + ají molido
+      if (h && STEW_IN.includes(stewKey(h.type)) && s.state === 'idle' && !s.items.includes(stewKey(h.type))) {
+        s.items.push(stewKey(h.type)); p.held = null;
         if (s.items.length === STEW_IN.length) { s.state = 'cooking'; s.t = 0; }
         return true;
       }

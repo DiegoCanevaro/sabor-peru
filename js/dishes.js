@@ -40,7 +40,7 @@ const DISHES = {
     howto: { rows: [{ ings: ['pollo_raw'], tools: ['pot', 'board'] }, { ings: ['aji'], tools: ['blender'] }], merge: 'pan', extras: [{ ings: ['arroz_raw'], tools: ['pot'] }, { ings: ['papa_raw'], tools: ['pot', 'board'] }] },
     recipe: RECIPES.aji
   },
-  // Nivel 1-4: Pollo al ají. Todo a la olla de barro (pollo, cebolla en cuadros y ají amarillo molido en la licuadora);
+  // Nivel 1-4: Pollo al ají. Todo a una olla (pollo, cebolla en cuadros y ají amarillo molido en la licuadora);
   // se sirve con papa sancochada en rodajas (tabla) y arroz. El ají sigue siendo el protagonista del Mundo 1.
   pollo_aji: {
     id: 'pollo_aji', level: 4, name: 'Pollo al Ají', short: 'Pollo al ají', icon: '🍛', course: 'segundo',
@@ -52,6 +52,19 @@ const DISHES = {
     ticket: { slots: [{ id: 'pollo_raw', t: ['stew'] }, { id: 'cebolla_roja', t: ['board', 'stew'] }, { id: 'aji', t: ['blender', 'stew'] }, { id: 'arroz_raw', t: ['pot'] }, { id: 'papa_raw', t: ['pot', 'board'] }] },
     howto: { rows: [{ ings: ['pollo_raw'], tools: [] }, { ings: ['cebolla_roja'], tools: ['board'] }, { ings: ['aji'], tools: ['blender'] }], merge: 'stew', extras: [{ ings: ['arroz_raw'], tools: ['pot'] }, { ings: ['papa_raw'], tools: ['pot', 'board'] }] },
     recipe: RECIPES.pollo_aji
+  },
+  // Nivel 1-5: Lomo saltado. Cortes en la tabla (carne en cubos, papa en bastón, cebolla y tomate en juliana);
+  // la papa va a la freidora y lo demás se saltea en el wok con sillao. Al plato: el saltado, arroz y papas fritas.
+  lomo_saltado: {
+    id: 'lomo_saltado', level: 5, name: 'Lomo Saltado', short: 'Lomo saltado', icon: '🥩', course: 'segundo',
+    kind: 'set', parts: ['arroz', 'papas_fritas', 'saltado'],
+    partName: { arroz: 'Arroz cocido', papas_fritas: 'Papas fritas', saltado: 'Lomo saltado' },
+    patience: 150,
+    uses: ['arroz_raw', 'arroz_cooked', 'papa_raw', 'papa_baston', 'papas_fritas', 'carne', 'carne_cubos', 'tomate', 'tomate_juliana', 'cebolla_roja', 'cebolla_juliana', 'sillao', 'saltado'],
+    blend: null,
+    ticket: { slots: [{ id: 'carne', t: ['board', 'wok'] }, { id: 'tomate', t: ['board', 'wok'] }, { id: 'cebolla_roja', t: ['board', 'wok'] }, { id: 'sillao', t: ['wok'] }, { id: 'arroz_raw', t: ['pot'] }, { id: 'papa_raw', t: ['board', 'fryer'] }] },
+    howto: { rows: [{ ings: ['carne'], tools: ['board'] }, { ings: ['tomate'], tools: ['board'] }, { ings: ['cebolla_roja'], tools: ['board'] }, { ings: ['sillao'], tools: [] }], merge: 'wok', extras: [{ ings: ['arroz_raw'], tools: ['pot'] }, { ings: ['papa_raw'], tools: ['board', 'fryer'] }] },
+    recipe: RECIPES.lomo_saltado
   },
   // Kevin: comida de la calle (niveles independientes de los mundos)
   // Cebiche de pota carretillero: la pota (en cuadros) y el camote ya vienen listos. Se pide con o sin ají.

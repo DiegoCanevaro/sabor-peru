@@ -25,7 +25,7 @@ function drawItem(it, x, y, size) {
     if (LABELED.includes(it.type)) label(NAME[it.type] + (it.n > 1 ? ' ×' + it.n : ''), x, y + size * .62, '#fff', 9);
   }
 }
-const COL = { stew: '#9a4a24', cups: '#7aa7c9', balde: '#6a2c8a', wok: '#3a2a2a', crate: '#8a5a2b', plates: '#9aa5ad', trash: '#4a4f55', pot: '#5a6470', board: '#b98a4f', bowl: '#c98a4a', blender: '#6b4f7a', pan: '#4a4a52', table: '#a07a45', counter: '#7a3b2b' };
+const COL = { stew: '#5a6470', fryer: '#8a8f96', cups: '#7aa7c9', balde: '#6a2c8a', wok: '#3a2a2a', crate: '#8a5a2b', plates: '#9aa5ad', trash: '#4a4f55', pot: '#5a6470', board: '#b98a4f', bowl: '#c98a4a', blender: '#6b4f7a', pan: '#4a4a52', table: '#a07a45', counter: '#7a3b2b' };
 
 function drawStation(s) {
   const cx = s.x + s.w / 2, cy = s.y + s.h / 2;
@@ -91,7 +91,12 @@ function drawStation(s) {
       base('🥘');
       s.items.forEach((it, i) => emoji(ICON[it], s.x + 8 + i * 12, s.y + 14, 11));
       if (s.state === 'cooking') prog(s.t / T.wok);
-      if (s.state === 'done') { emoji('🍛', cx + 20, cy + 2, 20); label('¡listo!', cx, s.y + 12, '#8fe39a', 11); }
+      if (s.state === 'done') { emoji(ICON[s.out] || '🍛', cx + 20, cy + 2, 20); label('¡listo!', cx, s.y + 12, '#8fe39a', 11); }
+      break;
+    case 'fryer':
+      base('🍟');
+      if (s.state === 'frying') { emoji(ICON[s.item], cx + 20, cy + 2, 14); prog(s.t / T.fry); }
+      if (s.state === 'done') { emoji('🍟', cx + 20, cy + 2, 20); label('¡listas!', cx, s.y + 12, '#8fe39a', 11); }
       break;
     case 'counter':
       label(s.label, cx, s.y + s.h - 8, '#e8c9b8', 9);

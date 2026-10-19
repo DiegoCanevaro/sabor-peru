@@ -22,7 +22,8 @@ function stationExtra(spec) {
     case 'bowl': return { state: 'idle', t: 0, items: [], label: 'Bowl' };
     case 'pan': return { state: 'idle', t: 0, items: [], label: 'Sartén' };
     case 'wok': return { state: 'idle', t: 0, items: [], label: 'Wok' };
-    case 'stew': return { state: 'idle', t: 0, items: [], label: 'Olla de barro' };      // pollo al ají
+    case 'stew': return { state: 'idle', t: 0, items: [], label: 'Olla' };      // olla del guiso (pollo al ají)
+    case 'fryer': return { state: 'idle', t: 0, item: null, label: 'Freidora' };   // papas fritas
     case 'balde': return { state: 'idle', t: 0, label: 'Balde chichero' };      // llena vasos de chicha morada
     case 'cups': return { label: 'Vasos' };
     case 'blender': return { state: 'idle', t: 0, items: [], out: null, label: 'Licuadora' };
