@@ -4,7 +4,7 @@
 (function () {
   const hud = document.getElementById('hud'), wrap = document.getElementById('gameWrap');
   const btn = document.createElement('button');
-  btn.id = 'pauseBtn'; btn.className = 'small'; btn.textContent = '⏸ Pausa (P)';
+  btn.id = 'pauseBtn'; btn.className = 'small'; btn.textContent = '⏸ Pausa' + keyHint('P');
   hud.insertBefore(btn, document.getElementById('botBtn'));
 
   const ov = document.createElement('div');
@@ -20,7 +20,7 @@
     paused = v;
     for (const k in keys) keys[k] = false;          // que nadie quede caminando o picando al volver
     ov.classList.toggle('show', paused);
-    btn.textContent = paused ? '▶ Seguir (P)' : '⏸ Pausa (P)';
+    btn.textContent = paused ? '▶ Seguir' + keyHint('P') : '⏸ Pausa' + keyHint('P');
   }
   window.setPaused = setPaused;
   btn.addEventListener('click', () => setPaused(!paused));

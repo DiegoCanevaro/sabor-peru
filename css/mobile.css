@@ -1,12 +1,22 @@
-/* ================= MÓVIL (js/mobile.js añade body.mobile y body.portrait) =================
-   - Siempre en horizontal: si el teléfono está en vertical, toda la página se gira 90° por CSS.
+/* ================= MÓVIL (js/mobile.js añade body.mobile, body.inGame y body.portrait) =================
+   - Siempre en horizontal: en vertical un aviso tapa la página hasta girar el teléfono.
    - La cocina ocupa toda la pantalla; el HUD y los tickets van encima, semitransparentes.
-   - Controles táctiles semitransparentes flotando sobre la cocina. */
-body.mobile { overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; min-height: 0; }
-body.mobile.portrait {
-  position: fixed; top: 0; left: 0; width: var(--vw); height: var(--vh);
-  transform-origin: top left; transform: translateX(100vw) rotate(90deg);
+   - Joystick virtual y botón de acción semitransparentes flotando sobre la cocina. */
+body.mobile.inGame { overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; min-height: 0; }
+#rotateBlock { display: none; }
+body.mobile.portrait #rotateBlock {
+  display: flex; position: fixed; inset: 0; z-index: 1000; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  background: #2b180b; color: #f7e9d0; text-align: center; padding: 24px; touch-action: none;
 }
+body.mobile.portrait { overflow: hidden; }
+#rotateBlock h2 { font-family: Kitchen, sans-serif; font-size: 34px; margin: 18px 0 0; color: #f4b83c; }
+#rotateBlock p { font-size: 18px; margin: 0; opacity: .85; }
+#rotateBlock .phone {
+  width: 70px; height: 120px; border: 6px solid #f7e9d0; border-radius: 14px; position: relative;
+  animation: girar 2.2s ease-in-out infinite;
+}
+#rotateBlock .phone::after { content: ''; position: absolute; left: 50%; bottom: 6px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: #f7e9d0; }
+@keyframes girar { 0%, 25% { transform: rotate(0); } 55%, 85% { transform: rotate(-90deg); } 100% { transform: rotate(0); } }
 body.mobile #gameWrap {
   position: fixed; left: 50%; top: 50%; width: 900px; max-width: none;
   transform: translate(-50%, -50%) scale(var(--s, 1)); transform-origin: center;
@@ -36,11 +46,25 @@ body.mobile #recipeCard { font-size: 17px; max-width: 700px; }
 body.mobile #touchControls {
   display: block; position: fixed; inset: 0; width: auto; max-width: none; padding: 0; z-index: 20; pointer-events: none;
 }
-body.mobile #dpad {
-  position: absolute; left: max(16px, env(safe-area-inset-left)); bottom: 16px; pointer-events: auto;
-  grid-template-columns: repeat(3, 58px); grid-template-rows: repeat(3, 58px); gap: 4px;
+/* joystick: zona invisible en la mitad izquierda; el círculo aparece donde se apoya el pulgar */
+body.mobile #joyZone { position: absolute; left: 0; top: 0; bottom: 0; width: 50%; pointer-events: auto; touch-action: none; }
+body.mobile #joyBase {
+  position: fixed; left: max(96px, calc(env(safe-area-inset-left) + 86px)); top: calc(100% - 100px);
+  width: 128px; height: 128px; margin: -64px 0 0 -64px; border-radius: 50%;
+  background: rgba(255, 255, 255, .12); border: 2px solid rgba(255, 255, 255, .35);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); opacity: .7; transition: opacity .15s;
 }
-body.mobile #dpad button, body.mobile #actBtn {
+body.mobile #joyBase.on { opacity: 1; transition: none; }
+body.mobile #joyKnob {
+  position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%;
+  background: rgba(255, 255, 255, .45); border: 2px solid rgba(255, 255, 255, .7); box-shadow: 0 2px 6px rgba(0, 0, 0, .35);
+}
+body.mobile #actBtn {
+  background: rgba(255, 255, 255, .16); color: rgba(255, 255, 255, .85); border: 2px solid rgba(255, 255, 255, .38);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+  transition: background .08s, transform .08s;
+}
+body.mobile #actBtn {
   background: rgba(255, 255, 255, .16); color: rgba(255, 255, 255, .85); border: 2px solid rgba(255, 255, 255, .38);
   -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
   transition: background .08s, transform .08s;
@@ -50,7 +74,12 @@ body.mobile #actBtn {
   position: absolute; right: max(22px, env(safe-area-inset-right)); bottom: 26px; pointer-events: auto;
   width: 104px; height: 104px; border-radius: 52px; font-size: 17px; background: rgba(244, 184, 60, .28); border-color: rgba(255, 230, 170, .6);
 }
-body.mobile #dpad button.pressed, body.mobile #actBtn.pressed { background: rgba(255, 255, 255, .42); transform: scale(.94); }
+body.mobile #actBtn.pressed { transform: scale(.94); }
 body.mobile #actBtn.pressed { background: rgba(244, 184, 60, .6); }
 /* mientras se ve la pantalla de inicio o de fin, los controles no estorban */
 body.mobile.menuOpen #touchControls { display: none; }
+/* en el móvil no hay teclado: fuera la guía de teclas */
+body.mobile .howtoKeys { display: none; }
+/* pizarra de receta: cabe entera junto con los botones */
+body.mobile .howtoOverlay { padding-top: 8px; gap: 8px; }
+body.mobile .howtoOverlay canvas#howto { width: auto !important; max-width: 100%; height: calc(100% - 96px) !important; min-height: 0; }

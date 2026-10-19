@@ -29,10 +29,10 @@ function buildTickets() {
     const D = DISHES[ORDERS[i]];
     const d = document.createElement('div');
     d.className = 'ticket upcoming';
-    d.innerHTML = '<div class="card"><div class="tbar"><i></i></div><div class="dish">' + (typeof dishIcon === 'function' && DISH_ICONS[D.id] ? '' : D.icon) + '</div><div class="name">' + CUSTOMERS[i] + ' · ' + D.short + '</div><div class="course ' + D.course + '">' + ({ entrada: 'Entrada', segundo: 'Segundo', plato: 'Plato', bebida: 'Bebida' }[D.course] || '') + '</div></div>' +
+    d.innerHTML = '<div class="card"><div class="tbar"><i></i></div><div class="dish">' + (typeof dishIcon === 'function' && hasDishIcon(D.id) ? '' : D.icon) + '</div><div class="name">' + CUSTOMERS[i] + ' · ' + D.short + '</div><div class="course ' + D.course + '">' + ({ entrada: 'Entrada', segundo: 'Segundo', plato: 'Plato', bebida: 'Bebida' }[D.course] || '') + '</div></div>' +
       '';
     d.appendChild(ticketSlots(D));
-    if (typeof dishIcon === 'function' && DISH_ICONS[D.id]) d.querySelector('.dish').appendChild(dishIcon(D.id, 44));
+    if (typeof dishIcon === 'function' && hasDishIcon(D.id)) d.querySelector('.dish').appendChild(dishIcon(D.id, 44));
     box.appendChild(d);
     tickEls.push({ el: d, bar: d.querySelector('.tbar i'), cls: '', w: -1, col: '' });
   }
@@ -56,6 +56,7 @@ function updateTickets() {
 // Al terminar solo se ofrece la receta real del plato del nivel, oculta tras un botón.
 function endGame() {
   gameOver = true;
+  document.body.classList.remove('playing');
   document.getElementById('overlayTitle').textContent = served > 0 ? '¡' + LEVEL.title.split(':')[0] + ' completado! 🎉' : 'Fin del turno';
   const record = served > 0 && saveBest(LEVEL.id, score);
   document.getElementById('overlaySubtitle').textContent = 'Puntaje final: ' + score + ' ⭐ — ' + served + ' de ' + TOTAL_CUSTOMERS + ' clientes atendidos' + (record ? ' · ¡Nuevo récord!' : '');

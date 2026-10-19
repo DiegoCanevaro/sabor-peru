@@ -53,7 +53,9 @@ if (LEVEL.layout === 'calle') {
   cart(8, 1, 'down', pad(heat.concat(LEVEL.drinks || []), 4), 'blue');
   const cut = prep.filter(sp => sp !== 'bowl');
   cart(1, 6, 'up', cut, 'blue');
-  st.push(cellSt('counter', 'counter', 1 + cut.length, 6, 'up', { label: 'MOSTRADOR' }, 1, 5 - cut.length));
+  // mostrador de 2 mesas pegado al cruce; si sobra espacio entre las tablas y el mostrador, va una mesa de apoyo
+  st.push(cellSt('counter', 'counter', 4, 6, 'up', { label: 'MOSTRADOR' }, 1, 2));
+  for (let col = 1 + cut.length; col < 4; col++) place('table', col, 6, 'up');
   cart(8, 6, 'up', (prep.includes('bowl') ? ['bowl'] : []).concat(['plates', 'plates', 'trash']), 'blue');
 } else {
 {
@@ -69,8 +71,8 @@ if (LEVEL.layout === 'calle') {
   const prep = specs.filter(sp => !HEAT.includes(sp));
   const c0 = Math.round((COLS - prep.length) / 2);
   prep.forEach((sp, i) => put(uid(sp), sp, c0 + i, ISLAND_ROW, 'down', stationExtra(sp)));
-  // pared derecha: bandeja de salida (3 celdas) y basura
-  put('counter', 'counter', COLS - 1, 2, 'left', { label: 'MOSTRADOR' }, 3);
+  // pared derecha: bandeja de salida (2 celdas) y basura
+  put('counter', 'counter', COLS - 1, 2, 'left', { label: 'MOSTRADOR' }, 2);
   put('trash', 'trash', COLS - 1, ROWS - 2, 'left', { label: 'Basura' });
   // el resto del perímetro y de la isla: mesas estándar (las esquinas no se alcanzan, son solo decoración en 3D)
   let mn = 0;

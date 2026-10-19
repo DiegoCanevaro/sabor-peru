@@ -294,7 +294,7 @@ function setBot(v) {
   bot = v;
   helper = bot ? { x: 450, y: 400, held: null, timer: 0, idle: 0, trashNext: false, work: null } : null;
   const b = document.getElementById('botBtn');
-  b.textContent = '🤖 Ayudante: ' + (bot ? 'ON' : 'OFF') + ' (B)';
+  b.textContent = '🤖 Ayudante: ' + (bot ? 'ON' : 'OFF') + keyHint('B');
   b.classList.toggle('on', bot);
   if (started) showToast(bot ? 'Tu ayudante entró a la cocina' : 'El ayudante salió de la cocina');
 }

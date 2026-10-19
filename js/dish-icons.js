@@ -106,7 +106,16 @@ function dishIcon(id, size) {
   const cnv = document.createElement('canvas'), dpr = Math.min(2, window.devicePixelRatio || 1);
   cnv.width = cnv.height = size * dpr; cnv.style.width = cnv.style.height = size + 'px'; cnv.className = 'dishIcon';
   const c = cnv.getContext('2d');
+  // si hay ilustración del plato (js/dish-images.js) se usa esa; si todavía está cargando, se dibuja al terminar
+  if (typeof DISH_IMAGES !== 'undefined' && DISH_IMAGES[id]) {
+    const paint = im => { c.clearRect(0, 0, cnv.width, cnv.height); c.drawImage(im, 0, 0, cnv.width, cnv.height); };
+    if (DISH_IMG[id]) paint(DISH_IMG[id]);
+    else { const im = new Image(); im.onload = () => paint(im); im.src = DISH_IMAGES[id]; }
+    return cnv;
+  }
   c.scale(size * dpr / 220, size * dpr / 220); c.translate(110, 96);
   if (DISH_ICONS[id]) DISH_ICONS[id](c);
   return cnv;
 }
+// ¿hay icono para este plato (ilustración o dibujo)?
+const hasDishIcon = id => !!((typeof DISH_IMAGES !== 'undefined' && DISH_IMAGES[id]) || DISH_ICONS[id]);

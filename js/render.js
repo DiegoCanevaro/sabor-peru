@@ -96,7 +96,7 @@ function drawStation(s) {
 function drawCustomers() {      // clientes en el mostrador: un puesto por cliente (cara, plato que pide y barra de paciencia)
   for (const c of customers) {
     if (c.state === 'queued' || (c.state !== 'waiting' && clock - c.doneAt > 1.5)) continue;
-    const out = byKind('counter'), wide = out.w > out.h, k = c.idx % 3;      // mostrador horizontal (calle): clientes en fila
+    const out = byKind('counter'), wide = out.w > out.h, k = c.idx % 2;      // mostrador horizontal (calle): clientes en fila
     const cx = wide ? out.x + 32 + k * 64 : out.x + out.w / 2, y0 = wide ? out.y + 2 : out.y + 4 + k * 62, pr = c.patience / c.max;
     const face = c.state === 'happy' ? '😋' : c.state === 'angry' ? '😠' : pr > .4 ? '🙂' : pr > .15 ? '😐' : '😟';
     label(c.name.replace('Doña ', 'D. ').replace('Don ', 'D. '), cx, y0 + 7, '#f4e4c1', 9);

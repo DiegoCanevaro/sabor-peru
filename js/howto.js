@@ -126,5 +126,5 @@
     });
   }
   const fonts = document.fonts && document.fonts.load ? document.fonts.load('40px Kitchen') : Promise.resolve();
-  Promise.all([fonts, typeof ICONS_READY !== 'undefined' ? ICONS_READY : null]).then(draw, draw);
+  Promise.all([fonts, typeof ICONS_READY !== 'undefined' ? ICONS_READY : null, typeof DISH_READY !== 'undefined' ? DISH_READY : null]).then(draw, draw);
 })();

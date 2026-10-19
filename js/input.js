@@ -9,12 +9,7 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => { if (KEYMAP[e.key]) keys[KEYMAP[e.key]] = false; if (isAct(e.key)) keys.act = false; });
 window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
-document.querySelectorAll('#dpad button').forEach(b => {
-  const k = b.dataset.k;
-  const on = e => { keys[k] = true; e.preventDefault(); }, off = e => { keys[k] = false; e.preventDefault(); };
-  b.addEventListener('touchstart', on); b.addEventListener('touchend', off); b.addEventListener('touchcancel', off);
-  b.addEventListener('mousedown', on); b.addEventListener('mouseup', off); b.addEventListener('mouseleave', off);
-});
+// el joystick táctil está en js/mobile.js
 const actBtn = document.getElementById('actBtn');
 const actOn = e => { if (started && !gameOver && !paused) { keys.act = true; manualInteract(); } e.preventDefault(); };
 const actOff = e => { keys.act = false; e.preventDefault(); };
@@ -22,6 +17,7 @@ actBtn.addEventListener('touchstart', actOn); actBtn.addEventListener('touchend'
 actBtn.addEventListener('mousedown', actOn); actBtn.addEventListener('mouseup', actOff); actBtn.addEventListener('mouseleave', actOff);
 document.getElementById('botBtn').addEventListener('click', () => { if (started) setBot(!bot); });
 document.getElementById('startBtn').addEventListener('click', () => {
+  document.body.classList.add('playing');      // recién ahora aparecen Pausa y Ayudante
   document.getElementById('startOverlay').classList.remove('show');
   startRound();
 });

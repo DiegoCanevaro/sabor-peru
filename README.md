@@ -7,7 +7,7 @@ Juego de cocina peruana estilo Overcooked que enseña recetas reales. Se juega e
 - **Mover:** WASD o flechas
 - **Interactuar:** Espacio o E (mantener presionado en la tabla y el bowl)
 - **Ayudante (IA):** B
-- **Móvil:** se juega en horizontal con los controles táctiles semitransparentes
+- **Móvil:** solo en horizontal (en vertical aparece el aviso de girar el teléfono). Joystick virtual en la mitad izquierda (el chef camina en cualquier dirección) y botón ACCIÓN a la derecha
 
 ## Niveles
 
@@ -31,10 +31,10 @@ La pantalla de niveles abre las versiones 3D (`nivelX-Y-3d.html`, `kevin-*-3d.ht
 - `js/helper.js`: el ayudante controlado por IA
 - `js/render.js`: dibujo 2D · `js/3d/`: dibujo 3D con Three.js (`street3d.js`: escenario de la calle de los Kevin)
 - `js/pause.js`: pausa
-- `js/mobile.js`, `css/mobile.css`: vista horizontal forzada y controles táctiles
+- `js/mobile.js`, `css/mobile.css`: horizontal obligatorio, joystick virtual y botón de acción
 - `js/icons.js`, `js/ing-images.js`: iconos de ingredientes y herramientas (etiquetas de cajas, tickets y pizarra). Las ilustraciones originales están en `assets/ingredientes/`
 - `js/howto.js`: pizarra con la receta en dibujo antes de jugar
-- `js/dish-icons.js`, `js/3d/labels3d.js`: ilustraciones de platos y etiquetas 3D de las cajas
+- `js/dish-images.js`, `js/dish-icons.js`, `js/3d/labels3d.js`: ilustraciones de los platos terminados (originales en `assets/platos/`) y etiquetas 3D de las cajas
 
 ## Créditos
 

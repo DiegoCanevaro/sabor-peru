@@ -10,8 +10,11 @@ function workedStations() {
 function update(dt) {
   if (!started || gameOver || paused) return;
   clock += dt;
-  const dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
-  if (dx || dy) { const l = Math.hypot(dx, dy); tryMove(player, dx / l * SPEED * dt, dy / l * SPEED * dt); }
+  let dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0), force = 1;
+  if (stick.active && Math.hypot(stick.x, stick.y) > 0.18) {       // joystick: cualquier dirección y velocidad según cuánto se empuja
+    dx = stick.x; dy = stick.y; force = Math.min(1, Math.hypot(dx, dy) * 1.25);
+  }
+  if (dx || dy) { const l = Math.hypot(dx, dy); tryMove(player, dx / l * SPEED * force * dt, dy / l * SPEED * force * dt); }
   trackPlayerHeld(dt);
   if (helper) botStep(dt);
 
