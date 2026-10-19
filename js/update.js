@@ -26,7 +26,10 @@ function update(dt) {
       case 'wok': if (s.state === 'cooking') { s.t += dt; if (s.t >= T.wok) s.state = 'done'; } break;
       // mantener presionado: solo avanzan mientras alguien las trabaja
       case 'board': if (s.state === 'chopping' && s.worked) { s.t += dt; if (s.t >= T.board) s.state = 'done'; } break;
-      case 'bowl': if (s.state === 'mashing' && s.worked) { s.t += dt; if (s.t >= T.bowl) { s.state = 'done'; s.n = s.portions || 1; } } break;
+      case 'balde': if (s.state === 'filling') { s.t += dt; if (s.t >= T.balde) s.state = 'done'; } break;
+      case 'bowl':
+        if (s.state === 'idle' && s.worked) { const m = bowlMatch(s.items); if (m) { s.state = 'mashing'; s.t = 0; s.out = m.out; s.portions = m.n; } }
+        if (s.state === 'mashing' && s.worked) { s.t += dt; if (s.t >= T.bowl) { s.state = 'done'; s.n = s.portions || 1; } } break;
       // automática: arranca sola cuando el contenido es una receta (el contenido decide qué sale)
       case 'blender': {
         if (s.state === 'idle') {

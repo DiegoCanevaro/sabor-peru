@@ -3,6 +3,7 @@
 // Los pedidos llegan escalonados. Como en un restaurante real, primero salen las entradas y después los segundos:
 // las entradas llegan antes y se entregan en cualquier orden; un segundo solo se entrega cuando no queda ninguna entrada pendiente.
 // Para probar: añade ?pedidos=causa,huancaina,aji a la dirección de la página.
+if (LEVEL.customers) TOTAL_CUSTOMERS = LEVEL.customers;
 const ARRIVAL = LEVEL.arrival || 30;   // segundos entre la llegada de un pedido y el siguiente
 const ORDERS = [];
 function makeOrders() {
@@ -55,7 +56,7 @@ const plateEarly = plate => !plateDone(plate) && waitingList().some(c => isDone(
 const fitsOpen = plate => openDishes().some(D => fits(D, plate));
 function canPlace(plate, part) { return openDishes().some(D => fits(D, plate) && canAdd(D, plate, part)); }
 // entrega: el plato sirve al primer cliente servible cuyo pedido completa (entradas en orden libre, segundos al final)
-function serve(plate) {
+function serve(plate, noPlate) {      // noPlate: lo entregado no es un plato (p. ej. un vaso de chicha), no vuelve a la mesa
   const list = servableList();
   // primero a quien ya está esperando; si nadie espera ese plato, se adelanta un pedido que aún no llega
   const c = list.find(c => c.state === 'waiting' && isDone(c.dish, plate)) || list.find(c => isDone(c.dish, plate));
@@ -63,7 +64,7 @@ function serve(plate) {
   const bonus = c.state === 'queued' ? 50 : Math.round(c.patience / c.max * 50);
   score += 100 + bonus; served++;
   c.state = 'happy'; c.doneAt = clock; lastResolve = clock;
-  plateReturns.push(clock + PLATE_RETURN);       // el plato volverá limpio
+  if (!noPlate) plateReturns.push(clock + PLATE_RETURN);       // el plato volverá limpio
   showToast('+' + (100 + bonus) + ' ⭐ ¡Buen provecho!');
   return true;
 }

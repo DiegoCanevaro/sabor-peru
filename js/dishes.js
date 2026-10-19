@@ -36,15 +36,37 @@ const DISHES = {
     recipe: RECIPES.aji
   },
   // Kevin: comida de la calle (niveles independientes de los mundos)
+  // Cebiche de pota carretillero: la pota (en cuadros) y el camote ya vienen listos. Se pide con o sin ají.
   cebiche_pota: {
-    id: 'cebiche_pota', level: 0, name: 'Cebiche de Pota', short: 'Cebiche', icon: '🦑', course: 'segundo',
-    kind: 'set', parts: ['cebiche', 'camote'],
-    partName: { cebiche: 'Cebiche de pota', camote: 'Camote' },
-    patience: 115,
-    uses: ['pota', 'pota_cortada', 'limon', 'cebolla_roja', 'cebolla_pluma', 'aji_limo', 'aji_limo_picado', 'camote', 'camote_cocido', 'cebiche'],
+    id: 'cebiche_pota', level: 0, name: 'Cebiche de Pota con ají', short: 'Con ají', icon: '🦑', course: 'plato',
+    kind: 'set', parts: ['cebiche_aji', 'camote'],
+    partName: { cebiche_aji: 'Cebiche con ají', camote: 'Camote' },
+    patience: 110,
+    uses: ['pota_cortada', 'limon', 'cebolla_roja', 'cebolla_cuadros', 'aji_limo', 'aji_limo_picado', 'camote_cocido', 'cebiche_aji'],
     blend: null,
-    ticket: { slots: [{ g: ['🦑', '🧅', '🌶️', '🍋'], t: '🥣' }, { i: '🍠', t: ['🍲'] }] },
+    ticket: { slots: [{ g: ['🦑', '🧅', '🌶️', '🍋'], t: '🥣' }, { i: '🍠', t: [] }] },
     recipe: RECIPES.cebiche_pota
+  },
+  cebiche_sin: {
+    id: 'cebiche_sin', level: 0, name: 'Cebiche de Pota sin ají', short: 'Sin ají', icon: '🦑', course: 'plato',
+    kind: 'set', parts: ['cebiche', 'camote'],
+    partName: { cebiche: 'Cebiche sin ají', camote: 'Camote' },
+    patience: 105,
+    uses: ['pota_cortada', 'limon', 'cebolla_roja', 'cebolla_cuadros', 'camote_cocido', 'cebiche'],
+    blend: null,
+    ticket: { slots: [{ g: ['🦑', '🧅', '🍋'], t: '🥣' }, { i: '🍠', t: [] }] },
+    recipe: RECIPES.cebiche_pota
+  },
+  // bebida: se entrega en su vaso, sin plato
+  chicha: {
+    id: 'chicha', level: 0, name: 'Chicha Morada', short: 'Chicha', icon: '🍇', course: 'bebida',
+    kind: 'set', parts: ['chicha'],
+    partName: { chicha: 'Vaso de chicha' },
+    patience: 80,
+    uses: ['vaso', 'chicha'],
+    blend: null,
+    ticket: { slots: [{ i: '🥤', t: ['🪣'] }] },
+    recipe: ''
   },
   // Mundo 2 (chifa)
   chaufa: {

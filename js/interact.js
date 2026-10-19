@@ -57,9 +57,7 @@ function interact(s, p, want) {
     case 'bowl':     // hold: 2 papas cocidas + ají -> masa de 2 porciones
       if (h && s.state === 'idle' && bowlAccepts(s.items, h.type)) {
         s.items.push(h.type); p.held = null;
-        const m = bowlMatch(s.items);
-        if (m) { s.state = 'mashing'; s.t = 0; s.out = m.out; s.portions = m.n; }
-        return true;
+        return true;      // la mezcla empieza al mantener la acción (update.js)
       }
       // con un plato en la mano: se pone una capa directamente desde el bowl (gasta la mitad)
       if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, PART_OF_ITEM[s.out])) {
@@ -94,7 +92,14 @@ function interact(s, p, want) {
       }
       if (!h && s.state === 'done') { p.held = { type: 'guiso' }; s.state = 'idle'; s.items = []; return true; }
       return false;
+    case 'cups':     // vasos de plástico vacíos
+      if (!h) { p.held = { type: 'vaso' }; return true; } return false;
+    case 'balde':    // automático: se deja el vaso bajo el caño y se llena solo
+      if (h && h.type === 'vaso' && s.state === 'idle') { s.state = 'filling'; s.t = 0; p.held = null; return true; }
+      if (!h && s.state === 'done') { p.held = { type: 'chicha' }; s.state = 'idle'; return true; }
+      return false;
     case 'counter':
+      if (h && h.type === 'chicha' && serve({ type: 'plate', parts: ['chicha'] }, true)) { p.held = null; return true; }   // la chicha se entrega en su vaso
       if (h && h.type === 'plate' && serve(h)) { p.held = null; return true; }
       return false;
   }
@@ -104,7 +109,7 @@ function interact(s, p, want) {
 // ¿Hay algo que "mantener" en esta estación ahora mismo?
 function workable(s) {
   if (s.kind === 'board') return s.state === 'chopping';
-  if (s.kind === 'bowl') return s.state === 'mashing';
+  if (s.kind === 'bowl') return s.state === 'mashing' || (s.state === 'idle' && !!bowlMatch(s.items));
   if (s.kind === 'blender') return s.state === 'blending' || (s.state === 'idle' && !!blendMatch(s.items));
   return false;
 }

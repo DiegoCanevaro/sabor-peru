@@ -76,17 +76,31 @@ DISH_ICONS.chaufa = function (c) {
   [[-16, -6], [18, 4], [-36, 22], [40, -2], [4, 30]].forEach(([x, y]) => { c.beginPath(); c.arc(x, y, 4.5, 0, 7); c.stroke(); });
   diShine(c, -22, -14, 18, 6, -0.3, 0.45);
 };
-// Cebiche de pota: hoja de lechuga, cuadritos de pota, cebolla roja, ají limo y camote al costado
-DISH_ICONS.cebiche_pota = function (c) {
+// Cebiche de pota carretillero: hoja de lechuga, cuadritos de pota, cebolla roja en cuadros, culantro, camote al costado
+// y, si es con ají, el ají limo picado
+function cebicheIcon(c, aji) {
   diPlate(c);
   diShape(c, '#7cbf45', c => { c.moveTo(-72, 34); c.bezierCurveTo(-76, -4, -30, -14, 0, -8); c.bezierCurveTo(30, -16, 50, 0, 40, 30); c.bezierCurveTo(10, 52, -54, 54, -72, 34); c.closePath(); }, 5);
   diShape(c, '#f2ecdf', c => c.ellipse(-16, 22, 50, 20, 0, 0, 7), 5);
   [[-44, 12], [-22, 4], [0, 10], [-34, 26], [-10, 24], [12, 22], [-26, 16]].forEach(([x, y]) => diShape(c, '#fbf7f0', c => c.rect(x - 8, y - 7, 16, 13), 3.5));
-  c.strokeStyle = '#a8376b'; c.lineWidth = 5; c.lineCap = 'round';
-  [[-36, 0, 0.3], [-4, -2, -0.2], [-20, 30, 0.1], [8, 30, 0.6]].forEach(([x, y, r]) => { c.beginPath(); c.ellipse(x, y, 13, 6, r, Math.PI * 1.1, Math.PI * 1.9); c.stroke(); });
-  [[-28, 12, '#d9271c'], [-6, 14, '#4f9a32'], [-46, 22, '#4f9a32'], [4, 2, '#d9271c']].forEach(([x, y, col]) => { c.fillStyle = col; c.fillRect(x - 3, y - 3, 6, 6); });
+  [[-36, 0], [-4, -2], [-18, 30], [8, 30], [-50, 22]].forEach(([x, y]) => diShape(c, '#a8376b', c => c.rect(x - 5, y - 5, 10, 9), 3));
+  const bits = aji ? [[-28, 12, '#d9271c'], [-6, 14, '#4f9a32'], [-46, 22, '#4f9a32'], [4, 2, '#d9271c'], [-14, 34, '#d9271c'], [16, 14, '#d9271c']] : [[-6, 14, '#4f9a32'], [-46, 22, '#4f9a32'], [14, 30, '#4f9a32']];
+  bits.forEach(([x, y, col]) => { c.fillStyle = col; c.fillRect(x - 3, y - 3, 6, 6); });
   diShine(c, -30, 6, 16, 4, -0.1, 0.4);
   [[52, 26], [62, 12]].forEach(([x, y]) => { diShape(c, '#8a3a4a', c => c.ellipse(x, y, 22, 14, 0.2, 0, 7), 5); diShape(c, '#f08a2a', c => c.ellipse(x, y - 2, 17, 10, 0.2, 0, 7), 3); });
+  if (aji) { c.save(); c.translate(-62, -14); c.rotate(-0.6); diShape(c, '#d9271c', c => { c.moveTo(0, -18); c.bezierCurveTo(8, -14, 8, 6, 1, 20); c.bezierCurveTo(-6, 6, -8, -14, 0, -18); c.closePath(); }, 4); c.restore(); }
+}
+DISH_ICONS.cebiche_pota = c => cebicheIcon(c, true);
+DISH_ICONS.cebiche_sin = c => cebicheIcon(c, false);
+// Chicha morada en vaso de plástico, con cañita
+DISH_ICONS.chicha = function (c) {
+  c.fillStyle = 'rgba(0,0,0,.18)'; c.beginPath(); c.ellipse(4, 66, 46, 14, 0, 0, 7); c.fill();
+  diShape(c, '#4a1342', c => { c.moveTo(-34, -30); c.lineTo(34, -30); c.lineTo(26, 60); c.lineTo(-26, 60); c.closePath(); });
+  c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.moveTo(-40, -58); c.lineTo(40, -58); c.lineTo(34, -30); c.lineTo(-34, -30); c.closePath(); c.fill();
+  diShape(c, null, c => { c.moveTo(-40, -58); c.lineTo(40, -58); c.lineTo(28, 62); c.lineTo(-28, 62); c.closePath(); });
+  diShape(c, '#f4f4f4', c => { c.moveTo(6, -30); c.lineTo(22, -86); c.lineTo(30, -84); c.lineTo(14, -30); c.closePath(); }, 4);
+  diShine(c, -18, 6, 5, 26, 0.05, 0.35);
+  c.fillStyle = '#7a2c6e'; c.beginPath(); c.ellipse(0, -30, 34, 6, 0, 0, 7); c.fill();
 };
 function dishIcon(id, size) {
   const cnv = document.createElement('canvas'), dpr = Math.min(2, window.devicePixelRatio || 1);

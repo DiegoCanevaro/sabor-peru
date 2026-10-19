@@ -10,8 +10,8 @@ const CS = 64, GX = 26, GY = 24, COLS = 13, ROWS = 8, ISLAND_ROW = 3;
 const cellX = c => GX + c * CS, cellY = r => GY + r * CS;
 const STAND = 32;     // a qué distancia del borde se para el ayudante para usar una estación
 // face = hacia dónde queda la zona de paso (desde ahí se usa la estación)
-function cellSt(id, kind, c, r, face, extra, cellsTall) {
-  const x = cellX(c), y = cellY(r), w = CS, h = CS * (cellsTall || 1), cx = x + w / 2, cy = y + h / 2;
+function cellSt(id, kind, c, r, face, extra, cellsTall, cellsWide) {
+  const x = cellX(c), y = cellY(r), w = CS * (cellsWide || 1), h = CS * (cellsTall || 1), cx = x + w / 2, cy = y + h / 2;
   const sp = { down: [cx, y + h + STAND], up: [cx, y - STAND], right: [x + w + STAND, cy], left: [x - STAND, cy] }[face];
   return S(id, kind, x, y, w, h, sp[0], sp[1], Object.assign({ face, col: c, row: r }, extra || {}));
 }
@@ -22,6 +22,8 @@ function stationExtra(spec) {
     case 'bowl': return { state: 'idle', t: 0, items: [], label: 'Bowl' };
     case 'pan': return { state: 'idle', t: 0, items: [], label: 'Sartén' };
     case 'wok': return { state: 'idle', t: 0, items: [], label: 'Wok' };
+    case 'balde': return { state: 'idle', t: 0, label: 'Balde chichero' };      // llena vasos de chicha morada
+    case 'cups': return { label: 'Vasos' };
     case 'blender': return { state: 'idle', t: 0, items: [], out: null, label: 'Licuadora' };
   }
 }
@@ -30,9 +32,6 @@ const CARTS = [];
 const idCount = {};
 const uid = base => { idCount[base] = (idCount[base] || 0) + 1; return idCount[base] === 1 ? base : base + idCount[base]; };
 if (LEVEL.layout === 'calle') {
-  // Calle con carritos cebicheros a ambos lados de la pista (inspirado en Overcooked); el cruce peatonal queda al centro.
-  //   carrito de arriba a la izquierda: cajas · arriba a la derecha: ollas · abajo a la izquierda: tablas
-  //   abajo a la derecha: bowl, platos y basura · a la derecha: carrito de salida · al centro: dos mesitas de apoyo
   let mn = 0, pn = 0;
   const place = (spec, c, r, face) => {
     if (spec.startsWith('crate:')) { const it = spec.slice(6); st.push(cellSt('crate_' + it, 'crate', c, r, face, { item: it, emoji: CRATE_INFO[it][0], label: CRATE_INFO[it][1] })); return; }
@@ -44,15 +43,18 @@ if (LEVEL.layout === 'calle') {
     CARTS.push({ c0, c1: c0 + specs.length - 1, r, side: face === 'down' ? 'top' : 'bottom', awning });
     specs.forEach((sp, i) => place(sp, c0 + i, r, face));
   };
+  // Calle con carretillas cebicheras a ambos lados de la pista; el cruce peatonal queda al centro (columnas 6 y 7).
+  //   arriba a la izquierda: los ingredientes · arriba a la derecha: fuegos (si hay), balde chichero y vasos
+  //   abajo a la izquierda: tablas de picar y el mostrador (entre las tablas y el cruce) · abajo a la derecha: bowl, platos y basura
   const specs = LEVEL.left.concat(LEVEL.right || []);
   const heat = specs.filter(sp => sp === 'pot' || sp === 'pan' || sp === 'wok'), prep = specs.filter(sp => !heat.includes(sp));
   const pad = (list, n) => list.concat(Array(Math.max(0, n - list.length)).fill('table'));
-  cart(1, 1, 'down', LEVEL.crates.map(it => 'crate:' + it), 'red');
-  cart(8, 1, 'down', pad(heat, 4), 'blue');
-  cart(1, 6, 'up', pad(prep.filter(sp => sp !== 'bowl'), 5), 'blue');
-  cart(8, 6, 'up', (prep.includes('bowl') ? ['bowl'] : []).concat(['plates', 'plates', 'trash']), 'red');
-  st.push(cellSt('counter', 'counter', COLS - 1, 2, 'left', { label: 'MOSTRADOR' }, 3));
-  [[3, 3, 'right'], [3, 4, 'right'], [10, 3, 'left'], [10, 4, 'left']].forEach(([c, r, f]) => place('table', c, r, f));
+  cart(1, 1, 'down', LEVEL.crates.map(it => 'crate:' + it), 'blue');
+  cart(8, 1, 'down', pad(heat.concat(LEVEL.drinks || []), 4), 'blue');
+  const cut = prep.filter(sp => sp !== 'bowl');
+  cart(1, 6, 'up', cut, 'blue');
+  st.push(cellSt('counter', 'counter', 1 + cut.length, 6, 'up', { label: 'MOSTRADOR' }, 1, 5 - cut.length));
+  cart(8, 6, 'up', (prep.includes('bowl') ? ['bowl'] : []).concat(['plates', 'plates', 'trash']), 'blue');
 } else {
 {
   const used = new Set(), key = (c, r) => c + ',' + r;

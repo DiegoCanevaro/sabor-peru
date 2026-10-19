@@ -295,12 +295,34 @@ Object.assign(ITEM3, {
     return g;
   },
   // cebiche recién mezclado (en el bowl, con su leche de tigre)
-  cebiche: () => bowlWith('#efe9da', g => cebicheMound(g, 0.14, 0.16))
+  cebiche: () => bowlWith('#efe9da', g => cebicheMound(g, 0.14, 0.16, false)),
+  cebiche_aji: () => bowlWith('#efe9da', g => cebicheMound(g, 0.14, 0.16, true)),
+  // cebolla roja picada en cuadros
+  cebolla_cuadros: () => {
+    const g = new THREE.Group();
+    for (let i = 0; i < 14; i++) { const b = mesh(new THREE.BoxGeometry(0.05, 0.035, 0.05), M(i % 3 ? '#a8376b' : '#ead2e0', { roughness: 0.4 })); b.position.set(rnd(-0.13, 0.13), 0.02 + rnd(0, 0.03), rnd(-0.1, 0.1)); b.rotation.y = rnd(0, 1.5); g.add(b); }
+    return g;
+  },
+  // vaso de plástico vacío y vaso de chicha morada (con cañita)
+  vaso: () => plasticCup(null),
+  chicha: () => plasticCup('#4a1342')
 });
-function cebicheMound(g, y, r) {
+function plasticCup(fill) {
+  const g = new THREE.Group();
+  const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.085, 0.3, 18, 1, true), new THREE.MeshStandardMaterial({ color: '#eef6ff', transparent: true, opacity: 0.45, roughness: 0.1, side: THREE.DoubleSide }));
+  cup.position.y = 0.15; g.add(cup);
+  const rim = mesh(new THREE.TorusGeometry(0.12, 0.008, 4, 18), M('#ffffff')); rim.rotation.x = Math.PI / 2; rim.position.y = 0.3; g.add(rim);
+  if (fill) {
+    const liq = mesh(new THREE.CylinderGeometry(0.11, 0.088, 0.24, 18), M(fill, { roughness: 0.15 })); liq.position.y = 0.13; g.add(liq);
+    const straw = mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.42, 6), M('#f4f4f4')); straw.rotation.z = 0.25; straw.position.set(0.04, 0.3, 0); g.add(straw);
+  }
+  return g;
+}
+// cebiche carretillero: cuadritos de pota, cebolla roja en cuadros, culantro y, si es con ají, ají limo
+function cebicheMound(g, y, r, aji) {
   for (let i = 0; i < 12; i++) { const b = mesh(new THREE.BoxGeometry(0.07, 0.045, 0.07), M('#f8f2ea', { roughness: 0.3 })); const a = rnd(0, 6.28), k = rnd(0, r); b.position.set(Math.cos(a) * k, y + rnd(0, 0.06), Math.sin(a) * k); b.rotation.y = rnd(0, 2); g.add(b); }
-  for (let i = 0; i < 7; i++) { const o = mesh(new THREE.TorusGeometry(0.06, 0.01, 4, 10, Math.PI * 0.9), M('#a8376b')); o.rotation.set(Math.PI / 2, 0, rnd(0, 6)); o.position.set(rnd(-r, r) * 0.7, y + 0.06, rnd(-r, r) * 0.7); g.add(o); }
-  for (let i = 0; i < 6; i++) { const c = mesh(new THREE.BoxGeometry(0.025, 0.012, 0.025), M(i % 2 ? '#d9271c' : '#4f9a32')); c.position.set(rnd(-r, r) * 0.7, y + 0.08, rnd(-r, r) * 0.7); g.add(c); }
+  for (let i = 0; i < 8; i++) { const o = mesh(new THREE.BoxGeometry(0.04, 0.03, 0.04), M('#a8376b')); o.position.set(rnd(-r, r) * 0.7, y + 0.06, rnd(-r, r) * 0.7); o.rotation.y = rnd(0, 2); g.add(o); }
+  for (let i = 0; i < (aji ? 8 : 3); i++) { const c = mesh(new THREE.BoxGeometry(0.025, 0.012, 0.025), M(aji && i % 2 ? '#d9271c' : '#4f9a32')); c.position.set(rnd(-r, r) * 0.7, y + 0.08, rnd(-r, r) * 0.7); g.add(c); }
 }
 // montículo de arroz chaufa: arroz dorado por el sillao, trocitos de pollo y cebolla china
 function chaufaMound(g, y, r) {
@@ -357,13 +379,12 @@ function plateModel(parts) {
   }
   if (has('chaufa')) chaufaMound(g, y0, 0.26);      // servido en forma de cúpula, como en el chifa
   // cebiche de pota: hoja de lechuga, el cebiche con su leche de tigre y el camote al costado
-  if (has('cebiche') || has('camote')) {
+  const ceb = has('cebiche') || has('cebiche_aji');
+  if (ceb) {
     const lettuce = mesh(new THREE.SphereGeometry(0.2, 12, 6, 0, 6.3, 0, 0.7), M('#6fae3b', { side: THREE.DoubleSide, flatShading: true }));
-    lettuce.scale.set(1, 0.3, 0.85); lettuce.position.set(-0.06, y0 - 0.02, 0); if (has('cebiche')) g.add(lettuce);
-  }
-  if (has('cebiche')) {
+    lettuce.scale.set(1, 0.3, 0.85); lettuce.position.set(-0.06, y0 - 0.02, 0); g.add(lettuce);
     const juice = mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.02, 20), M('#efe9da', { roughness: 0.2 })); juice.position.set(-0.06, y0 + 0.01, 0); g.add(juice);
-    cebicheMound(g, y0 + 0.03, 0.15);
+    cebicheMound(g, y0 + 0.03, 0.15, has('cebiche_aji'));
   }
   if (has('camote')) {
     for (let i = 0; i < 2; i++) { const s3 = mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.05, 16), [M('#8a3a4a'), M('#f08a2a'), M('#f08a2a')]); s3.position.set(0.2, y0 + 0.03 + i * 0.03, 0.12 - i * 0.07); s3.rotation.z = -0.2; g.add(s3); }
@@ -686,17 +707,25 @@ function trash3() {
 }
 // Bandeja de salida (estilo Overcooked): cinta que lleva los platos a la ventanilla de la pared derecha
 let _beltTex = null;
+// Si el mostrador es horizontal (calle), la cinta lleva los platos hacia la vereda (hacia la cámara).
+const beltDown = s => s.w > s.h;
 function bandeja3(s) {
-  const g = new THREE.Group(), w = s.w / U3, d = s.h / U3;
+  const g = new THREE.Group(), w = s.w / U3, d = s.h / U3, down = beltDown(s);
   const body = mesh(new THREE.BoxGeometry(w, 0.9, d), M('#5a6470', { metalness: 0.35, roughness: 0.45 })); body.position.y = 0.45; g.add(body);
   const steel = M('#c8ccd0', { metalness: 0.7, roughness: 0.3 });
-  for (const sz of [-1, 1]) { const r = mesh(new THREE.BoxGeometry(w + 0.1, 0.18, 0.14), steel); r.position.set(0, 0.97, sz * (d / 2 - 0.07)); g.add(r); }
+  for (const sz of [-1, 1]) {
+    const r = down ? mesh(new THREE.BoxGeometry(0.14, 0.18, d + 0.1), steel) : mesh(new THREE.BoxGeometry(w + 0.1, 0.18, 0.14), steel);
+    if (down) r.position.set(sz * (w / 2 - 0.07), 0.97, 0); else r.position.set(0, 0.97, sz * (d / 2 - 0.07)); g.add(r);
+  }
   _beltTex = canvasTex(128, 128, (c, cw, ch) => {
     c.fillStyle = '#2a2d31'; c.fillRect(0, 0, cw, ch);
     c.strokeStyle = '#f4b83c'; c.lineWidth = 14; c.lineCap = 'round';
-    c.beginPath(); c.moveTo(40, 24); c.lineTo(84, 64); c.lineTo(40, 104); c.stroke();      // flecha hacia la ventanilla
-  }, [w / 0.9, (d - 0.28) / 0.9]);
-  const belt = mesh(new THREE.BoxGeometry(w, 0.08, d - 0.28), new THREE.MeshStandardMaterial({ map: _beltTex, roughness: 0.8 })); belt.position.y = 0.93; g.add(belt);
+    c.beginPath();
+    if (down) { c.moveTo(24, 40); c.lineTo(64, 84); c.lineTo(104, 40); } else { c.moveTo(40, 24); c.lineTo(84, 64); c.lineTo(40, 104); }      // flecha hacia la salida
+    c.stroke();
+  }, down ? [(w - 0.28) / 0.9, d / 0.9] : [w / 0.9, (d - 0.28) / 0.9]);
+  const belt = mesh(down ? new THREE.BoxGeometry(w - 0.28, 0.08, d) : new THREE.BoxGeometry(w, 0.08, d - 0.28), new THREE.MeshStandardMaterial({ map: _beltTex, roughness: 0.8 })); belt.position.y = 0.93; g.add(belt);
+  g.userData.down = down;
   return g;
 }
 
@@ -708,6 +737,7 @@ function buildStations() {
     s3.slot.position.y = TOP;
     switch (s.kind) {
       case 'crate': {
+        if (typeof IS_CALLE !== 'undefined' && IS_CALLE) { const lw = s.w / U3, ld = s.h / U3; g.add(cartCounter(lw, ld, facingOf(s))); g.add(vitrina3(s.item, lw, ld)); break; }
         // caja de madera cerrada a la altura de la mesa (estilo Overcooked), con la etiqueta del ingrediente en la tapa
         const lw = s.w / U3, ld = s.h / U3;
         const box = KK('crate'); box.scale.set(lw / 2, 0.84 / 0.8, ld / 2); g.add(box);
@@ -750,6 +780,8 @@ function buildStations() {
         g.add(counter3(s)); const b = blender3(); b.scale.setScalar(1.75); b.position.y = TOP; b.rotation.y = facingOf(s); g.add(b); s3.extra.bl = b; break;
       }
       case 'counter': g.add(bandeja3(s)); break;
+      case 'balde': { g.add(counter3(s)); const b = baldeChichero(); b.position.y = TOP; g.add(b); s3.extra.balde = b; break; }
+      case 'cups': { g.add(counter3(s)); const c = cupStacks(); c.position.y = TOP; g.add(c); break; }
       default: g.add(counter3(s));
     }
     // materiales propios para poder resaltar la estación más cercana
@@ -816,22 +848,30 @@ function updChef(ch, p, dt, workSt) {
 // Los pedidos se ven en los tickets del HUD; aquí solo se anima el plato que sale.
 V3.sent = [];
 const _serve = serve;
-serve = function (plate) {
-  const by = player.held === plate ? player : helper;
-  const ok = _serve(plate);
+serve = function (plate, noPlate) {
+  const by = (player.held === plate || (noPlate && player.held && player.held.type === 'chicha')) ? player : helper;
+  const ok = _serve(plate, noPlate);
   if (ok && V3.ready) {
-    const out = st.find(x => x.kind === 'counter');
-    const m = plateModel(plate.parts); m.scale.setScalar(1.3);
-    const z = Math.max(Z3(out.y) + 0.5, Math.min(Z3(out.y + out.h) - 0.5, Z3(by ? by.y : out.y + out.h / 2)));
-    m.position.set(X3(out.x) + 0.25, 0.98, z); scene3.add(m); V3.sent.push(m);
+    const out = st.find(x => x.kind === 'counter'), down = beltDown(out);
+    const m = noPlate ? ITEM3.chicha() : plateModel(plate.parts); m.scale.setScalar(1.3);
+    if (down) {
+      const x = Math.max(X3(out.x) + 0.5, Math.min(X3(out.x + out.w) - 0.5, X3(by ? by.x : out.x + out.w / 2)));
+      m.position.set(x, 0.98, Z3(out.y) + 0.25); m.userData.end = Z3(out.y + out.h) + 0.9;
+    } else {
+      const z = Math.max(Z3(out.y) + 0.5, Math.min(Z3(out.y + out.h) - 0.5, Z3(by ? by.y : out.y + out.h / 2)));
+      m.position.set(X3(out.x) + 0.25, 0.98, z); m.userData.end = 13.2;
+    }
+    m.userData.down = down; scene3.add(m); V3.sent.push(m);
   }
   return ok;
 };
 function updSent(dt) {
-  if (_beltTex) _beltTex.offset.x -= dt * 0.6;
+  const out = st.find(x => x.kind === 'counter');
+  if (_beltTex) { if (out && beltDown(out)) _beltTex.offset.y += dt * 0.6; else _beltTex.offset.x -= dt * 0.6; }
   V3.sent = V3.sent.filter(m => {
-    m.position.x += dt * 1.1;
-    if (m.position.x > 13.2) { scene3.remove(m); return false; }
+    const k = m.userData.down ? 'z' : 'x';
+    m.position[k] += dt * 1.1;
+    if (m.position[k] > m.userData.end) { scene3.remove(m); return false; }
     return true;
   });
 }
@@ -908,6 +948,14 @@ function updStations(dt) {
         if (s.state === 'cooking' && Math.random() < dt * 6) puff(g.position.x, 1.45, g.position.z);
         break;
       case 'blender': updBlender(s3, s); break;
+      case 'balde': {        // el vaso bajo el caño se va llenando
+        const { cup, liquid } = s3.extra.balde.userData, filling = s.state === 'filling', full = s.state === 'done';
+        cup.visible = filling || full;
+        const k = full ? 1 : filling ? Math.min(1, s.t / T.balde) : 0;
+        cup.userData.liq.scale.y = Math.max(0.01, k); cup.userData.liq.position.y = 0.01 + 0.12 * k;
+        cup.userData.stream.visible = filling;
+        break;
+      }
       case 'wok': {
         setSlot(s3.slot, s.state === 'done' ? 'chaufa' : s.items.length ? 'set|' + s.items.join(',') : null);
         const toss = s.state === 'cooking';                      // salteado: el wok se mueve y saltan los ingredientes
@@ -956,9 +1004,10 @@ function stationOverlay(s) {
       break;
     }
     case 'board': if (s.state === 'chopping') { prog(s.t / T.board); hint(); } if (s.state === 'done') ready(); break;
-    case 'bowl': if (s.state === 'mashing') { prog(s.t / T.bowl); hint(); } if (s.state === 'done') pill(s.out === 'masa' ? '¡LISTO! ×' + s.n + (s.n === 1 ? ' capa' : ' capas') : '¡LISTO!', c.x, c.y, '#2f8a3b', '#ffffff', 11); break;
+    case 'bowl': if (s.state === 'idle' && bowlMatch(s.items)) { prog(0); hint(); } if (s.state === 'mashing') { prog(s.t / T.bowl); hint(); } if (s.state === 'done') pill(s.out === 'masa' ? '¡LISTO! ×' + s.n + (s.n === 1 ? ' capa' : ' capas') : '¡LISTO!', c.x, c.y, '#2f8a3b', '#ffffff', 11); break;
     case 'pan': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.pan, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'wok': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.wok, '#f4b83c', 9); if (s.state === 'done') ready(); break;
+    case 'balde': if (s.state === 'filling') bar(bx, c.y - 5, 56, s.t / T.balde, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'blender': {
       const c2 = proj(X3(s.x + s.w / 2), 3.0, Z3(s.y + s.h / 2)), b2 = c2.x - 28;
       const m = s.state === 'idle' && blendMatch(s.items);
@@ -995,6 +1044,7 @@ function draw() {
     updChef(V3.player, player, dt, pWork);
     updChef(V3.helper, helper, dt, helper && helper.work);
     updSent(dt);
+    if (typeof updStreet === 'function' && IS_CALLE) updStreet(dt);
     if (V3.cat) V3.cat.userData.paw.rotation.z = 0.3 + Math.sin(V3.t * 4) * 0.45;
     updSteam(dt);
     setHighlight(started && !gameOver ? near : null);

@@ -81,6 +81,25 @@ const LABEL_ICONS = {
     c.fillStyle = LBL_INK; c.beginPath(); c.arc(-28, 14, 6, 0, 7); c.fill();
     lblShine(c, 4, -14, 26, 6, -0.3);
   },
+  // pota ya cortada en cuadritos (como llega a la carretilla)
+  pota_cortada(c) {
+    lblShadow(c, 66, 78);
+    [[-46, 18], [-10, 26], [26, 20], [56, 30], [-30, -14], [8, -8], [42, -12], [-6, -40], [24, -38]].forEach(([x, y], i) => {
+      c.save(); c.translate(x, y); c.rotate((i % 3 - 1) * 0.2);
+      lblShape(c, i % 2 ? '#f6ece6' : '#f1ddd6', c => c.rect(-17, -15, 34, 30), 6);
+      c.restore();
+    });
+    lblShine(c, -2, -42, 10, 4, 0);
+  },
+  // camote ya cocido: rodajas anaranjadas con su piel morada
+  camote_cocido(c) {
+    lblShadow(c, 64, 78);
+    [[-40, 14], [0, 4], [40, 14]].forEach(([x, y]) => {
+      lblShape(c, '#8a3a4a', c => c.ellipse(x, y, 34, 30, 0, 0, 7), 7);
+      lblShape(c, '#f08a2a', c => c.ellipse(x, y - 2, 26, 22, 0, 0, 7), 0);
+      lblShine(c, x - 8, y - 10, 9, 4, -0.3);
+    });
+  },
   // limones verdes, uno partido por la mitad
   limon(c) {
     lblShadow(c, 64, 76);

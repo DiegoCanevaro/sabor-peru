@@ -3,9 +3,10 @@ const W = 900, H = 560;
 const SPEED = 270;            // regla global: 180 base +50%
 const R = 14;                 // radio del jugador
 const REACH = 42;             // alcance de interacción
-const TOTAL_CUSTOMERS = 3;
-const CUSTOMERS = ['Doña Rosa', 'Don Julio', 'Marisol'];
-const T = { cook: 6, board: 3, blend: 4, bowl: 4, pan: 5, wok: 5 };   // segundos de trabajo (se muestran como barras)
+// cantidad de clientes por nivel: 3 salvo que el nivel diga otra cosa (LEVEL.customers, se aplica en orders.js)
+let TOTAL_CUSTOMERS = 3;
+const CUSTOMERS = ['Doña Rosa', 'Don Julio', 'Marisol', 'Don Lucho', 'Charito', 'Kike'];
+const T = { cook: 6, board: 3, blend: 4, bowl: 4, pan: 5, wok: 5, balde: 1.5 };   // segundos de trabajo (se muestran como barras)
 const PLATE_RETURN = 6;        // segundos que tarda en volver un plato limpio después de servir (sin lavar en los primeros niveles)
 const POT_SLOTS = 1;          // regla global: 1 ingrediente por olla (salvo que la receta pida más)
 // Cuántas unidades del mismo ingrediente caben en una olla: 1, salvo que algún plato del nivel pida más
@@ -22,7 +23,7 @@ const ICON = {
   salsa: '🥣', salsa_aji: '🟠', masa: '🟨', guiso: '🍛', plate: '🍽️',
   cebolla_china: '🌱', cebolla_picada: '🌱', sillao: '🍶', chaufa: '🍛', huevo: '🥚', pollo_cuadros: '🍗',
   pota: '🦑', pota_cortada: '🦑', limon: '🍋', cebolla_roja: '🧅', cebolla_pluma: '🧅', aji_limo: '🌶️', aji_limo_picado: '🌶️',
-  camote: '🍠', camote_cocido: '🍠', cebiche: '🥣'
+  camote: '🍠', camote_cocido: '🍠', cebiche: '🥣', cebiche_aji: '🥣', cebolla_cuadros: '🧅', vaso: '🥤', chicha: '🍇'
 };
 const NAME = {
   papa_raw: 'papa', papa_cooked: 'cocida', papa_sliced: 'rodajas', pollo_raw: 'pollo', pollo_cooked: 'cocido', pollo_shred: 'desmenuz.',
@@ -30,26 +31,27 @@ const NAME = {
   galleta: 'galleta', salsa: 'salsa', salsa_aji: 'crema', masa: 'masa', guiso: 'guiso', plate: 'plato',
   cebolla_china: 'cebolla', cebolla_picada: 'picada', sillao: 'sillao', chaufa: 'chaufa', huevo: 'huevo', pollo_cuadros: 'cuadros',
   pota: 'pota', pota_cortada: 'cortada', limon: 'limón', cebolla_roja: 'cebolla', cebolla_pluma: 'pluma', aji_limo: 'ají limo', aji_limo_picado: 'picado',
-  camote: 'camote', camote_cocido: 'cocido', cebiche: 'cebiche'
+  camote: 'camote', camote_cocido: 'cocido', cebiche: 'sin ají', cebiche_aji: 'con ají', cebolla_cuadros: 'cuadros', vaso: 'vaso', chicha: 'chicha'
 };
-const LABELED = ['papa_cooked', 'papa_sliced', 'pollo_cooked', 'pollo_shred', 'arroz_cooked', 'palta_sliced', 'salsa', 'salsa_aji', 'masa', 'guiso', 'cebolla_picada', 'chaufa', 'pollo_cuadros', 'pota_cortada', 'cebolla_pluma', 'aji_limo_picado', 'camote_cocido', 'cebiche'];
+const LABELED = ['papa_cooked', 'papa_sliced', 'pollo_cooked', 'pollo_shred', 'arroz_cooked', 'palta_sliced', 'salsa', 'salsa_aji', 'masa', 'guiso', 'cebolla_picada', 'chaufa', 'pollo_cuadros', 'pota_cortada', 'cebolla_pluma', 'aji_limo_picado', 'camote_cocido', 'cebiche', 'cebiche_aji', 'cebolla_cuadros', 'chicha'];
 const CRATE_INFO = {
   papa_raw: ['🥔', 'Papas'], pollo_raw: ['🍗', 'Pollo'], aji: ['🌶️', 'Ají'], arroz_raw: ['🍚', 'Arroz'],
   palta: ['🥑', 'Paltas'], queso: ['🧀', 'Queso'], leche: ['🥛', 'Leche'], galleta: ['🍘', 'Galletas'],
   cebolla_china: ['🌱', 'Cebolla china'], sillao: ['🍶', 'Sillao'], huevo: ['🥚', 'Huevos'],
-  pota: ['🦑', 'Pota'], limon: ['🍋', 'Limones'], cebolla_roja: ['🧅', 'Cebolla'], aji_limo: ['🌶️', 'Ají limo'], camote: ['🍠', 'Camote']
+  pota: ['🦑', 'Pota'], limon: ['🍋', 'Limones'], cebolla_roja: ['🧅', 'Cebolla'], aji_limo: ['🌶️', 'Ají limo'], camote: ['🍠', 'Camote'],
+  pota_cortada: ['🦑', 'Pota'], camote_cocido: ['🍠', 'Camote']
 };
 // lo que se puede poner sobre el plato (producto -> parte) y cómo se dibuja cada parte
-const PART_OF_ITEM = { papa_sliced: 'papa', salsa: 'salsa', arroz_cooked: 'arroz', guiso: 'guiso', masa: 'masa', pollo_shred: 'relleno', palta_sliced: 'palta', chaufa: 'chaufa', cebiche: 'cebiche', camote_cocido: 'camote' };
-const PART_EMOJI = { papa: '🥔', salsa: '🥣', arroz: '🍚', guiso: '🍛', chaufa: '🍛', cebiche: '🦑', camote: '🍠' };
-const PART_POS = { arroz: [-.22, -.12], papa: [.22, -.12], salsa: [0, .1], guiso: [0, .1], chaufa: [0, 0], cebiche: [-.1, 0], camote: [.26, .1] };
+const PART_OF_ITEM = { papa_sliced: 'papa', salsa: 'salsa', arroz_cooked: 'arroz', guiso: 'guiso', masa: 'masa', pollo_shred: 'relleno', palta_sliced: 'palta', chaufa: 'chaufa', cebiche: 'cebiche', cebiche_aji: 'cebiche_aji', camote_cocido: 'camote' };
+const PART_EMOJI = { papa: '🥔', salsa: '🥣', arroz: '🍚', guiso: '🍛', chaufa: '🍛', cebiche: '🦑', cebiche_aji: '🦑', camote: '🍠' };
+const PART_POS = { arroz: [-.22, -.12], papa: [.22, -.12], salsa: [0, .1], guiso: [0, .1], chaufa: [0, 0], cebiche: [-.1, 0], cebiche_aji: [-.1, 0], camote: [.26, .1] };
 const LAYER_COL = { masa: '#f2c94c', relleno: '#d99a6c', palta: '#7fb54a' };
 const LAYER_NAME = { masa: 'Masa', relleno: 'Relleno', palta: 'Palta' };
 
 // ================= PROCESOS DE LAS ESTACIONES =================
-const POT_OUT = { papa_raw: 'papa_cooked', pollo_raw: 'pollo_cooked', arroz_raw: 'arroz_cooked', camote: 'camote_cocido' };   // olla (automática)
+const POT_OUT = { papa_raw: 'papa_cooked', pollo_raw: 'pollo_cooked', arroz_raw: 'arroz_cooked' };   // olla (automática)
 const CHOP = { papa_cooked: 'papa_sliced', pollo_cooked: 'pollo_shred', palta: 'palta_sliced', cebolla_china: 'cebolla_picada', pollo_raw: 'pollo_cuadros',
-  pota: 'pota_cortada', cebolla_roja: 'cebolla_pluma', aji_limo: 'aji_limo_picado' };
+  cebolla_roja: 'cebolla_cuadros', aji_limo: 'aji_limo_picado' };      // carretillero: la pota y el camote ya vienen listos
 // la tabla solo corta lo que algún plato del nivel necesita (p. ej. el pollo crudo en cuadros solo en el chifa)
 const chopOut = type => { const out = CHOP[type]; return out && LEVEL.dishes.some(d => DISHES[d].uses.includes(out)) ? out : null; };      // tabla (hold)
 // bowl (hold) -> masa de causa: 2 papas cocidas + 1 ají. Rinde 2 porciones: cada capa de masa gasta la mitad del bowl.
@@ -57,10 +59,13 @@ const BOWL_NEED = { papa_cooked: 2, aji: 1 };
 const MASA_PORTIONS = 2;
 const nOf = (arr, x) => arr.filter(y => y === x).length;
 // El bowl tiene varias recetas: la que se arma la deciden los ingredientes (solo cuentan las de los platos del nivel).
-//   masa de causa: 2 papas cocidas + ají amarillo (2 porciones) · cebiche: pota cortada + cebolla en pluma + ají limo picado + limón
+//   masa de causa: 2 papas cocidas + ají amarillo (2 porciones)
+//   cebiche carretillero: pota en cuadros + cebolla en cuadros + limón, y con ají limo picado si el pedido es con ají
+// Cuando los ingredientes forman una receta, la mezcla empieza al MANTENER la acción (así se puede añadir el ají antes).
 const BOWL_RECIPES = [
   { need: BOWL_NEED, out: 'masa', n: MASA_PORTIONS },
-  { need: { pota_cortada: 1, cebolla_pluma: 1, aji_limo_picado: 1, limon: 1 }, out: 'cebiche', n: 1 }
+  { need: { pota_cortada: 1, cebolla_cuadros: 1, limon: 1 }, out: 'cebiche', n: 1 },
+  { need: { pota_cortada: 1, cebolla_cuadros: 1, aji_limo_picado: 1, limon: 1 }, out: 'cebiche_aji', n: 1 }
 ];
 const activeBowls = () => BOWL_RECIPES.filter(r => LEVEL.dishes.some(d => DISHES[d].uses.includes(r.out)));
 const bowlAccepts = (items, t) => activeBowls().some(r => (r.need[t] || 0) > nOf(items, t) && items.every(i => r.need[i]));

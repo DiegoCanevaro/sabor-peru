@@ -59,6 +59,8 @@ button.small.on { background: #5ec26a; }
 .ticket.upcoming { opacity: .55; }
 .ticket .course { font-size: 8px; text-align: center; text-transform: uppercase; letter-spacing: .5px; font-weight: bold; color: #fff; background: #4f8a3a; padding: 1px 0; }
 .ticket .course.segundo { background: #b5532f; }
+.ticket .course.plato { background: #2f6fb3; }
+.ticket .course.bebida { background: #6a2c8a; }
 .ticket.hold .course.segundo::after { content: ' · después de entradas'; }
 .ticket.urgent .card { animation: tkpulse .5s infinite alternate; }
 .ticket.ok .card::after, .ticket.bad .card::after {

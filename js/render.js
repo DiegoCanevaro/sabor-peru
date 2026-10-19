@@ -25,7 +25,7 @@ function drawItem(it, x, y, size) {
     if (LABELED.includes(it.type)) label(NAME[it.type] + (it.n > 1 ? ' ×' + it.n : ''), x, y + size * .62, '#fff', 9);
   }
 }
-const COL = { wok: '#3a2a2a', crate: '#8a5a2b', plates: '#9aa5ad', trash: '#4a4f55', pot: '#5a6470', board: '#b98a4f', bowl: '#c98a4a', blender: '#6b4f7a', pan: '#4a4a52', table: '#a07a45', counter: '#7a3b2b' };
+const COL = { cups: '#7aa7c9', balde: '#6a2c8a', wok: '#3a2a2a', crate: '#8a5a2b', plates: '#9aa5ad', trash: '#4a4f55', pot: '#5a6470', board: '#b98a4f', bowl: '#c98a4a', blender: '#6b4f7a', pan: '#4a4a52', table: '#a07a45', counter: '#7a3b2b' };
 
 function drawStation(s) {
   const cx = s.x + s.w / 2, cy = s.y + s.h / 2;
@@ -56,6 +56,7 @@ function drawStation(s) {
     case 'bowl':
       base('🥣');
       s.items.forEach((it, i) => emoji(ICON[it], s.x + 56 + i * 16, cy + 2, 14));
+      if (s.state === 'idle' && bowlMatch(s.items)) { prog(0); hint(); }
       if (s.state === 'mashing') { prog(s.t / T.bowl); hint(); }
       if (s.state === 'done') { emoji(s.out === 'masa' ? '🟨' : ICON[s.out], cx + 20, cy + 2, 20); label('¡lista!' + (s.n > 1 ? ' ×' + s.n : ''), cx, s.y + 12, '#8fe39a', 11); }
       break;
@@ -74,6 +75,12 @@ function drawStation(s) {
       if (s.state === 'cooking') prog(s.t / T.pan);
       if (s.state === 'done') { emoji('🍛', cx + 20, cy + 2, 20); label('¡listo!', cx, s.y + 12, '#8fe39a', 11); }
       break;
+    case 'cups': base('🥤'); break;
+    case 'balde':
+      base('🪣');
+      if (s.state === 'filling') { emoji('🥤', cx + 20, cy + 2, 16); prog(s.t / T.balde); }
+      if (s.state === 'done') { emoji('🍇', cx + 20, cy + 2, 18); label('¡lista!', cx, s.y + 12, '#8fe39a', 11); }
+      break;
     case 'wok':
       base('🥘');
       s.items.forEach((it, i) => emoji(ICON[it], s.x + 8 + i * 12, s.y + 14, 11));
@@ -89,7 +96,8 @@ function drawStation(s) {
 function drawCustomers() {      // clientes en el mostrador: un puesto por cliente (cara, plato que pide y barra de paciencia)
   for (const c of customers) {
     if (c.state === 'queued' || (c.state !== 'waiting' && clock - c.doneAt > 1.5)) continue;
-    const out = byKind('counter'), cx = out.x + out.w / 2, y0 = out.y + 4 + c.idx * 62, pr = c.patience / c.max;
+    const out = byKind('counter'), wide = out.w > out.h, k = c.idx % 3;      // mostrador horizontal (calle): clientes en fila
+    const cx = wide ? out.x + 32 + k * 64 : out.x + out.w / 2, y0 = wide ? out.y + 2 : out.y + 4 + k * 62, pr = c.patience / c.max;
     const face = c.state === 'happy' ? '😋' : c.state === 'angry' ? '😠' : pr > .4 ? '🙂' : pr > .15 ? '😐' : '😟';
     label(c.name.replace('Doña ', 'D. ').replace('Don ', 'D. '), cx, y0 + 7, '#f4e4c1', 9);
     emoji(face, cx - 11, y0 + 27, 24);
