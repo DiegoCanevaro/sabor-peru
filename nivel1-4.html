@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sabor Perú - Nivel 1-4: Pollo al Ají</title>
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/mobile.css">
+</head>
+<body>
+<div id="gameWrap">
+  <div id="hud">
+    <span id="scoreDisplay">⭐ 0</span>
+    <span id="customerDisplay"></span>
+    <button id="botBtn" class="small">🤖 Ayudante: OFF (B)</button>
+  </div>
+  <div id="tickets"></div>
+  <canvas id="c" width="900" height="560"></canvas>
+
+  <div id="startOverlay" class="overlay show">
+    <h1>🇵🇪 Nivel 1-4: Pollo al Ají</h1>
+    <p>Atiende a 4 clientes. El <b>Pollo al Ají</b> lleva <b>arroz cocido</b>, <b>papa sancochada</b> y el <b>pollo al ají</b> de la olla de barro (pollo + cebolla en cuadros + ají licuado).</p>
+    <p>El ají de gallina se hace en la <b>sartén</b>: pollo cocido y desmenuzado (tabla) + crema de ají (<b>1 ají</b> en la licuadora). El arroz se cuece en la olla.</p>
+    <p><b>Nuevo:</b> los clientes también pueden pedirte platos de los niveles anteriores: <b>Causa Limeña</b> y <b>Papa a la Huancaína</b>. La licuadora es la misma para todo: según lo que le metas hace crema de ají (1 ají) o salsa huancaína (queso, ají, leche, galleta).</p>
+    <p>La <b>olla</b>, la <b>sartén</b> y la <b>licuadora</b> trabajan solas. En la <b>tabla</b> y el <b>bowl</b> debes <b>mantener presionado</b> Espacio/E. Los pedidos llegan escalonados; tu ayudante siempre empieza por el primero de la cola.</p>
+    <p><b>Nuevo: la olla de barro.</b> Echa el pollo crudo, la cebolla picada en cuadros y la crema de ají amarillo: se cocina sola.</p>
+    <p><b>Mover:</b> WASD / flechas &nbsp; <b>Interactuar:</b> Espacio o E (mantenlo en tabla y bowl) &nbsp; <b>Ayudante (IA):</b> B &nbsp; <b>Pausa:</b> P</p>
+    <div class="btnRow"><a class="gamebtn alt" href="niveles.html">← Niveles</a><button id="startBtn" class="gamebtn">¡Empezar!</button></div>
+  </div>
+
+  <div id="overlay" class="overlay">
+    <h1 id="overlayTitle"></h1>
+    <p id="overlaySubtitle"></p>
+    <button id="recipeBtn" class="gamebtn alt">📖 Ver receta real</button>
+    <div id="recipeCard" style="display:none"></div>
+    <div class="btnRow"><a class="gamebtn alt" href="niveles.html">Elegir nivel</a><button id="restartBtn" class="gamebtn">Jugar de nuevo</button></div>
+  </div>
+</div>
+
+<div id="touchControls">
+  <div id="joyZone"><div id="joyBase"><div id="joyKnob"></div></div></div>
+    <button id="actBtn">ACCIÓN</button>
+</div>
+<div id="hint">WASD/flechas: mover · Espacio/E: interactuar (mantén presionado en tabla y bowl) · P: pausa · B: ayudante · Una sola cosa en las manos a la vez</div>
+
+<script src="js/menu.js"></script>
+<script src="js/config.js"></script>
+<script src="js/recipes-data.js"></script>
+<script src="js/dishes.js"></script>
+<script src="js/levels/level-1-4.js"></script>
+<script src="js/ing-images.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/dish-images.js"></script>
+<script src="js/dish-icons.js"></script>
+<script src="js/howto.js"></script>
+<script src="js/plate.js"></script>
+<script src="js/state.js"></script>
+<script src="js/stations.js"></script>
+<script src="js/movement.js"></script>
+<script src="js/orders.js"></script>
+<script src="js/interact.js"></script>
+<script src="js/helper.js"></script>
+<script src="js/update.js"></script>
+<script src="js/render.js"></script>
+<script src="js/hud.js"></script>
+<script src="js/input.js"></script>
+<script src="js/pause.js"></script>
+<script src="js/mobile.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

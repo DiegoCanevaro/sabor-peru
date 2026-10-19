@@ -22,6 +22,7 @@ function stationExtra(spec) {
     case 'bowl': return { state: 'idle', t: 0, items: [], label: 'Bowl' };
     case 'pan': return { state: 'idle', t: 0, items: [], label: 'Sartén' };
     case 'wok': return { state: 'idle', t: 0, items: [], label: 'Wok' };
+    case 'stew': return { state: 'idle', t: 0, items: [], label: 'Olla de barro' };      // pollo al ají
     case 'balde': return { state: 'idle', t: 0, label: 'Balde chichero' };      // llena vasos de chicha morada
     case 'cups': return { label: 'Vasos' };
     case 'blender': return { state: 'idle', t: 0, items: [], out: null, label: 'Licuadora' };
@@ -47,7 +48,7 @@ if (LEVEL.layout === 'calle') {
   //   arriba a la izquierda: los ingredientes · arriba a la derecha: fuegos (si hay), balde chichero y vasos
   //   abajo a la izquierda: tablas de picar y el mostrador (entre las tablas y el cruce) · abajo a la derecha: bowl, platos y basura
   const specs = LEVEL.left.concat(LEVEL.right || []);
-  const heat = specs.filter(sp => sp === 'pot' || sp === 'pan' || sp === 'wok'), prep = specs.filter(sp => !heat.includes(sp));
+  const heat = specs.filter(sp => sp === 'pot' || sp === 'pan' || sp === 'wok' || sp === 'stew'), prep = specs.filter(sp => !heat.includes(sp));
   const pad = (list, n) => list.concat(Array(Math.max(0, n - list.length)).fill('table'));
   cart(1, 1, 'down', LEVEL.crates.map(it => 'crate:' + it), 'blue');
   cart(8, 1, 'down', pad(heat.concat(LEVEL.drinks || []), 4), 'blue');
@@ -66,7 +67,7 @@ if (LEVEL.layout === 'calle') {
   // fuegos en la pared izquierda; preparación en el centro de la isla
   const specs = LEVEL.left.concat(LEVEL.right || []);
   let pn = 0, row = 1;
-  const HEAT = ['pot', 'pan', 'wok'];
+  const HEAT = ['pot', 'stew', 'pan', 'wok'];
   specs.filter(sp => HEAT.includes(sp)).forEach(sp => { put(sp === 'pot' ? 'pot' + (++pn) : sp, sp, 0, row++, 'right', stationExtra(sp)); });
   const prep = specs.filter(sp => !HEAT.includes(sp));
   const c0 = Math.round((COLS - prep.length) / 2);

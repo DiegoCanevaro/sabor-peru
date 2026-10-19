@@ -29,7 +29,7 @@ function buildTickets() {
     const D = DISHES[ORDERS[i]];
     const d = document.createElement('div');
     d.className = 'ticket upcoming';
-    d.innerHTML = '<div class="card"><div class="tbar"><i></i></div><div class="dish">' + (typeof dishIcon === 'function' && hasDishIcon(D.id) ? '' : D.icon) + '</div><div class="name">' + CUSTOMERS[i] + ' · ' + D.short + '</div><div class="course ' + D.course + '">' + ({ entrada: 'Entrada', segundo: 'Segundo', plato: 'Plato', bebida: 'Bebida' }[D.course] || '') + '</div></div>' +
+    d.innerHTML = '<div class="card"><div class="tbar"><i></i></div><div class="dish">' + (typeof dishIcon === 'function' && hasDishIcon(D.id) ? '' : D.icon) + '</div><div class="name">' + D.short + '</div><div class="course ' + D.course + '">' + ({ entrada: 'Entrada', segundo: 'Segundo', plato: 'Plato', bebida: 'Bebida' }[D.course] || '') + '</div></div>' +
       '';
     d.appendChild(ticketSlots(D));
     if (typeof dishIcon === 'function' && hasDishIcon(D.id)) d.querySelector('.dish').appendChild(dishIcon(D.id, 44));

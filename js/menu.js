@@ -8,6 +8,8 @@ const LEVEL_LIST = [
     desc: 'Capas en orden: masa, relleno de pollo, masa y palta.', serves: ['🍰', '🥔'] },
   { id: '1-3', file: 'nivel1-3-3d.html', icon: '🍛', dish: 'aji', servesDish: ['aji', 'causa', 'huancaina'], name: 'Ají de Gallina',
     desc: 'Arroz, papa y ají de gallina hecho en la sartén.', serves: ['🍛', '🍰', '🥔'] },
+  { id: '1-4', file: 'nivel1-4-3d.html', icon: '🍗', dish: 'pollo_aji', servesDish: ['pollo_aji', 'aji', 'huancaina'], name: 'Pollo al Ají',
+    desc: 'Pollo, cebolla en cuadros y ají licuado en la olla de barro; con papa y arroz.', serves: ['🍗', '🍛', '🥔'] },
   { id: '2-1', world: 2, file: 'nivel2-1-3d.html', icon: '🍛', dish: 'chaufa', servesDish: ['chaufa'], name: 'Arroz Chaufa',
     desc: 'Arroz, pollo en cuadros, huevo, cebolla china y sillao salteados en el wok.', serves: ['🍛'] },
   { id: 'K-9', world: 'kevin', file: 'kevin-pota-3d.html', icon: '🦑', dish: 'cebiche_pota', servesDish: ['cebiche_pota', 'cebiche_sin', 'chicha'], name: 'Cebiche de Pota',

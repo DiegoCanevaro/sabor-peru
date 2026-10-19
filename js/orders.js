@@ -34,7 +34,7 @@ function returnPlates() {
   }
 }
 function initCustomers() {
-  customers = ORDERS.map((d, i) => ({ idx: i, name: CUSTOMERS[i], dish: DISHES[d], state: 'queued', arriveAt: i * ARRIVAL, patience: 0, max: 0, doneAt: 0 }));
+  customers = ORDERS.map((d, i) => ({ idx: i, dish: DISHES[d], state: 'queued', arriveAt: i * ARRIVAL, patience: 0, max: 0, doneAt: 0 }));
   clock = 0; lastResolve = -9; endTimer = -1;
 }
 function startRound() { initCustomers(); started = true; }

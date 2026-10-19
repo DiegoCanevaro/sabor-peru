@@ -233,6 +233,15 @@ const TOOL_ICONS = {
     lblShape(c, '#4a4a4e', c => c.ellipse(0, -16, 80, 16, 0, 0, 7));
     lblShape(c, '#8a5a2b', c => { c.moveTo(76, -8); c.lineTo(100, 16); c.lineTo(92, 24); c.lineTo(68, 2); c.closePath(); }, 5);
   },
+  stew(c) {       // olla de barro (pollo al ají)
+    lblShadow(c, 70, 84);
+    lblShape(c, '#a4502a', c => { c.moveTo(-60, -30); c.bezierCurveTo(-96, 0, -78, 66, 0, 66); c.bezierCurveTo(78, 66, 96, 0, 60, -30); c.closePath(); });
+    lblShape(c, '#c4673a', c => c.ellipse(0, -30, 64, 16, 0, 0, 7));
+    lblShape(c, '#f0a52a', c => c.ellipse(0, -30, 52, 10, 0, 0, 7), 4);
+    [-1, 1].forEach(s => lblShape(c, '#8a3f1f', c => c.ellipse(s * 76, -12, 12, 8, s * 0.4, 0, 7), 6));
+    lblShape(c, 'rgba(255,230,190,.55)', c => { c.moveTo(-74, 14); c.quadraticCurveTo(0, 30, 74, 14); c.lineTo(72, 22); c.quadraticCurveTo(0, 38, -72, 22); c.closePath(); }, 0);
+    lblShine(c, -40, 20, 8, 18, 0.2);
+  },
   pan(c) {        // sartén
     lblShadow(c, 46, 80);
     lblShape(c, '#2f2f33', c => c.ellipse(-16, 0, 66, 34, 0, 0, 7));

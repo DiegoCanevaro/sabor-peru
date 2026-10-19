@@ -25,7 +25,7 @@ function drawItem(it, x, y, size) {
     if (LABELED.includes(it.type)) label(NAME[it.type] + (it.n > 1 ? ' ×' + it.n : ''), x, y + size * .62, '#fff', 9);
   }
 }
-const COL = { cups: '#7aa7c9', balde: '#6a2c8a', wok: '#3a2a2a', crate: '#8a5a2b', plates: '#9aa5ad', trash: '#4a4f55', pot: '#5a6470', board: '#b98a4f', bowl: '#c98a4a', blender: '#6b4f7a', pan: '#4a4a52', table: '#a07a45', counter: '#7a3b2b' };
+const COL = { stew: '#9a4a24', cups: '#7aa7c9', balde: '#6a2c8a', wok: '#3a2a2a', crate: '#8a5a2b', plates: '#9aa5ad', trash: '#4a4f55', pot: '#5a6470', board: '#b98a4f', bowl: '#c98a4a', blender: '#6b4f7a', pan: '#4a4a52', table: '#a07a45', counter: '#7a3b2b' };
 
 function drawStation(s) {
   const cx = s.x + s.w / 2, cy = s.y + s.h / 2;
@@ -75,6 +75,12 @@ function drawStation(s) {
       if (s.state === 'cooking') prog(s.t / T.pan);
       if (s.state === 'done') { emoji('🍛', cx + 20, cy + 2, 20); label('¡listo!', cx, s.y + 12, '#8fe39a', 11); }
       break;
+    case 'stew':
+      base('🍲');
+      s.items.forEach((it, i) => emoji(ICON[it], s.x + 40 + i * 14, cy + 2, 13));
+      if (s.state === 'cooking') prog(s.t / T.stew);
+      if (s.state === 'done') { emoji('🍛', cx + 20, cy + 2, 20); label('¡listo!', cx, s.y + 12, '#8fe39a', 11); }
+      break;
     case 'cups': base('🥤'); break;
     case 'balde':
       base('🪣');
@@ -99,7 +105,6 @@ function drawCustomers() {      // clientes en el mostrador: un puesto por clien
     const out = byKind('counter'), wide = out.w > out.h, k = c.idx % 2;      // mostrador horizontal (calle): clientes en fila
     const cx = wide ? out.x + 32 + k * 64 : out.x + out.w / 2, y0 = wide ? out.y + 2 : out.y + 4 + k * 62, pr = c.patience / c.max;
     const face = c.state === 'happy' ? '😋' : c.state === 'angry' ? '😠' : pr > .4 ? '🙂' : pr > .15 ? '😐' : '😟';
-    label(c.name.replace('Doña ', 'D. ').replace('Don ', 'D. '), cx, y0 + 7, '#f4e4c1', 9);
     emoji(face, cx - 11, y0 + 27, 24);
     emoji(c.dish.icon, cx + 15, y0 + 27, 16);
     if (c.state === 'waiting') bar(cx - 26, y0 + 44, 52, pr, pr > .4 ? '#5ec26a' : pr > .15 ? '#f4b83c' : '#d9473a', 7);

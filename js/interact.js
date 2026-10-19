@@ -92,6 +92,16 @@ function interact(s, p, want) {
       }
       if (!h && s.state === 'done') { p.held = { type: 'guiso' }; s.state = 'idle'; s.items = []; return true; }
       return false;
+    case 'stew':     // olla de barro (automática): arranca sola con pollo crudo + cebolla en cuadros + crema de ají
+      if (h && STEW_IN.includes(h.type) && s.state === 'idle' && !s.items.includes(h.type)) {
+        s.items.push(h.type); p.held = null;
+        if (s.items.length === STEW_IN.length) { s.state = 'cooking'; s.t = 0; }
+        return true;
+      }
+      // con un plato en la mano: se sirve el pollo al ají directamente de la olla
+      if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, 'pollo_aji')) { h.parts.push('pollo_aji'); s.state = 'idle'; s.items = []; return true; }
+      if (!h && s.state === 'done') { p.held = { type: 'pollo_aji' }; s.state = 'idle'; s.items = []; return true; }
+      return false;
     case 'cups':     // vasos de plástico vacíos
       if (!h) { p.held = { type: 'vaso' }; return true; } return false;
     case 'balde':    // automático: se deja el vaso bajo el caño y se llena solo

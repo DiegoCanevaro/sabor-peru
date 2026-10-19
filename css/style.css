@@ -166,3 +166,14 @@ h1, .logo, .menuTop h1, .overlay h1, .world, .lvName, #recipeCard h2 {
 body:not(.playing) #pauseBtn, body:not(.playing) #botBtn { visibility: hidden; }
 /* las pantallas de inicio, pausa y fin siempre van por encima del HUD y de los pedidos */
 .overlay { z-index: 30; }
+
+/* portada: botón de pantalla completa */
+.fsBtn {
+  position: fixed; top: 12px; right: 12px; z-index: 40; font: inherit; font-size: 14px; cursor: pointer;
+  background: rgba(43, 24, 11, .75); color: #f4e4c1; border: 2px solid #8a5a2b; border-radius: 10px; padding: 8px 14px;
+}
+.fsBtn:hover { background: #3d2411; }
+/* textos solo para teclado o solo para táctil */
+.touchOnly { display: none; }
+body.mobile .touchOnly { display: list-item; }
+body.mobile .pcOnly { display: none; }

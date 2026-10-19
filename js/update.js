@@ -26,6 +26,7 @@ function update(dt) {
       // automáticas: avanzan solas al colocar los ingredientes
       case 'pot': s.slots.forEach(sl => { if (!sl.done) { sl.t += dt; if (sl.t >= T.cook) sl.done = true; } }); break;
       case 'pan': if (s.state === 'cooking') { s.t += dt; if (s.t >= T.pan) s.state = 'done'; } break;
+      case 'stew': if (s.state === 'cooking') { s.t += dt; if (s.t >= T.stew) s.state = 'done'; } break;
       case 'wok': if (s.state === 'cooking') { s.t += dt; if (s.t >= T.wok) s.state = 'done'; } break;
       // mantener presionado: solo avanzan mientras alguien las trabaja
       case 'board': if (s.state === 'chopping' && s.worked) { s.t += dt; if (s.t >= T.board) s.state = 'done'; } break;
@@ -59,7 +60,7 @@ function update(dt) {
     c.patience -= dt;
     if (c.patience <= 0) {
       c.state = 'angry'; c.doneAt = clock; lastResolve = clock; score = Math.max(0, score - 30);
-      showToast(c.name + ' se fue enojado/a (-30)');
+      showToast('Un cliente se fue enojado (-30)');
     }
   }
   // fin de partida: todos atendidos o perdidos

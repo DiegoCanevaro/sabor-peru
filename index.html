@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="css/mobile.css">
 </head>
 <body class="menu">
+<button id="fsBtn" class="fsBtn" title="Pantalla completa">⛶ Pantalla completa</button>
 <main class="menuCard title">
   <div class="flagStripe"><i></i><i></i><i></i></div>
   <div class="heroDishes" id="heroDishes"></div>
@@ -18,9 +19,11 @@
   <details class="howto">
     <summary>¿Cómo se juega?</summary>
     <ul>
-      <li><b>Mover:</b> WASD o flechas</li>
-      <li><b>Interactuar:</b> Espacio o E. En la tabla y el bowl mantenlo presionado; la olla, la sartén y la licuadora van solas.</li>
-      <li><b>Ayudante (IA):</b> B</li>
+      <li class="pcOnly"><b>Mover:</b> WASD o flechas</li>
+      <li class="pcOnly"><b>Interactuar:</b> Espacio o E. En la tabla y el bowl mantenlo presionado; la olla, la sartén y la licuadora van solas.</li>
+      <li class="pcOnly"><b>Ayudante (IA):</b> B</li>
+      <li class="touchOnly"><b>Mover:</b> joystick (apoya el pulgar en la mitad izquierda)</li>
+      <li class="touchOnly"><b>Interactuar:</b> botón ACCIÓN. En la tabla y el bowl mantenlo presionado; la olla, la sartén y la licuadora van solas.</li>
       <li>Solo puedes llevar una cosa en las manos a la vez. Arma cada plato sobre un plato limpio y entrégalo antes de que el cliente se canse.</li>
     </ul>
   </details>
@@ -29,5 +32,20 @@
 <script src="js/dish-icons.js"></script>
 <script>['huancaina', 'aji', 'causa'].forEach((d, i) => { const c = dishIcon(d, i === 1 ? 120 : 96); document.getElementById('heroDishes').appendChild(c); });</script>
 <script src="js/mobile.js"></script>
+<script>
+// pantalla completa (si el navegador lo permite; el iPhone no deja ponerla en una página)
+(function () {
+  const b = document.getElementById('fsBtn'), el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen, exit = document.exitFullscreen || document.webkitExitFullscreen;
+  if (!req) { b.remove(); return; }
+  const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+  const upd = () => { b.textContent = isFs() ? '✕ Salir de pantalla completa' : '⛶ Pantalla completa'; };
+  b.addEventListener('click', () => {
+    if (isFs()) exit.call(document);
+    else Promise.resolve(req.call(el)).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape')).catch(() => {});
+  });
+  document.addEventListener('fullscreenchange', upd); document.addEventListener('webkitfullscreenchange', upd);
+})();
+</script>
 </body>
 </html>

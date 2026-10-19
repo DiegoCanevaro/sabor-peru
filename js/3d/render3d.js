@@ -161,6 +161,7 @@ const ITEM3 = {
   // media masa: queda una sola capa en el bowl
   masa1: () => bowlWith('#f2c94c', g => { const m = mesh(new THREE.SphereGeometry(0.15, 14, 8, 0, 6.3, 0, 1.2), M('#f2c94c', { roughness: 0.5 })); m.scale.y = 0.6; m.position.y = 0.12; g.add(m); }),
   guiso: () => bowlWith('#eab73f', g => chickenBits(g, 7, 0.16, 0.12)),
+  pollo_aji: () => bowlWith('#f0a52a', g => { polloAjiPieces(g, 0.14, 0.13); }),
   arroz_cooked: () => bowlWith('#fbfaf3', g => { const d = mesh(new THREE.SphereGeometry(0.19, 14, 8, 0, 6.3, 0, 1.4), M('#fbfaf3', { roughness: 0.95 })); d.position.y = 0.1; g.add(d); }),
   arroz_raw: () => {
     const g = new THREE.Group();
@@ -337,6 +338,15 @@ function chaufaMound(g, y, r) {
   }
 }
 const LAYER3 = { masa: ['#f2c94c', 0.12], relleno: ['#e9d3a0', 0.1], palta: ['#7fb54a', 0.07] };
+// presa de pollo dorada con cuadraditos de cebolla roja (pollo al ají)
+function polloAjiPieces(g, y, r, ox, oz) {
+  const leg = lumpy(0.11, 1.5, 0.75, 1, '#d98a2b', 0.03); leg.position.set((ox || 0), y + 0.05, (oz || 0)); leg.rotation.y = 0.6; g.add(leg);
+  const cm = M('#9c3a6a', { roughness: 0.5 });
+  for (let i = 0; i < 6; i++) {
+    const a = i * 1.05, c = mesh(new THREE.BoxGeometry(0.035, 0.02, 0.035), cm);
+    c.position.set((ox || 0) + Math.cos(a) * r, y + 0.02, (oz || 0) + Math.sin(a) * r * 0.8); c.rotation.y = a; g.add(c);
+  }
+}
 function plateModel(parts) {
   const g = new THREE.Group();
   g.add(KK('plate', 0.8));
@@ -354,7 +364,7 @@ function plateModel(parts) {
       const o = mesh(new THREE.SphereGeometry(0.045, 10, 8), M('#2a1a2a', { roughness: 0.3 })); o.scale.set(1, 0.8, 1.2); o.position.set(0.06, y + 0.03, 0); g.add(o);
     }
   }
-  const alone = !has('arroz') && !has('guiso');
+  const alone = !has('arroz') && !has('guiso') && !has('pollo_aji');
   // papa a la huancaína: hoja de lechuga + rodajas, salsa por encima y, completa, huevo y aceituna
   if (has('papa')) {
     const pos = alone ? [0, 0] : [0.18, -0.1];
@@ -392,6 +402,17 @@ function plateModel(parts) {
   if (has('arroz')) {
     const d = mesh(new THREE.SphereGeometry(0.15, 14, 8, 0, 6.3, 0, 1.4), M('#fbfaf3', { roughness: 0.95 }));
     d.position.set(-0.17, y0, -0.1); g.add(d);
+  }
+  // pollo al ají: presa de pollo en su salsa amarilla con cebolla, y la papa sancochada entera al costado
+  if (has('papa_entera')) {
+    for (let i = 0; i < 2; i++) {
+      const p = lumpy(0.1, 1.25, 0.8, 1, '#f1c840', 0.03); p.position.set(0.2 - i * 0.04, y0 + 0.06, -0.14 + i * 0.13); p.rotation.y = i * 1.3; g.add(p);
+    }
+  }
+  if (has('pollo_aji')) {
+    const s = mesh(new THREE.SphereGeometry(0.18, 16, 8), M('#f0a52a', { roughness: 0.3 }));
+    s.scale.set(1.15, 0.26, 0.9); s.position.set(-0.02, y0 + 0.02, 0.13); g.add(s);
+    polloAjiPieces(g, y0 + 0.04, 0.11, -0.02, 0.13);
   }
   if (has('guiso')) {
     const s = mesh(new THREE.SphereGeometry(0.17, 16, 8), M('#eab73f', { roughness: 0.32 }));
@@ -686,6 +707,17 @@ function wok3() {
   const loop = mesh(new THREE.TorusGeometry(0.08, 0.02, 6, 12), M('#2a2a2c', { metalness: 0.7 })); loop.position.set(-0.62, 0.3, 0); loop.rotation.x = Math.PI / 2; g.add(loop);
   return g;
 }
+// olla de barro (pollo al ají): panzona, de terracota, con dos asas y la salsa de ají adentro
+function ollaBarro3() {
+  const g = new THREE.Group();
+  const pts = [[0, 0], [0.3, 0.02], [0.52, 0.2], [0.6, 0.44], [0.53, 0.68], [0.44, 0.8], [0.48, 0.86], [0.44, 0.89]].map(([x, y]) => new THREE.Vector2(x, y));
+  g.add(mesh(new THREE.LatheGeometry(pts, 30), M('#7a3518', { roughness: 0.9, side: THREE.DoubleSide })));
+  const band = mesh(new THREE.TorusGeometry(0.6, 0.022, 6, 30), M('#e8c08a', { roughness: 0.8 })); band.rotation.x = Math.PI / 2; band.position.y = 0.46; g.add(band);
+  [-1, 1].forEach(k => { const h = mesh(new THREE.TorusGeometry(0.08, 0.025, 6, 12, Math.PI), M('#8a3f1f')); h.position.set(k * 0.53, 0.7, 0); h.rotation.set(0, k > 0 ? 0 : Math.PI, -k * 0.6); g.add(h); });
+  const sauce = mesh(new THREE.CylinderGeometry(0.43, 0.43, 0.02, 26), M('#f0a52a', { roughness: 0.3 })); sauce.position.y = 0.8; sauce.visible = false; g.add(sauce);
+  g.userData.sauce = sauce;
+  return g;
+}
 function blender3() {
   const g = new THREE.Group();
   const base = mesh(new THREE.BoxGeometry(0.42, 0.3, 0.42), M('#c63a2c', { roughness: 0.4 })); base.position.y = 0.15; g.add(base);
@@ -760,6 +792,11 @@ function buildStations() {
         g.add(counter3(s)); g.add(stove3(s));
         const p = KK('pan_A', 1.0); p.position.y = 1.21; p.rotation.y = facingOf(s) + Math.PI; g.add(p);
         s3.slot.position.y = 1.3; s3.slot.scale.setScalar(1.3); g.add(s3.slot); break;
+      }
+      case 'stew': {        // olla de barro sobre el fuego
+        g.add(counter3(s)); g.add(stove3(s));
+        const o = ollaBarro3(); o.position.y = 1.21; g.add(o); s3.extra.olla = o;
+        s3.slot.position.y = 1.96; s3.slot.scale.setScalar(1.15); g.add(s3.slot); break;
       }
       case 'wok': {
         g.add(counter3(s)); g.add(stove3(s));
@@ -943,6 +980,15 @@ function updStations(dt) {
         setSlot(s3.slot, s.state === 'done' ? (s.out === 'masa' ? (s.n === 1 ? 'masa1' : 'masa') : s.out) : s.items.length ? 'set|' + s.items.join(',') : null);
         s3.slot.rotation.y += s.state === 'mashing' && s.worked ? dt * 6 : 0;
         break;
+      case 'stew': {
+        const sauce = s3.extra.olla.userData.sauce;
+        sauce.visible = s.state !== 'idle' || s.items.includes('salsa_aji');
+        setSlot(s3.slot, s.state === 'idle' && s.items.length ? 'set|' + s.items.filter(x => x !== 'salsa_aji').join(',') : null);
+        if (s.state === 'done' && !s3.extra.oPiece) { s3.extra.oPiece = new THREE.Group(); polloAjiPieces(s3.extra.oPiece, 0, 0.16); s3.extra.oPiece.position.y = 1.98; s3.extra.oPiece.scale.setScalar(1.3); g.add(s3.extra.oPiece); }
+        if (s3.extra.oPiece) s3.extra.oPiece.visible = s.state !== 'idle';
+        if (s.state === 'cooking' && Math.random() < dt * 6) puff(g.position.x, 2.15, g.position.z);
+        break;
+      }
       case 'pan':
         setSlot(s3.slot, s.state === 'done' ? 'guiso' : s.items.length ? 'set|' + s.items.join(',') : null);
         if (s.state === 'cooking' && Math.random() < dt * 6) puff(g.position.x, 1.45, g.position.z);
@@ -1006,6 +1052,7 @@ function stationOverlay(s) {
     case 'board': if (s.state === 'chopping') { prog(s.t / T.board); hint(); } if (s.state === 'done') ready(); break;
     case 'bowl': if (s.state === 'idle' && bowlMatch(s.items)) { prog(0); hint(); } if (s.state === 'mashing') { prog(s.t / T.bowl); hint(); } if (s.state === 'done') pill(s.out === 'masa' ? '¡LISTO! ×' + s.n + (s.n === 1 ? ' capa' : ' capas') : '¡LISTO!', c.x, c.y, '#2f8a3b', '#ffffff', 11); break;
     case 'pan': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.pan, '#f4b83c', 9); if (s.state === 'done') ready(); break;
+    case 'stew': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.stew, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'wok': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.wok, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'balde': if (s.state === 'filling') bar(bx, c.y - 5, 56, s.t / T.balde, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'blender': {

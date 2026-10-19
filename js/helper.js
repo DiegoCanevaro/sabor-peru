@@ -20,6 +20,8 @@ const boardHas = p => boards().filter(b => b.product === p && b.state !== 'empty
 // ¿al bowl le falta este ingrediente para la receta que se está armando?
 const bowlNeeds = t => { const Bw = byKind('bowl'); return !!Bw && Bw.state === 'idle' && bowlAccepts(Bw.items, t); };
 const count = (arr, x) => arr.filter(y => y === x).length;
+// ¿a la olla de barro le falta este ingrediente?
+const stewNeeds = t => { const S = byKind('stew'); return !!S && S.state === 'idle' && !S.items.includes(t); };
 
 // ---- Mesa donde se arma el plato del pedido: la que ya tiene un plato compatible (la más avanzada)
 function planTable(D) {
@@ -42,11 +44,12 @@ function usable(D, h) {
   const wokNeeds = t => !!Wk && Wk.state === 'idle' && !Wk.items.includes(t);
   const inPlate = () => { const A = planTable(D); return !!A && canAdd(D, A.item, PART_OF_ITEM[h.type]); };
   switch (h.type) {
-    case 'pollo_raw': if (D.id === 'chaufa') return Bd.state === 'empty'; return !!freePot(h.type);      // chaufa: el pollo se corta crudo
+    case 'pollo_raw': if (D.id === 'chaufa') return Bd.state === 'empty'; if (D.id === 'pollo_aji') return stewNeeds('pollo_raw'); return !!freePot(h.type);      // chaufa: el pollo se corta crudo
     case 'papa_raw': case 'arroz_raw': return !!freePot(h.type);
-    case 'papa_cooked': return D.id === 'causa' ? (Bw.state === 'idle' && nOf(Bw.items, h.type) < BOWL_NEED.papa_cooked) : Bd.state === 'empty';
+    case 'papa_cooked': if (D.id === 'pollo_aji') return inPlate(); return D.id === 'causa' ? (Bw.state === 'idle' && nOf(Bw.items, h.type) < BOWL_NEED.papa_cooked) : Bd.state === 'empty';
     case 'pollo_cooked': case 'palta': case 'cebolla_china': case 'cebolla_roja': case 'aji_limo': return !!freeBoard();
-    case 'pota_cortada': case 'cebolla_cuadros': case 'aji_limo_picado': case 'limon': return bowlNeeds(h.type);
+    case 'cebolla_cuadros': if (D.id === 'pollo_aji') return stewNeeds(h.type); return bowlNeeds(h.type);
+    case 'pota_cortada': case 'aji_limo_picado': case 'limon': return bowlNeeds(h.type);
     case 'vaso': return !!byKind('balde') && byKind('balde').state === 'idle';
     case 'chicha': return true;
     case 'cebolla_picada': case 'sillao': case 'huevo': case 'pollo_cuadros': return wokNeeds(h.type);
@@ -58,18 +61,19 @@ function usable(D, h) {
     case 'pollo_shred':
       if (D.id === 'chaufa') return wokNeeds('pollo_shred');
       return D.id === 'causa' ? inPlate() : (Pn.state === 'idle' && !Pn.items.includes('pollo_shred'));
-    case 'salsa_aji': return Pn.state === 'idle' && !Pn.items.includes('salsa_aji');
+    case 'salsa_aji': if (D.id === 'pollo_aji') return stewNeeds('salsa_aji'); return Pn.state === 'idle' && !Pn.items.includes('salsa_aji');
     case 'plate': return plateDone(h) || (fits(D, h) && !planTable(D));
     default: return inPlate();      // papa_sliced, arroz_cooked, guiso, salsa, masa, palta_sliced
   }
 }
 function destination(D, h) {
   switch (h.type) {
-    case 'pollo_raw': if (D.id === 'chaufa') return g('board'); return freePot(h.type) || POTS[0];
+    case 'pollo_raw': if (D.id === 'chaufa') return g('board'); if (D.id === 'pollo_aji') return byKind('stew'); return freePot(h.type) || POTS[0];
     case 'papa_raw': case 'arroz_raw': return freePot(h.type) || POTS[0];
-    case 'papa_cooked': return D.id === 'causa' ? byKind('bowl') : g('board');
+    case 'papa_cooked': return D.id === 'causa' ? byKind('bowl') : D.id === 'pollo_aji' ? planTable(D) : g('board');
     case 'pollo_cooked': case 'palta': case 'cebolla_china': case 'cebolla_roja': case 'aji_limo': return freeBoard() || g('board');
-    case 'pota_cortada': case 'cebolla_cuadros': case 'aji_limo_picado': case 'limon': return byKind('bowl');
+    case 'cebolla_cuadros': return D.id === 'pollo_aji' ? byKind('stew') : byKind('bowl');
+    case 'pota_cortada': case 'aji_limo_picado': case 'limon': return byKind('bowl');
     case 'vaso': return byKind('balde');
     case 'chicha': return g('counter');
     case 'cebolla_picada': case 'sillao': case 'huevo': case 'pollo_cuadros': return byKind('wok');
@@ -77,7 +81,7 @@ function destination(D, h) {
     case 'aji': return D.id === 'causa' ? byKind('bowl') : BL();
     case 'queso': case 'leche': case 'galleta': return BL();
     case 'pollo_shred': return D.id === 'chaufa' ? byKind('wok') : D.id === 'causa' ? planTable(D) : byKind('pan');
-    case 'salsa_aji': return byKind('pan');
+    case 'salsa_aji': return D.id === 'pollo_aji' ? byKind('stew') : byKind('pan');
     case 'plate': return plateDone(h) ? g('counter') : (buildSpot() || g('trash'));
     default: return planTable(D);
   }
@@ -159,6 +163,32 @@ const PLANS = {
     if (guisoUnits < 1 && cremaUnit < 1 && Bl.state === 'idle' && count(Bl.items, 'aji') + cnt('aji') < 1) return { s: g('crate_aji') };
     return null;
   }
+};
+
+// Pollo al ají: pollo crudo, cebolla en cuadros (tabla) y crema de ají (licuadora) van a la olla de barro.
+// Al plato: arroz (olla), papa sancochada entera (olla) y el pollo al ají.
+PLANS.pollo_aji = function (D) {
+  const A = planTable(D), Bd = freeBoard() || g('board'), Bl = BL(), S = byKind('stew'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
+  if (S.state === 'done' && pl && !has('pollo_aji')) return { s: S };
+  if (Bl.state === 'done' && Bl.out === 'salsa_aji' && stewNeeds('salsa_aji')) return { s: Bl };
+  const bd = boards().find(b => b.state === 'done' && b.product === 'cebolla_cuadros');
+  if (bd && stewNeeds('cebolla_cuadros')) return { s: bd };
+  const arrozDone = potWith('arroz_raw'), papaDone = potWith('papa_raw');
+  if (arrozDone && pl && !has('arroz')) return { s: arrozDone, want: 'arroz_raw' };
+  if (papaDone && pl && !has('papa_entera')) return { s: papaDone, want: 'papa_raw' };
+  const inS = x => S.items.includes(x) ? 1 : 0, stewOn = S.state !== 'idle' || has('pollo_aji') || cnt('pollo_aji') > 0;
+  const arroz = (has('arroz') ? 1 : 0) + cnt('arroz_cooked') + potN('arroz_raw') + cnt('arroz_raw');
+  const papa = (has('papa_entera') ? 1 : 0) + cnt('papa_cooked') + potN('papa_raw') + cnt('papa_raw');
+  if (arroz < 1 && freePot('arroz_raw')) return { s: g('crate_arroz_raw') };
+  if (papa < 1 && freePot('papa_raw')) return { s: g('crate_papa_raw') };
+  if (stewOn) return null;
+  const crema = inS('salsa_aji') + cnt('salsa_aji') + ((Bl.state === 'blending' || Bl.state === 'done') && Bl.out === 'salsa_aji' ? 1 : 0) + (Bl.state === 'idle' ? count(Bl.items, 'aji') : 0) + cnt('aji');
+  const cebolla = inS('cebolla_cuadros') + cnt('cebolla_cuadros') + boardHas('cebolla_cuadros') + cnt('cebolla_roja');
+  const pollo = inS('pollo_raw') + cnt('pollo_raw');
+  if (crema < 1 && Bl.state === 'idle') return { s: g('crate_aji') };
+  if (cebolla < 1 && freeBoard()) return { s: g('crate_cebolla_roja') };
+  if (pollo < 1) return { s: g('crate_pollo_raw') };
+  return null;
 };
 
 // Arroz chaufa: todo va al wok: arroz cocido (olla), pollo crudo cortado en cuadros (tabla), cebolla china picada (tabla),
@@ -249,7 +279,7 @@ function unblockPlan(idle) {
   for (const s of st) {
     if (s.kind === 'board' && s.state === 'done') return { s };
     if (s.kind === 'pot' && s.slots.some(x => x.done)) return { s };
-    if ((s.kind === 'bowl' || s.kind === 'blender' || s.kind === 'pan' || s.kind === 'wok') && s.state === 'done') return { s };
+    if ((s.kind === 'bowl' || s.kind === 'blender' || s.kind === 'pan' || s.kind === 'wok' || s.kind === 'stew') && s.state === 'done') return { s };
   }
   // proceso a medias que nadie sigue (p. ej. una mezcla que no sirve): terminarlo manteniendo, luego se retira y se tira
   for (const s of st) {

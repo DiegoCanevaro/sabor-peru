@@ -40,6 +40,19 @@ const DISHES = {
     howto: { rows: [{ ings: ['pollo_raw'], tools: ['pot', 'board'] }, { ings: ['aji'], tools: ['blender'] }], merge: 'pan', extras: [{ ings: ['arroz_raw'], tools: ['pot'] }, { ings: ['papa_raw'], tools: ['pot', 'board'] }] },
     recipe: RECIPES.aji
   },
+  // Nivel 1-4: Pollo al ají. Todo a la olla de barro (pollo, cebolla en cuadros y ají amarillo licuado);
+  // se sirve con papa sancochada entera y arroz. El ají sigue siendo el protagonista del Mundo 1.
+  pollo_aji: {
+    id: 'pollo_aji', level: 4, name: 'Pollo al Ají', short: 'Pollo al ají', icon: '🍛', course: 'segundo',
+    kind: 'set', parts: ['arroz', 'papa_entera', 'pollo_aji'],
+    partName: { arroz: 'Arroz cocido', papa_entera: 'Papa sancochada', pollo_aji: 'Pollo al ají' },
+    patience: 125,
+    uses: ['arroz_raw', 'arroz_cooked', 'papa_raw', 'papa_cooked', 'pollo_raw', 'cebolla_roja', 'cebolla_cuadros', 'aji', 'salsa_aji', 'pollo_aji'],
+    blend: ['aji'],
+    ticket: { slots: [{ id: 'pollo_raw', t: ['stew'] }, { id: 'cebolla_roja', t: ['board', 'stew'] }, { id: 'aji', t: ['blender', 'stew'] }, { id: 'arroz_raw', t: ['pot'] }, { id: 'papa_raw', t: ['pot'] }] },
+    howto: { rows: [{ ings: ['pollo_raw'], tools: [] }, { ings: ['cebolla_roja'], tools: ['board'] }, { ings: ['aji'], tools: ['blender'] }], merge: 'stew', extras: [{ ings: ['arroz_raw'], tools: ['pot'] }, { ings: ['papa_raw'], tools: ['pot'] }] },
+    recipe: RECIPES.pollo_aji
+  },
   // Kevin: comida de la calle (niveles independientes de los mundos)
   // Cebiche de pota carretillero: la pota (en cuadros) y el camote ya vienen listos. Se pide con o sin ají.
   cebiche_pota: {
