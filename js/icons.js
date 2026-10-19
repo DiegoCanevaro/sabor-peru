@@ -275,13 +275,21 @@ const TOOL_ICONS = {
 };
 
 // ---------- imágenes de ingredientes (se cargan una vez) ----------
-const ING_IMG = {};
-const ICONS_READY = Promise.all(Object.entries(typeof ING_IMAGES !== 'undefined' ? ING_IMAGES : {}).map(([k, src]) => new Promise(res => {
-  const im = new Image(); im.onload = () => { ING_IMG[k] = im; res(); }; im.onerror = res; im.src = src;
-})));
+const ING_IMG = {}, TOOL_IMG = {};
+const loadImgs = (srcs, into) => Object.entries(srcs || {}).map(([k, src]) => new Promise(res => {
+  const im = new Image(); im.onload = () => { into[k] = im; res(); }; im.onerror = res; im.src = src;
+}));
+const ICONS_READY = Promise.all(loadImgs(typeof ING_IMAGES !== 'undefined' ? ING_IMAGES : null, ING_IMG)
+  .concat(loadImgs(typeof TOOL_IMAGES !== 'undefined' ? TOOL_IMAGES : null, TOOL_IMG)));
+// herramienta: la ilustración si existe (js/tool-images.js), si no el dibujo
+function drawTool(c, kind) {
+  const im = TOOL_IMG[kind];
+  if (im) { lblShadow(c, 80, 62); c.drawImage(im, -96, -96, 192, 192); return; }
+  (TOOL_ICONS[kind] || (() => {}))(c);
+}
 // dibuja un ingrediente en el cuadro -100..100
 function drawIngredient(c, id) {
-  const im = ING_IMG[id];
+  const im = ING_IMG[id] || (id === 'vaso' && TOOL_IMG.cups);      // el vaso vacío es la misma ilustración de los vasos
   if (im) { lblShadow(c, 78, 64); c.drawImage(im, -92, -92, 184, 184); return; }
   const draw = LABEL_ICONS[id];
   if (draw) { draw(c); return; }
@@ -304,7 +312,7 @@ function iconCanvas(drawFn, px, circle) {
 }
 const labelCanvas = (id, px) => iconCanvas(c => drawIngredient(c, id), px || 256, true);
 const ingCanvas = (id, px, circle) => iconCanvas(c => drawIngredient(c, id), px, circle);
-const toolCanvas = (kind, px, circle) => iconCanvas(c => (TOOL_ICONS[kind] || (() => {}))(c), px, circle);
+const toolCanvas = (kind, px, circle) => iconCanvas(c => drawTool(c, kind), px, circle);
 // para el HTML (tickets): un elemento con el icono
 function iconEl(kind, id, px) {
   const cnv = kind === 'tool' ? toolCanvas(id, px) : ingCanvas(id, px);

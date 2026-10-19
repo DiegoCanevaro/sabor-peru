@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="css/mobile.css">
 </head>
 <body class="menu">
-<button id="fsBtn" class="fsBtn" title="Pantalla completa">⛶ Pantalla completa</button>
+<button class="fsBtn" title="Pantalla completa">⛶ Pantalla completa</button>
 <main class="menuCard title">
   <div class="flagStripe"><i></i><i></i><i></i></div>
   <div class="heroDishes" id="heroDishes"></div>
@@ -31,21 +31,8 @@
 <script src="js/dish-images.js"></script>
 <script src="js/dish-icons.js"></script>
 <script>['huancaina', 'aji', 'causa'].forEach((d, i) => { const c = dishIcon(d, i === 1 ? 120 : 96); document.getElementById('heroDishes').appendChild(c); });</script>
+<script src="js/fullscreen.js"></script>
 <script src="js/mobile.js"></script>
-<script>
-// pantalla completa (si el navegador lo permite; el iPhone no deja ponerla en una página)
-(function () {
-  const b = document.getElementById('fsBtn'), el = document.documentElement;
-  const req = el.requestFullscreen || el.webkitRequestFullscreen, exit = document.exitFullscreen || document.webkitExitFullscreen;
-  if (!req) { b.remove(); return; }
-  const isFs = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
-  const upd = () => { b.textContent = isFs() ? '✕ Salir de pantalla completa' : '⛶ Pantalla completa'; };
-  b.addEventListener('click', () => {
-    if (isFs()) exit.call(document);
-    else Promise.resolve(req.call(el)).then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape')).catch(() => {});
-  });
-  document.addEventListener('fullscreenchange', upd); document.addEventListener('webkitfullscreenchange', upd);
-})();
-</script>
+
 </body>
 </html>

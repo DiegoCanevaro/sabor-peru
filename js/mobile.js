@@ -33,18 +33,7 @@
   if (wrap) new MutationObserver(fit).observe(wrap, { subtree: true, attributes: true, attributeFilter: ['class'] });
   fit();
 
-  // ---- pantalla completa + horizontal (solo en navegadores que lo permiten; iPhone no deja bloquear) ----
-  function landscape() {
-    const el = document.documentElement, req = el.requestFullscreen || el.webkitRequestFullscreen;
-    if (!req || document.fullscreenElement || document.webkitFullscreenElement) return lock();
-    Promise.resolve(req.call(el)).then(lock).catch(() => {}).then(() => setTimeout(fit, 300));
-  }
-  function lock() {
-    try { if (screen.orientation && screen.orientation.lock) return screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
-  }
-  // cualquier botón de juego (Jugar, niveles, Empezar) lo intenta; al cambiar de página el navegador sale de pantalla
-  // completa, así que se vuelve a pedir en cada página
-  document.addEventListener('click', e => { if (e.target.closest('.gamebtn, .levelCard, a[href*="nivel"], a[href*="kevin"]')) landscape(); }, true);
+  // pantalla completa + horizontal: js/fullscreen.js (se mantiene al pasar de una página a otra)
   // en vertical el aviso tapa la página: ningún toque pasa por debajo
   block.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
 

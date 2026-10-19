@@ -177,3 +177,7 @@ body:not(.playing) #pauseBtn, body:not(.playing) #botBtn { visibility: hidden; }
 .touchOnly { display: none; }
 body.mobile .touchOnly { display: list-item; }
 body.mobile .pcOnly { display: none; }
+
+/* marco de pantalla completa (js/fullscreen.js): las páginas siguientes se abren dentro, ocupándolo todo */
+body.shell > *:not(#shellFrame) { display: none !important; }
+#shellFrame { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; z-index: 2000; background: #1a0f08; }
