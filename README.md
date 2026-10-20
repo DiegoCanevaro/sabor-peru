@@ -18,7 +18,9 @@ Juego de cocina peruana estilo Overcooked que enseña recetas reales. Se juega e
 | | 1-3 | Ají de Gallina |
 | | 1-4 | Pollo al Ají |
 | | 1-5 | Lomo Saltado (wok y freidora) |
-| 2 · Chifa | 2-1 | Arroz Chaufa |
+| 2 · Chifa | 2-1 | Entradas de chifa: Sopa Wantán y Wantán Frito |
+| | 2-2 | Arroz Chaufa |
+| | 2-3 | Tallarín Saltado |
 | Kevin · Comida de la calle (carretilla cebichera) | K-9 | Cebiche de Pota con o sin ají + Chicha Morada |
 | | K-10 | Anticuchos, rachi y pancita (carretilla de noche: tabla → bowl con salsa anticuchera → palitos → parrilla) |
 

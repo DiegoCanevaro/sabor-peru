@@ -122,8 +122,44 @@ const DISHES = {
     recipe: ''
   },
   // Mundo 2 (chifa)
+  // Nivel 2-1: entradas de chifa. Los wantanes se arman en el bowl (masa + cerdo picado en la tabla);
+  // fritos en la freidora o en la olla de caldo con cebolla china picada para la sopa.
+  wantan_frito: {
+    id: 'wantan_frito', level: 6, name: 'Wantán Frito', short: 'Wantán frito', icon: '🥟', course: 'entrada',
+    kind: 'set', parts: ['wantan_frito'],
+    partName: { wantan_frito: 'Wantán frito' },
+    patience: 100,
+    uses: ['wantan', 'cerdo', 'cerdo_picado', 'wantan_crudo', 'wantan_frito'],
+    blend: null,
+    ticket: { slots: [{ id: 'wantan', t: ['bowl', 'fryer'] }, { id: 'cerdo', t: ['board', 'bowl', 'fryer'] }] },
+    howto: { rows: [{ ings: ['cerdo'], tools: ['board'] }, { ings: ['wantan'], tools: [] }], merge: 'bowl', after: ['fryer'] },
+    recipe: RECIPES.wantan
+  },
+  sopa_wantan: {
+    id: 'sopa_wantan', level: 6, name: 'Sopa Wantán', short: 'Sopa wantán', icon: '🍜', course: 'entrada',
+    kind: 'set', parts: ['sopa'],
+    partName: { sopa: 'Sopa wantán' },
+    patience: 110,
+    uses: ['wantan', 'cerdo', 'cerdo_picado', 'wantan_crudo', 'cebolla_china', 'cebolla_picada', 'sopa'],
+    blend: null,
+    ticket: { slots: [{ id: 'wantan', t: ['bowl', 'stew'] }, { id: 'cerdo', t: ['board', 'bowl', 'stew'] }, { id: 'cebolla_china', t: ['board', 'stew'] }] },
+    howto: { rows: [{ ings: ['cerdo'], tools: ['board'] }, { ings: ['wantan'], tools: [] }], merge: 'bowl', after: ['stew'], afterWith: { ings: ['cebolla_china'], tools: ['board'] } },
+    recipe: RECIPES.wantan
+  },
+  // Nivel 2-3: tallarín saltado: tallarines cocidos (olla) + carne, cebolla y tomate (tabla) + sillao, todo al wok
+  tallarin_saltado: {
+    id: 'tallarin_saltado', level: 8, name: 'Tallarín Saltado', short: 'Tallarín saltado', icon: '🍝', course: 'segundo',
+    kind: 'set', parts: ['tallarin_saltado'],
+    partName: { tallarin_saltado: 'Tallarín saltado' },
+    patience: 140,
+    uses: ['tallarines', 'tallarin_cocido', 'carne', 'carne_cubos', 'cebolla_roja', 'cebolla_juliana', 'tomate', 'tomate_juliana', 'sillao', 'tallarin_saltado'],
+    blend: null,
+    ticket: { slots: [{ id: 'tallarines', t: ['pot', 'wok'] }, { id: 'carne', t: ['board', 'wok'] }, { id: 'cebolla_roja', t: ['board', 'wok'] }, { id: 'tomate', t: ['board', 'wok'] }, { id: 'sillao', t: ['wok'] }] },
+    howto: { rows: [{ ings: ['tallarines'], tools: ['pot'] }, { ings: ['carne'], tools: ['board'] }, { ings: ['cebolla_roja'], tools: ['board'] }, { ings: ['tomate'], tools: ['board'] }, { ings: ['sillao'], tools: [] }], merge: 'wok' },
+    recipe: RECIPES.tallarin_saltado
+  },
   chaufa: {
-    id: 'chaufa', level: 4, name: 'Arroz Chaufa', short: 'Chaufa', icon: '🍛', course: 'segundo',
+    id: 'chaufa', level: 7, name: 'Arroz Chaufa', short: 'Chaufa', icon: '🍛', course: 'segundo',
     kind: 'set', parts: ['chaufa'],
     partName: { chaufa: 'Arroz chaufa' },
     patience: 120,

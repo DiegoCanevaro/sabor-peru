@@ -13,7 +13,7 @@
   ov.querySelectorAll('h1, p').forEach(e => e.remove());
   ov.classList.add('howtoOverlay');
   const W = 900, rowH = 74, gapSec = 24;
-  const rowsOf = id => { const h = DISHES[id].howto; return h.rows.length + (h.extras || []).length; };
+  const rowsOf = id => { const h = DISHES[id].howto; return h.rows.length + (h.afterWith ? 1 : 0) + (h.extras || []).length; };
   const H = 120 + ids.reduce((a, id) => a + rowsOf(id) * rowH, 0) + (ids.length - 1) * gapSec + 40;
   const cnv = document.createElement('canvas'), dpr = Math.min(2, window.devicePixelRatio || 1);
   cnv.width = W * dpr; cnv.height = H * dpr; cnv.id = 'howto';
@@ -92,11 +92,11 @@
     return x;
   }
   function section(id, y0) {
-    const h = DISHES[id].howto, rows = h.rows, extras = h.extras || [];
-    const n = rows.length + extras.length, yc = i => y0 + rowH * i + rowH / 2;
+    const h = DISHES[id].howto, rows = h.rows, extras = h.extras || [], aw = h.afterWith ? 1 : 0;
+    const n = rows.length + aw + extras.length, yc = i => y0 + rowH * i + rowH / 2;
     const after = h.after || [], xMerge = after.length ? 470 - (after.length - 1) * 30 : 560, xDish = 770, yRowsMid = (yc(0) + yc(rows.length - 1)) / 2, yDish = (yc(0) + yc(n - 1)) / 2;
     const ends = rows.map((r, i) => [chain(r, yc(i)), yc(i)]);
-    const extraEnds = extras.map((r, i) => [chain(r, yc(rows.length + i)), yc(rows.length + i)]);
+    const extraEnds = extras.map((r, i) => [chain(r, yc(rows.length + aw + i)), yc(rows.length + aw + i)]);
     if (h.merge) {
       ends.forEach(([x, y]) => arrow(x + 4, y, xMerge - 46, yRowsMid + (y - yRowsMid) * 0.25));
       tool(h.merge, xMerge, yRowsMid, true);
@@ -104,6 +104,8 @@
       // pasos después de juntar (p. ej. ensartar y asar los anticuchos)
       let xa = xMerge + 46;
       after.forEach((t, i) => { const xt = xMerge + 100 + i * 90; arrow(xa, yRowsMid, xt - 34, yRowsMid); tool(t, xt, yRowsMid); xa = xt + 34; });
+      // un ingrediente que se echa directo en el último paso (p. ej. la cebolla china en la olla de la sopa)
+      if (h.afterWith) { const y = yc(rows.length), xe = chain(h.afterWith, y); arrow(xe + 4, y, xa - 50, yRowsMid + 26); }
       arrow(xa, yRowsMid, xDish - 70, yDish);
     } else ends.forEach(([x, y]) => arrow(x + 4, y, xDish - 70, yDish + (y - yDish) * 0.3));
     extraEnds.forEach(([x, y]) => arrow(x + 4, y, xDish - 70, yDish + (y - yDish) * 0.3));

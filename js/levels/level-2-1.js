@@ -1,8 +1,11 @@
-// Nivel 2-1: Arroz Chaufa (primer nivel del Mundo 2: chifa)
-// Primer nivel del mundo: solo se pide su propio plato. Aparece el wok.
+// Nivel 2-1: Entradas de chifa (primer nivel del Mundo 2)
+// Sopa wantán y wantán frito. Los wantanes se arman en el bowl: masa + cerdo picado (tabla).
+// Fritos en la freidora; para la sopa van a la olla de caldo con cebolla china picada.
 const LEVEL = {
-  id: '2-1', world: 2, title: 'Nivel 2-1: Arroz Chaufa',
-  own: 'chaufa', dishes: ['chaufa'],
-  crates: ['arroz_raw', 'pollo_raw', 'cebolla_china', 'huevo', 'sillao'],
-  left: ['pot', 'pot', 'board', 'wok'], right: []
+  id: '2-1', world: 2, title: 'Nivel 2-1: Entradas de chifa',
+  own: 'wantan_frito', dishes: ['wantan_frito', 'sopa_wantan'],
+  crates: ['wantan', 'cerdo', 'cebolla_china'],
+  left: ['stew', 'board', 'board', 'bowl', 'fryer'], right: [],
+  customers: 4,
+  intro: ['wantan_frito', 'sopa_wantan']
 };

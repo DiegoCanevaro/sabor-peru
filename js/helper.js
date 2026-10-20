@@ -21,7 +21,7 @@ const boardHas = p => boards().filter(b => b.product === p && b.state !== 'empty
 const bowlNeeds = t => { const Bw = byKind('bowl'); return !!Bw && Bw.state === 'idle' && bowlAccepts(Bw.items, t); };
 const count = (arr, x) => arr.filter(y => y === x).length;
 // ¿a la olla del guiso le falta este ingrediente?
-const stewNeeds = t => { const S = byKind('stew'); return !!S && S.state === 'idle' && !S.items.includes(t); };
+const stewNeeds = t => { const S = byKind('stew'); return !!S && S.state === 'idle' && stewAccepts(S.items, t); };
 
 // ---- Mesa donde se arma el plato del pedido: la que ya tiene un plato compatible (la más avanzada)
 function planTable(D) {
@@ -47,7 +47,11 @@ function usable(D, h) {
   switch (h.type) {
     case 'pollo_raw': if (D.id === 'chaufa') return Bd.state === 'empty'; if (D.id === 'pollo_aji') return stewNeeds('pollo_raw'); return !!freePot(h.type);      // chaufa: el pollo se corta crudo
     case 'papa_raw': if (D.id === 'lomo_saltado') return !!freeBoard(); return !!freePot(h.type);
-    case 'arroz_raw': return !!freePot(h.type);
+    case 'arroz_raw': case 'tallarines': return !!freePot(h.type);
+    case 'cerdo': return !!freeBoard();
+    case 'cerdo_picado': case 'wantan': return bowlNeeds(h.type);
+    case 'wantan_crudo': return D.id === 'wantan_frito' ? (!!Fr && Fr.state === 'idle') : stewNeeds('wantan_crudo');
+    case 'tallarin_cocido': return wokNeeds(h.type);
     case 'carne': case 'tomate': return !!freeBoard();
     case 'carne_cubos': case 'tomate_juliana': case 'cebolla_juliana': return wokNeeds(h.type);
     case 'papa_baston': return !!Fr && Fr.state === 'idle';
@@ -62,7 +66,8 @@ function usable(D, h) {
     case 'pota_cortada': case 'aji_limo_picado': case 'limon': return bowlNeeds(h.type);
     case 'vaso': return !!byKind('balde') && byKind('balde').state === 'idle';
     case 'chicha': return true;
-    case 'cebolla_picada': case 'sillao': case 'huevo': case 'pollo_cuadros': return wokNeeds(h.type);
+    case 'cebolla_picada': if (D.id === 'sopa_wantan') return stewNeeds(h.type); return wokNeeds(h.type);
+    case 'sillao': case 'huevo': case 'pollo_cuadros': return wokNeeds(h.type);
     case 'arroz_cooked': if (D.id === 'chaufa') return wokNeeds('arroz_cooked'); return inPlate();
     case 'aji':
       if (D.id === 'causa') return Bw.state === 'idle' && !Bw.items.includes('aji');
@@ -80,7 +85,11 @@ function destination(D, h) {
   switch (h.type) {
     case 'pollo_raw': if (D.id === 'chaufa') return g('board'); if (D.id === 'pollo_aji') return byKind('stew'); return freePot(h.type) || POTS[0];
     case 'papa_raw': if (D.id === 'lomo_saltado') return freeBoard() || g('board'); return freePot(h.type) || POTS[0];
-    case 'arroz_raw': return freePot(h.type) || POTS[0];
+    case 'arroz_raw': case 'tallarines': return freePot(h.type) || POTS[0];
+    case 'cerdo': return freeBoard() || g('board');
+    case 'cerdo_picado': case 'wantan': return byKind('bowl');
+    case 'wantan_crudo': return D.id === 'wantan_frito' ? byKind('fryer') : byKind('stew');
+    case 'tallarin_cocido': return byKind('wok');
     case 'carne': case 'tomate': return freeBoard() || g('board');
     case 'carne_cubos': case 'tomate_juliana': case 'cebolla_juliana': return byKind('wok');
     case 'papa_baston': return byKind('fryer');
@@ -94,7 +103,8 @@ function destination(D, h) {
     case 'pota_cortada': case 'aji_limo_picado': case 'limon': return byKind('bowl');
     case 'vaso': return byKind('balde');
     case 'chicha': return g('counter');
-    case 'cebolla_picada': case 'sillao': case 'huevo': case 'pollo_cuadros': return byKind('wok');
+    case 'cebolla_picada': return D.id === 'sopa_wantan' ? byKind('stew') : byKind('wok');
+    case 'sillao': case 'huevo': case 'pollo_cuadros': return byKind('wok');
     case 'arroz_cooked': return D.id === 'chaufa' ? byKind('wok') : planTable(D);
     case 'aji': return D.id === 'causa' ? byKind('bowl') : BL();
     case 'queso': case 'leche': case 'galleta': return BL();
@@ -269,6 +279,51 @@ function parrillaPlan(D) {
   return null;
 }
 PLANS.anticuchos = parrillaPlan; PLANS.rachi = parrillaPlan; PLANS.pancita = parrillaPlan;
+
+// Wantanes: el cerdo se pica (tabla) y se arma con la masa en el bowl. Fritos: a la freidora. Sopa: a la olla de caldo
+// con la cebolla china picada.
+function wantanPlan(D) {
+  const frito = D.id === 'wantan_frito', part = frito ? 'wantan_frito' : 'sopa';
+  const A = planTable(D), Bw = byKind('bowl'), S = byKind('stew'), Fr = byKind('fryer'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
+  if (frito && Fr.state === 'done' && Fr.item === 'wantan_crudo' && pl && !has(part)) return { s: Fr };
+  if (!frito && S.state === 'done' && S.out === 'sopa' && pl && !has(part)) return { s: S };
+  if (Bw.state === 'done' && Bw.out === 'wantan_crudo' && (frito ? Fr.state === 'idle' : stewNeeds('wantan_crudo'))) return { s: Bw };
+  const bd = boards().find(b => b.state === 'done' && b.product === 'cerdo_picado' && bowlNeeds('cerdo_picado'));
+  if (bd) return { s: bd };
+  if (!frito) { const cb = boards().find(b => b.state === 'done' && b.product === 'cebolla_picada' && stewNeeds('cebolla_picada')); if (cb) return { s: cb }; }
+  const cooking = frito ? (Fr.state !== 'idle' && Fr.item === 'wantan_crudo') : (S.state !== 'idle' && S.out === 'sopa');
+  if (has(part) || cnt(part) > 0 || cooking) return null;
+  const wan = cnt('wantan_crudo') + (Bw.state !== 'idle' && Bw.out === 'wantan_crudo' ? 1 : 0) + (!frito && S.state === 'idle' && S.items.includes('wantan_crudo') ? 1 : 0);
+  if (wan < 1 && Bw.state === 'idle') {
+    const inB = x => Bw.items.includes(x);
+    if (!inB('cerdo_picado') && cnt('cerdo_picado') + boardHas('cerdo_picado') + cnt('cerdo') < 1 && freeBoard()) return { s: g('crate_cerdo') };
+    if (!inB('wantan') && cnt('wantan') < 1) return { s: g('crate_wantan') };
+  }
+  if (!frito) {
+    const ceb = (S.state === 'idle' && S.items.includes('cebolla_picada') ? 1 : 0) + cnt('cebolla_picada') + boardHas('cebolla_picada') + cnt('cebolla_china');
+    if (ceb < 1 && freeBoard()) return { s: g('crate_cebolla_china') };
+  }
+  return null;
+}
+PLANS.wantan_frito = wantanPlan; PLANS.sopa_wantan = wantanPlan;
+// Tallarín saltado: tallarines cocidos (olla) + carne en cubos, cebolla y tomate en juliana (tablas) + sillao, todo al wok.
+PLANS.tallarin_saltado = function (D) {
+  const A = planTable(D), Wk = byKind('wok'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
+  const wokNeeds = t => Wk.state === 'idle' && wokAccepts(Wk.items, t);
+  if (Wk.state === 'done' && Wk.out === 'tallarin_saltado' && pl && !has('tallarin_saltado')) return { s: Wk };
+  const bd = boards().find(b => b.state === 'done' && ['carne_cubos', 'tomate_juliana', 'cebolla_juliana'].includes(b.product) && wokNeeds(b.product));
+  if (bd) return { s: bd };
+  const td = potWith('tallarines');
+  if (td && wokNeeds('tallarin_cocido')) return { s: td, want: 'tallarines' };
+  if (Wk.state !== 'idle' || has('tallarin_saltado') || cnt('tallarin_saltado') > 0) return null;
+  const inW = x => Wk.items.includes(x) ? 1 : 0;
+  if (inW('tallarin_cocido') + cnt('tallarin_cocido') + potN('tallarines') + cnt('tallarines') < 1 && freePot('tallarines')) return { s: g('crate_tallarines') };
+  for (const [cut, crate] of [['carne_cubos', 'carne'], ['cebolla_juliana', 'cebolla_roja'], ['tomate_juliana', 'tomate']]) {
+    if (inW(cut) + cnt(cut) + boardHas(cut) + cnt(crate) < 1 && freeBoard()) return { s: g('crate_' + crate) };
+  }
+  if (inW('sillao') + cnt('sillao') < 1) return { s: g('crate_sillao') };
+  return null;
+};
 
 // Arroz chaufa: todo va al wok: arroz cocido (olla), pollo crudo cortado en cuadros (tabla), cebolla china picada (tabla),
 // huevo y sillao (directo). El chaufa listo va al plato.

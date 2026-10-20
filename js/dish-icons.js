@@ -27,6 +27,18 @@ function diOlive(c, x, y, s) {
   c.restore();
 }
 const DISH_ICONS = {
+  // Wantán frito (provisional): pañuelitos dorados y crocantes con una salsita de tamarindo
+  wantan_frito(c) {
+    diPlate(c);
+    [[-34, 4, -0.4], [26, -6, 0.3], [-4, 26, 0.1], [36, 30, -0.2]].forEach(([x, y, r]) => {
+      c.save(); c.translate(x, y); c.rotate(r);
+      diShape(c, '#e9a93a', c => { c.moveTo(0, -30); c.quadraticCurveTo(20, -8, 34, 14); c.quadraticCurveTo(0, 26, -34, 14); c.quadraticCurveTo(-20, -8, 0, -30); c.closePath(); }, 5);
+      diShape(c, '#c9782a', c => c.ellipse(0, 6, 12, 8, 0, 0, 7), 3);
+      diShine(c, -8, -8, 8, 4, -0.5, 0.5);
+      c.restore();
+    });
+    diShape(c, '#8a2a14', c => c.ellipse(-46, -30, 18, 12, 0, 0, 7), 4);
+  },
   // Papa a la huancaína: hoja de lechuga, rodajas de papa amarilla bañadas en salsa, huevo y aceituna
   huancaina(c) {
     diPlate(c);

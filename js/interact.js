@@ -125,14 +125,15 @@ function interact(s, p, want) {
       if (!h && s.state === 'done') { p.held = { type: 'guiso' }; s.state = 'idle'; s.items = []; return true; }
       return false;
     case 'stew':     // olla del guiso (automática): arranca sola con pollo crudo + cebolla en cuadros + ají molido
-      if (h && STEW_IN.includes(stewKey(h.type)) && s.state === 'idle' && !s.items.includes(stewKey(h.type))) {
+      if (h && s.state === 'idle' && stewAccepts(s.items, stewKey(h.type))) {
         s.items.push(stewKey(h.type)); p.held = null;
-        if (s.items.length === STEW_IN.length) { s.state = 'cooking'; s.t = 0; }
+        const m = stewMatch(s.items);
+        if (m) { s.state = 'cooking'; s.t = 0; s.out = m.out; }
         return true;
       }
-      // con un plato en la mano: se sirve el pollo al ají directamente de la olla
-      if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, 'pollo_aji')) { h.parts.push('pollo_aji'); s.state = 'idle'; s.items = []; return true; }
-      if (!h && s.state === 'done') { p.held = { type: 'pollo_aji' }; s.state = 'idle'; s.items = []; return true; }
+      // con un plato en la mano: se sirve directamente de la olla
+      if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, PART_OF_ITEM[s.out])) { h.parts.push(PART_OF_ITEM[s.out]); s.state = 'idle'; s.items = []; return true; }
+      if (!h && s.state === 'done') { p.held = { type: s.out || 'pollo_aji' }; s.state = 'idle'; s.items = []; return true; }
       return false;
     case 'cups':     // vasos de plástico vacíos
       if (!h) { p.held = { type: 'vaso' }; return true; } return false;
