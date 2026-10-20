@@ -15,7 +15,7 @@
   <div class="heroDishes" id="heroDishes"></div>
   <h1 class="logo">Sabor Perú</h1>
   <p class="tagline">Cocina platos peruanos contra el reloj</p>
-  <a class="gamebtn big" href="niveles.html">▶ Jugar</a>
+  <a class="gamebtn big" href="#niveles" id="playBtn">▶ Jugar</a>
   <details class="howto">
     <summary>¿Cómo se juega?</summary>
     <ul>
@@ -28,9 +28,30 @@
     </ul>
   </details>
 </main>
+<main class="menuCard" id="levelsCard" hidden>
+  <div class="menuTop">
+    <a class="back" href="#">← Inicio</a>
+    <h1>Elige un nivel</h1>
+  </div>
+  <div id="worlds"></div>
+</main>
+<script src="js/menu.js"></script>
 <script src="js/dish-images.js"></script>
 <script src="js/dish-icons.js"></script>
 <script>['huancaina', 'aji', 'causa'].forEach((d, i) => { const c = dishIcon(d, i === 1 ? 120 : 96); document.getElementById('heroDishes').appendChild(c); });</script>
+<script>
+// portada y lista de niveles en la misma página: se cambia con #niveles (funciona también el botón Atrás)
+(function () {
+  const title = document.querySelector('.menuCard.title'), levels = document.getElementById('levelsCard');
+  let drawn = false;
+  function show() {
+    const lv = location.hash === '#niveles';
+    if (lv && !drawn) { renderLevels(document.getElementById('worlds')); drawn = true; }
+    title.hidden = lv; levels.hidden = !lv; document.body.classList.toggle('levelsView', lv); window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', show); show();
+})();
+</script>
 <script src="js/fullscreen.js"></script>
 <script src="js/mobile.js"></script>
 

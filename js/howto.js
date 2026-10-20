@@ -128,7 +128,7 @@
   function draw() {
     c.clearRect(0, 0, W, H);
     board();
-    const name = (LEVEL.title || '').split(': ')[1] || DISHES[LEVEL.own].name;      // 'Nivel 1-1: Papa a la Huancaína' -> 'Papa a la Huancaína'
+    const name = (LEVEL.title || '').split(': ')[1] || DISHES[LEVEL.own].name;      // título del nivel      // 'Nivel 1-1: Papa a la Huancaína' -> 'Papa a la Huancaína'
     title('¡' + name.toUpperCase() + '!');
     let y = 110;
     ids.forEach((id, k) => {

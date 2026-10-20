@@ -53,8 +53,9 @@ function usable(D, h) {
     case 'papa_baston': return !!Fr && Fr.state === 'idle';
     case 'corazon': case 'rachi': case 'pancita': case 'choclo_cocido': return !!freeBoard();
     case 'corazon_trozos': case 'rachi_trozos': case 'pancita_trozos': return bowlNeeds(h.type);
-    case 'corazon_mar': case 'rachi_mar': case 'pancita_mar': return !!byKind('skewer') && byKind('skewer').state === 'empty';
-    case 'corazon_palito': case 'rachi_palito': case 'pancita_palito': return !!byKind('grill') && byKind('grill').slots.length < GRILL_CAP;
+    case 'corazon_mar': return !!byKind('skewer') && byKind('skewer').state === 'empty';
+    case 'corazon_palito': return !!freeGrill();
+    case 'rachi_mar': case 'pancita_mar': return !!freeGrill();
     case 'papa_cooked': return D.id === 'causa' ? (Bw.state === 'idle' && nOf(Bw.items, h.type) < BOWL_NEED.papa_cooked) : Bd.state === 'empty';
     case 'pollo_cooked': case 'palta': case 'cebolla_china': case 'cebolla_roja': case 'aji_limo': return !!freeBoard();
     case 'cebolla_cuadros': if (D.id === 'pollo_aji') return stewNeeds(h.type); return bowlNeeds(h.type);
@@ -85,8 +86,8 @@ function destination(D, h) {
     case 'papa_baston': return byKind('fryer');
     case 'corazon': case 'rachi': case 'pancita': case 'choclo_cocido': return freeBoard() || g('board');
     case 'corazon_trozos': case 'rachi_trozos': case 'pancita_trozos': return byKind('bowl');
-    case 'corazon_mar': case 'rachi_mar': case 'pancita_mar': return byKind('skewer');
-    case 'corazon_palito': case 'rachi_palito': case 'pancita_palito': return byKind('grill');
+    case 'corazon_mar': return byKind('skewer');
+    case 'corazon_palito': case 'rachi_mar': case 'pancita_mar': return freeGrill() || byKind('grill');
     case 'papa_cooked': return D.id === 'causa' ? byKind('bowl') : freeBoard() || g('board');
     case 'pollo_cooked': case 'palta': case 'cebolla_china': case 'cebolla_roja': case 'aji_limo': return freeBoard() || g('board');
     case 'cebolla_cuadros': return D.id === 'pollo_aji' ? byKind('stew') : byKind('bowl');
@@ -240,12 +241,15 @@ PLANS.lomo_saltado = function (D) {
 
 // Carretilla de anticuchos (corazón, rachi o pancita): tabla -> bowl con salsa anticuchera -> palitos -> parrilla.
 // Al plato: lo asado y papa y choclo sancochados en rodajas (tabla).
+const grills = () => st.filter(s => s.kind === 'grill');
+const freeGrill = () => grills().find(g => g.slots.length < GRILL_CAP);
 function parrillaPlan(D) {
-  const meat = D.meat, cut = meat + '_trozos', mar = meat + '_mar', pal = meat + '_palito', out = GRILL_OUT[pal], part = PART_OF_ITEM[out];
-  const A = planTable(D), Bw = byKind('bowl'), Sk = byKind('skewer'), Gr = byKind('grill'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
-  if (pl && !has(part) && Gr.slots.some(x => x.done && x.type === pal)) return { s: Gr, want: pal };
-  if (Sk.state === 'done' && Sk.product === pal && Gr.slots.length < GRILL_CAP) return { s: Sk };
-  if (Bw.state === 'done' && Bw.out === mar && Sk.state === 'empty') return { s: Bw };
+  const meat = D.meat, cut = meat + '_trozos', mar = meat + '_mar', gin = grillIn(meat), out = GRILL_OUT[gin], part = PART_OF_ITEM[out], palito = gin !== mar;
+  const A = planTable(D), Bw = byKind('bowl'), Sk = byKind('skewer'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
+  const Gd = grills().find(g => g.slots.some(x => x.done && x.type === gin));
+  if (pl && !has(part) && Gd) return { s: Gd, want: gin };
+  if (palito && Sk.state === 'done' && Sk.product === gin && freeGrill()) return { s: Sk };
+  if (Bw.state === 'done' && Bw.out === mar && (palito ? Sk.state === 'empty' : !!freeGrill())) return { s: Bw };
   const bd = boards().find(b => b.state === 'done' && b.product === cut && bowlNeeds(cut));
   if (bd) return { s: bd };
   for (const [sl, part2] of [['papa_sliced', 'papa'], ['choclo_rodajas', 'choclo']]) {
@@ -254,7 +258,8 @@ function parrillaPlan(D) {
   }
   // ¿la carne de este pedido ya está en camino en alguna etapa?
   const inBowl = (Bw.state === 'idle' && Bw.items.includes(cut)) || (Bw.state !== 'idle' && Bw.out === mar);
-  const meatSec = (has(part) ? 1 : 0) + cnt(out) + Gr.slots.filter(x => x.type === pal).length + cnt(pal) + (Sk.state !== 'empty' && Sk.product === pal ? 1 : 0)
+  const onGrill = grills().reduce((n, g) => n + g.slots.filter(x => x.type === gin).length, 0);
+  const meatSec = (has(part) ? 1 : 0) + cnt(out) + onGrill + (palito ? cnt(gin) + (Sk.state !== 'empty' && Sk.product === gin ? 1 : 0) : 0)
     + cnt(mar) + (inBowl ? 1 : 0) + cnt(cut) + boardHas(cut) + cnt(meat);
   if (meatSec < 1 && freeBoard() && Bw.state === 'idle' && !Bw.items.some(i => i.endsWith('_trozos'))) return { s: g('crate_' + meat) };
   const papa = (has('papa') ? 1 : 0) + cnt('papa_sliced') + boardHas('papa_sliced') + cnt('papa_cooked');

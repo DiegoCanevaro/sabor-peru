@@ -64,7 +64,7 @@ function updateTickets() {
 function endGame() {
   gameOver = true;
   document.body.classList.remove('playing');
-  document.getElementById('overlayTitle').textContent = served > 0 ? '¡' + LEVEL.title.split(':')[0] + ' completado! 🎉' : 'Fin del turno';
+  document.getElementById('overlayTitle').textContent = served > 0 ? '¡' + (LEVEL.world === 'kevin' ? 'Nivel ' + LEVEL.id : LEVEL.title.split(':')[0]) + ' completado! 🎉' : 'Fin del turno';
   const record = served > 0 && saveBest(LEVEL.id, score);
   document.getElementById('overlaySubtitle').textContent = 'Puntaje final: ' + score + ' ⭐ — ' + served + ' de ' + TOTAL_CUSTOMERS + ' clientes atendidos' + (record ? ' · ¡Nuevo récord!' : '');
   document.getElementById('recipeCard').innerHTML = DISHES[LEVEL.own].recipe;

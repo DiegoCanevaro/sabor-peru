@@ -23,20 +23,26 @@ function cartCounter(lw, ld, rot) {
   return g;
 }
 
-// Caja de ingredientes sobre la carretilla: cajón de madera abierto con el ingrediente adentro y la etiqueta redonda
-// grande al frente, para que se lea desde la cámara
+// Caja de ingredientes sobre la carretilla: caja de vidrio (acrílico) con marco blanco, el ingrediente a la vista
+// y la etiqueta redonda grande sobre la tapa, como las cajas de la cocina (se lee bien desde la cámara)
+let _acrylic = null;
 function cartCrate3(item, lw, ld) {
-  const g = new THREE.Group(), w = lw * 0.84, d = ld * 0.72, h = 0.46, y0 = TOP;
-  const box = KK('crate'); box.scale.set(w / 2, h / 0.8, d / 2); box.position.y = y0; g.add(box);
-  // el ingrediente amontonado adentro
-  [[-0.22, -0.15], [0.2, -0.12], [-0.18, 0.14], [0.2, 0.15], [0, 0]].forEach(([x, z], i) => {
-    const m = itemModel(item); m.scale.setScalar(1.05); m.position.set(x * w, y0 + h - 0.2 + (i === 4 ? 0.1 : 0), z * d); m.rotation.y = i * 1.3; g.add(m);
+  if (!_acrylic) _acrylic = new THREE.MeshStandardMaterial({ color: '#eaf6ff', transparent: true, opacity: 0.2, roughness: 0.05, metalness: 0.1, depthWrite: false, side: THREE.DoubleSide });
+  const g = new THREE.Group(), w = lw * 0.86, d = ld * 0.8, h = 0.5, y0 = TOP;
+  const box = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), _acrylic); box.position.y = y0 + h / 2; g.add(box);
+  const frame = M('#ffffff', { roughness: 0.35 });
+  [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => { const p = mesh(new THREE.BoxGeometry(0.05, h, 0.05), frame); p.position.set(sx * w / 2, y0 + h / 2, sz * d / 2); g.add(p); });
+  [-1, 1].forEach(sz => { const r = mesh(new THREE.BoxGeometry(w, 0.05, 0.05), frame); r.position.set(0, y0 + h, sz * d / 2); g.add(r); });
+  [-1, 1].forEach(sx => { const r = mesh(new THREE.BoxGeometry(0.05, 0.05, d), frame); r.position.set(sx * w / 2, y0 + h, 0); g.add(r); });
+  // el ingrediente amontonado adentro (se ve por los costados)
+  [[-0.26, -0.2], [0.24, -0.18], [-0.24, 0.2], [0.24, 0.2], [0, 0]].forEach(([x, z], i) => {
+    const m = itemModel(item); m.scale.setScalar(1.1); m.position.set(x * w, y0 + 0.02 + (i === 4 ? 0.08 : 0), z * d); m.rotation.y = i * 1.3; g.add(m);
   });
-  // etiqueta redonda grande al frente, levantada e inclinada hacia la cámara (se lee desde lejos)
-  const plaque = new THREE.Group();
-  const back = mesh(new THREE.CylinderGeometry(0.33, 0.33, 0.04, 36), M('#6b3f1f'), false); back.rotation.x = Math.PI / 2; plaque.add(back);
-  const face = mesh(new THREE.CircleGeometry(0.31, 40), new THREE.MeshStandardMaterial({ map: labelTexture(item), roughness: 0.6 }), false); face.position.z = 0.025; plaque.add(face);
-  plaque.position.set(0, y0 + h + 0.12, d / 2 + 0.02); plaque.rotation.x = -0.55; g.add(plaque);
+  // etiqueta grande sobre la tapa (con borde de madera, como en la cocina)
+  const rr = Math.min(w, d) * 0.42;
+  const rim = mesh(new THREE.CylinderGeometry(rr + 0.03, rr + 0.03, 0.03, 40), M('#6b3f1f'), false); rim.position.y = y0 + h + 0.02; g.add(rim);
+  const lbl = mesh(new THREE.CircleGeometry(rr, 40), new THREE.MeshStandardMaterial({ map: labelTexture(item), roughness: 0.6 }), false);
+  lbl.rotation.x = -Math.PI / 2; lbl.position.y = y0 + h + 0.04; g.add(lbl);
   return g;
 }
 

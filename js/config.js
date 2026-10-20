@@ -26,7 +26,7 @@ const ICON = {
   carne: '🥩', carne_cubos: '🥩', papa_baston: '🍟', papas_fritas: '🍟', tomate: '🍅', tomate_juliana: '🍅', cebolla_juliana: '🧅', saltado: '🥘', choclo: '🌽',
   corazon: '🫀', rachi: '🥩', pancita: '🥩', choclo_cocido: '🌽', choclo_rodajas: '🌽', salsa_anticuchera: '🥫',
   corazon_trozos: '🫀', rachi_trozos: '🥩', pancita_trozos: '🥩', corazon_mar: '🥣', rachi_mar: '🥣', pancita_mar: '🥣',
-  corazon_palito: '🍢', rachi_palito: '🍢', pancita_palito: '🍢', anticucho: '🍢', rachi_asado: '🍢', pancita_asada: '🍢'
+  corazon_palito: '🍢', anticucho: '🍢', rachi_asado: '🥩', pancita_asada: '🥩'
 };
 const NAME = {
   papa_raw: 'papa', papa_cooked: 'cocida', papa_sliced: 'rodajas', pollo_raw: 'pollo', pollo_cooked: 'cocido', pollo_shred: 'desmenuz.',
@@ -38,10 +38,10 @@ const NAME = {
   carne: 'carne', carne_cubos: 'cubos', papa_baston: 'bastón', papas_fritas: 'fritas', tomate: 'tomate', tomate_juliana: 'juliana', cebolla_juliana: 'juliana', saltado: 'saltado', choclo: 'choclo',
   corazon: 'corazón', rachi: 'rachi', pancita: 'pancita', choclo_cocido: 'choclo', choclo_rodajas: 'rodajas', salsa_anticuchera: 'salsa',
   corazon_trozos: 'trozos', rachi_trozos: 'trozos', pancita_trozos: 'trozos', corazon_mar: 'macerado', rachi_mar: 'macerado', pancita_mar: 'macerado',
-  corazon_palito: 'palito', rachi_palito: 'palito', pancita_palito: 'palito', anticucho: 'anticucho', rachi_asado: 'rachi', pancita_asada: 'pancita'
+  corazon_palito: 'palito', anticucho: 'anticucho', rachi_asado: 'rachi', pancita_asada: 'pancita'
 };
 const LABELED = ['papa_cooked', 'papa_sliced', 'pollo_cooked', 'pollo_shred', 'arroz_cooked', 'palta_sliced', 'salsa', 'salsa_aji', 'masa', 'guiso', 'cebolla_picada', 'chaufa', 'pollo_cuadros', 'pota_cortada', 'cebolla_pluma', 'aji_limo_picado', 'camote_cocido', 'cebiche', 'cebiche_aji', 'cebolla_cuadros', 'chicha', 'pollo_aji', 'carne_cubos', 'papa_baston', 'papas_fritas', 'tomate_juliana', 'cebolla_juliana', 'saltado',
-  'choclo_rodajas', 'corazon_trozos', 'rachi_trozos', 'pancita_trozos', 'corazon_mar', 'rachi_mar', 'pancita_mar', 'corazon_palito', 'rachi_palito', 'pancita_palito', 'anticucho', 'rachi_asado', 'pancita_asada'];
+  'choclo_rodajas', 'corazon_trozos', 'rachi_trozos', 'pancita_trozos', 'corazon_mar', 'rachi_mar', 'pancita_mar', 'corazon_palito', 'anticucho', 'rachi_asado', 'pancita_asada'];
 const CRATE_INFO = {
   papa_raw: ['🥔', 'Papas'], pollo_raw: ['🍗', 'Pollo'], aji: ['🌶️', 'Ají'], arroz_raw: ['🍚', 'Arroz'],
   palta: ['🥑', 'Paltas'], queso: ['🧀', 'Queso'], leche: ['🥛', 'Leche'], galleta: ['🍘', 'Galletas'],
@@ -81,8 +81,11 @@ Object.entries(CHOP).forEach(([a, b]) => [].concat(b).forEach(o => { CHOP_IN[o] 
 const FRY_OUT = { papa_baston: 'papas_fritas' };
 // Carretilla de anticuchos: la carne cortada se macera en el bowl con salsa anticuchera, se ensarta en palitos
 // (mantener, como la tabla) y se asa en la parrilla (automática, varios palitos a la vez).
-const SKEWER = { corazon_mar: 'corazon_palito', rachi_mar: 'rachi_palito', pancita_mar: 'pancita_palito' };
-const GRILL_OUT = { corazon_palito: 'anticucho', rachi_palito: 'rachi_asado', pancita_palito: 'pancita_asada' };
+// Solo el corazón va en palito; el rachi y la pancita pasan del macerado directo a la parrilla.
+const SKEWER = { corazon_mar: 'corazon_palito' };
+const GRILL_OUT = { corazon_palito: 'anticucho', rachi_mar: 'rachi_asado', pancita_mar: 'pancita_asada' };
+// qué entra a la parrilla para cada carne
+const grillIn = meat => SKEWER[meat + '_mar'] || meat + '_mar';
 const GRILL_CAP = 3;
 // bowl (hold) -> masa de causa: 2 papas cocidas + 1 ají. Rinde 2 porciones: cada capa de masa gasta la mitad del bowl.
 const BOWL_NEED = { papa_cooked: 2, aji: 1 };

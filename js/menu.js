@@ -31,3 +31,34 @@ function saveBest(id, score) {
   try { localStorage.setItem(BEST_KEY(id), String(score)); } catch { return false; }
   return true;
 }
+
+// Dibuja las tarjetas de niveles, un bloque por mundo (la usan la portada y niveles.html)
+const WORLD_NAMES = { 1: 'Mundo 1 · Cocina criolla', 2: 'Mundo 2 · Chifa', kevin: 'Kevin · Comida de la calle' };
+function renderLevels(box) {
+  box.innerHTML = '';
+  const grids = {};
+  LEVEL_LIST.forEach(L => {
+    const w = L.world || 1;
+    if (!grids[w]) {
+      const h = document.createElement('h2'); h.className = 'world'; h.textContent = WORLD_NAMES[w] || 'Mundo ' + w;
+      const gd = document.createElement('div'); gd.className = 'levelGrid';
+      box.append(h, gd); grids[w] = gd;
+    }
+    const best = getBest(L.id);
+    const a = document.createElement('a');
+    a.className = 'levelCard' + (best !== null ? ' done' : '');
+    a.href = L.file;
+    a.innerHTML =
+      '<span class="lvNum">' + L.id + '</span>' +
+      '<span class="lvIcon"></span>' +
+      '<span class="lvName">' + L.name + '</span>' +
+      '<span class="lvDesc">' + L.desc + '</span>' +
+      '<span class="lvServes">Pedidos: </span>' +
+      '<span class="lvBest">' + (best !== null ? '⭐ Récord: ' + best : 'Sin jugar') + '</span>';
+    if (typeof dishIcon === 'function') {
+      a.querySelector('.lvIcon').appendChild(dishIcon(L.dish, 110));
+      L.servesDish.forEach(d => a.querySelector('.lvServes').appendChild(dishIcon(d, 30)));
+    }
+    grids[w].appendChild(a);
+  });
+}

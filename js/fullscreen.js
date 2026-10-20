@@ -64,7 +64,7 @@
     const mobile = document.body.classList.contains('mobile');
     if (!a) { if (mobile && e.target.closest && e.target.closest('.gamebtn')) goFs(); return; }
     const href = a.getAttribute('href');
-    if (!/\.html(\?|#|$)/.test(href) || a.target) return;
+    if (!/\.html(\?|#|$)/.test(href) || a.target) { if (mobile && a.classList.contains('gamebtn')) goFs(); return; }
     if (inShell) { if (mobile) goFs(); return; }           // dentro del marco se navega normal y no se sale
     if (!fsOn && !mobile) return;                          // en el PC sin pantalla completa: navegación normal
     e.preventDefault();

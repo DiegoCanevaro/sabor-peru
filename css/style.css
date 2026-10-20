@@ -87,6 +87,7 @@ body.menu { padding: 16px; user-select: auto; }
 .flagStripe i { flex: 1; background: #d91023; }
 .flagStripe i:nth-child(2) { background: #fff; }
 .menuCard.title { padding: 48px 24px 28px; }
+.menuCard[hidden] { display: none; }
 .heroDishes { font-size: 56px; display: flex; gap: 18px; justify-content: center; }
 .heroDishes span { animation: bob 1.6s ease-in-out infinite alternate; }
 .heroDishes span:nth-child(2) { animation-delay: .3s; font-size: 72px; }
@@ -173,6 +174,7 @@ body:not(.playing) #pauseBtn, body:not(.playing) #botBtn { visibility: hidden; }
   background: rgba(43, 24, 11, .75); color: #f4e4c1; border: 2px solid #8a5a2b; border-radius: 10px; padding: 8px 14px;
 }
 .fsBtn:hover { background: #3d2411; }
+.levelsView .fsBtn { display: none; }
 /* textos solo para teclado o solo para táctil */
 .touchOnly { display: none; }
 body.mobile .touchOnly { display: list-item; }

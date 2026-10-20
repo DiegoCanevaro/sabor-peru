@@ -91,7 +91,7 @@ const DISHES = {
     recipe: RECIPES.cebiche_pota
   },
   // Kevin: carretilla nocturna de anticuchos. Corazón, rachi o pancita: se cortan (tabla), se maceran con salsa
-  // anticuchera (bowl), se ensartan (palitos) y se asan (parrilla). Al plato con papa y choclo sancochados en rodajas.
+  // anticuchera (bowl) y se asan (parrilla); solo el corazón se ensarta antes en palitos. Al plato con papa y choclo sancochados en rodajas.
   ...['anticuchos:corazon:anticucho:Anticuchos:Anticuchos', 'rachi:rachi:rachi_asado:Rachi:Rachi', 'pancita:pancita:pancita_asada:Pancita:Pancita'].reduce((o, row) => {
     const [id, meat, out, name, short] = row.split(':');
     o[id] = {
@@ -99,10 +99,11 @@ const DISHES = {
       kind: 'set', parts: [out, 'papa', 'choclo'],
       partName: { [out]: name, papa: 'Papa en rodajas', choclo: 'Choclo en rodajas' },
       patience: 150, meat,
-      uses: [meat, meat + '_trozos', meat + '_mar', meat + '_palito', out, 'papa_cooked', 'papa_sliced', 'choclo_cocido', 'choclo_rodajas'],
+      uses: [meat, meat + '_trozos', meat + '_mar'].concat(meat === 'corazon' ? ['corazon_palito'] : []).concat([out, 'papa_cooked', 'papa_sliced', 'choclo_cocido', 'choclo_rodajas']),
       blend: null,
-      ticket: { slots: [{ id: meat, t: ['board', 'bowl', 'skewer', 'grill'] }, { id: 'papa_cooked', t: ['board'] }, { id: 'choclo_cocido', t: ['board'] }] },
-      howto: { rows: [{ ings: ['corazon', 'rachi', 'pancita'], or: true, tools: ['board'] }], merge: 'bowl', mergeWith: 'salsa_anticuchera', after: ['skewer', 'grill'],
+      ticket: { slots: [{ id: meat, t: meat === 'corazon' ? ['board', 'bowl', 'skewer', 'grill'] : ['board', 'bowl', 'grill'] }, { id: 'papa_cooked', t: ['board'] }, { id: 'choclo_cocido', t: ['board'] }] },
+      howto: { rows: [meat === 'corazon' ? { ings: ['corazon'], tools: ['board'] } : { ings: ['rachi', 'pancita'], or: true, tools: ['board'] }], merge: 'bowl', mergeWith: 'salsa_anticuchera',
+        after: meat === 'corazon' ? ['skewer', 'grill'] : ['grill'],
         extras: [{ ings: ['papa_cooked'], tools: ['board'] }, { ings: ['choclo_cocido'], tools: ['board'] }] },
       recipe: RECIPES.anticuchos
     };
