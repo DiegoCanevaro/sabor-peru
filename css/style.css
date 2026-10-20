@@ -181,3 +181,15 @@ body.mobile .pcOnly { display: none; }
 /* marco de pantalla completa (js/fullscreen.js): las páginas siguientes se abren dentro, ocupándolo todo */
 body.shell > *:not(#shellFrame) { display: none !important; }
 #shellFrame { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; z-index: 2000; background: #1a0f08; }
+
+/* tickets estilo Overcooked: plato arriba, ingredientes en fila y señales negras solo para acciones complejas */
+.ticket { min-width: 0; }
+.ticket .card { border-radius: 6px 6px 4px 4px; }
+.ticket .dish { padding: 3px 10px 1px; }
+.ticket .slots { display: flex; gap: 3px; align-items: flex-start; background: #e9eef1; border-radius: 0 0 8px 8px; padding: 3px 4px 4px; margin: 0 5px; }
+.ticket .slot, .ticket .grp { display: flex; flex-direction: column; align-items: center; gap: 0; background: none; padding: 0; border-radius: 0; position: static; }
+.ticket .grow { display: flex; gap: 2px; }
+.ticket .chip { width: 24px; height: 24px; background: #ffffff; box-shadow: 0 1px 0 rgba(0,0,0,.15); }
+.ticket .tsign { display: flex; justify-content: center; align-self: stretch; background: #b9d6e6; border-radius: 0 0 7px 7px; padding: 2px 3px 1px; margin-top: 1px; }
+.ticket .tsign canvas.sign { display: block; background: none; border: 0; }
+canvas.sign { background: none; border: 0; }

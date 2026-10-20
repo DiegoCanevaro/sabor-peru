@@ -96,10 +96,10 @@ const BOWL_RECIPES = [
   { need: BOWL_NEED, out: 'masa', n: MASA_PORTIONS },
   { need: { pota_cortada: 1, cebolla_cuadros: 1, limon: 1 }, out: 'cebiche', n: 1 },
   { need: { pota_cortada: 1, cebolla_cuadros: 1, aji_limo_picado: 1, limon: 1 }, out: 'cebiche_aji', n: 1 },
-  // macerado de anticuchos: la carne cortada + salsa anticuchera
-  { need: { corazon_trozos: 1, salsa_anticuchera: 1 }, out: 'corazon_mar', n: 1 },
-  { need: { rachi_trozos: 1, salsa_anticuchera: 1 }, out: 'rachi_mar', n: 1 },
-  { need: { pancita_trozos: 1, salsa_anticuchera: 1 }, out: 'pancita_mar', n: 1 }
+  // macerado de anticuchos: el bowl ya tiene salsa anticuchera (LEVEL.bowlSauce); solo se echa la carne cortada
+  { need: { corazon_trozos: 1 }, out: 'corazon_mar', n: 1 },
+  { need: { rachi_trozos: 1 }, out: 'rachi_mar', n: 1 },
+  { need: { pancita_trozos: 1 }, out: 'pancita_mar', n: 1 }
 ];
 const activeBowls = () => BOWL_RECIPES.filter(r => LEVEL.dishes.some(d => DISHES[d].uses.includes(r.out)));
 const bowlAccepts = (items, t) => activeBowls().some(r => (r.need[t] || 0) > nOf(items, t) && items.every(i => r.need[i]));

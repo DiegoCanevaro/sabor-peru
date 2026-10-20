@@ -7,6 +7,6 @@ const LEVEL = {
   customers: 5, arrival: 36,
   crates: ['corazon', 'rachi', 'pancita', 'papa_cooked', 'choclo_cocido'],
   left: ['board', 'board', 'skewer', 'bowl', 'grill'], right: [],
-  drinks: ['crate:salsa_anticuchera'],
+  bowlSauce: 'salsa_anticuchera',      // el bowl de macerar siempre tiene salsa anticuchera
   intro: ['anticuchos']      // la pizarra muestra el flujo una vez (corazón, rachi o pancita)
 };

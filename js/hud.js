@@ -1,27 +1,33 @@
 // ================= HUD: TICKETS Y FIN DE NIVEL =================
-// Un ticket por cliente: plato, barra de espera y, estilo Overcooked, cada ingrediente con la herramienta que usa debajo.
-// Los ingredientes que se licúan juntos se agrupan en una pestaña con el icono de la licuadora.
+// Un ticket por cliente, estilo Overcooked: el plato, la barra de espera y los ingredientes (las mismas ilustraciones
+// de las cajas). Debajo de un ingrediente solo aparece una señal negra si necesita una acción compleja (olla, freidora,
+// sartén, wok, parrilla...); las básicas como cortar no se muestran. Los que van juntos (licuadora, bowl, wok)
+// se agrupan bajo una sola señal.
 const tickEls = [];
-// Los iconos son las mismas ilustraciones de las etiquetas de las cajas (js/icons.js): así se reconoce qué caja usar.
 const hasIcons = typeof iconEl === 'function';
-function chip(id) { const s = document.createElement('span'); s.className = 'chip'; if (hasIcons) s.appendChild(iconEl('ing', id, 22)); else s.textContent = ICON[id] || '?'; return s; }
-function tool(id, px) { const s = document.createElement('span'); s.className = 'tool'; if (hasIcons) s.appendChild(iconEl('tool', id, px)); return s; }
+const COMPLEX_TOOLS = ['pot', 'stew', 'fryer', 'pan', 'wok', 'grill', 'blender', 'bowl', 'balde'];
+function chip(id) { const s = document.createElement('span'); s.className = 'chip'; if (hasIcons) s.appendChild(iconEl('ing', id, 24)); else s.textContent = ICON[id] || '?'; return s; }
+function sign(id, px) { const s = document.createElement('span'); s.className = 'tsign'; if (hasIcons) s.appendChild(iconEl('sign', id, px)); return s; }
 function ticketSlots(D) {
   const box = document.createElement('div'); box.className = 'slots';
+  // cada ingrediente con su acción compleja principal (la última); los seguidos que van a la misma herramienta
+  // (p. ej. todo lo del wok) comparten una sola señal
+  const groups = [];
   D.ticket.slots.forEach(sl => {
-    if (sl.g) {
-      const g = document.createElement('div'); g.className = 'grp';
-      const tab = document.createElement('span'); tab.className = 'gtab'; tab.appendChild(tool(sl.t, 16)); g.appendChild(tab);
-      sl.g.forEach(id => g.appendChild(chip(id)));
-      box.appendChild(g);
-    } else {
-      const d = document.createElement('div'); d.className = 'slot'; d.appendChild(chip(sl.id));
-      const t = document.createElement('div'); t.className = 'tools'; sl.t.forEach(x => t.appendChild(tool(x, 18))); d.appendChild(t);
-      box.appendChild(d);
-    }
+    const ids = sl.g || [sl.id], t = sl.g ? sl.t : sl.t.filter(x => COMPLEX_TOOLS.includes(x)).pop() || null;
+    const last = groups[groups.length - 1];
+    if (last && t && last.t === t) last.ids.push(...ids); else groups.push({ ids: ids.slice(), t });
+  });
+  groups.forEach(gr => {
+    const g = document.createElement('div'); g.className = 'grp';
+    const row = document.createElement('div'); row.className = 'grow'; gr.ids.forEach(id => row.appendChild(chip(id))); g.appendChild(row);
+    if (gr.t) g.appendChild(sign(gr.t, 18));
+    box.appendChild(g);
   });
   return box;
 }
+// la etiqueta Entrada / Segundo solo hace falta si en el nivel se mezclan (las entradas salen antes)
+const MIXED_COURSES = ['entrada', 'segundo'].every(k => LEVEL.dishes.some(d => DISHES[d].course === k));
 function buildTickets() {
   const box = document.getElementById('tickets');
   box.innerHTML = ''; tickEls.length = 0;
@@ -29,10 +35,11 @@ function buildTickets() {
     const D = DISHES[ORDERS[i]];
     const d = document.createElement('div');
     d.className = 'ticket upcoming';
-    d.innerHTML = '<div class="card"><div class="tbar"><i></i></div><div class="dish">' + (typeof dishIcon === 'function' && hasDishIcon(D.id) ? '' : D.icon) + '</div><div class="name">' + D.short + '</div><div class="course ' + D.course + '">' + ({ entrada: 'Entrada', segundo: 'Segundo', plato: 'Plato', bebida: 'Bebida' }[D.course] || '') + '</div></div>' +
-      '';
+    const img = typeof dishIcon === 'function' && hasDishIcon(D.id);
+    d.innerHTML = '<div class="card"><div class="tbar"><i></i></div><div class="dish" title="' + D.name + '">' + (img ? '' : D.icon) + '</div>' +
+      (MIXED_COURSES ? '<div class="course ' + D.course + '">' + ({ entrada: 'Entrada', segundo: 'Segundo', plato: 'Plato', bebida: 'Bebida' }[D.course] || '') + '</div>' : '') + '</div>';
     d.appendChild(ticketSlots(D));
-    if (typeof dishIcon === 'function' && hasDishIcon(D.id)) d.querySelector('.dish').appendChild(dishIcon(D.id, 44));
+    if (img) d.querySelector('.dish').appendChild(dishIcon(D.id, 46));
     box.appendChild(d);
     tickEls.push({ el: d, bar: d.querySelector('.tbar i'), cls: '', w: -1, col: '' });
   }

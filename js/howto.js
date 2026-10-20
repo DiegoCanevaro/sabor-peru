@@ -100,6 +100,7 @@
     if (h.merge) {
       ends.forEach(([x, y]) => arrow(x + 4, y, xMerge - 46, yRowsMid + (y - yRowsMid) * 0.25));
       tool(h.merge, xMerge, yRowsMid, true);
+      if (h.mergeWith) c.drawImage(ingCanvas(h.mergeWith, 32, true), xMerge + 16, yRowsMid + 12, 32, 32);      // la herramienta ya trae esto (p. ej. el bowl con salsa)
       // pasos después de juntar (p. ej. ensartar y asar los anticuchos)
       let xa = xMerge + 46;
       after.forEach((t, i) => { const xt = xMerge + 100 + i * 90; arrow(xa, yRowsMid, xt - 34, yRowsMid); tool(t, xt, yRowsMid); xa = xt + 34; });

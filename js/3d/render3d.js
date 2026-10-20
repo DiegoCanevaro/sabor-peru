@@ -848,7 +848,7 @@ function buildStations() {
     s3.slot.position.y = TOP;
     switch (s.kind) {
       case 'crate': {
-        if (typeof IS_CALLE !== 'undefined' && IS_CALLE) { const lw = s.w / U3, ld = s.h / U3; g.add(cartCounter(lw, ld, facingOf(s))); g.add(vitrina3(s.item, lw, ld)); break; }
+        if (typeof IS_CALLE !== 'undefined' && IS_CALLE) { const lw = s.w / U3, ld = s.h / U3; g.add(cartCounter(lw, ld, facingOf(s))); g.add(cartCrate3(s.item, lw, ld)); break; }
         // caja de madera cerrada a la altura de la mesa (estilo Overcooked), con la etiqueta del ingrediente en la tapa
         const lw = s.w / U3, ld = s.h / U3;
         const box = KK('crate'); box.scale.set(lw / 2, 0.84 / 0.8, ld / 2); g.add(box);
@@ -905,6 +905,7 @@ function buildStations() {
       }
       case 'bowl': {
         g.add(counter3(s)); const b = KK('bowl', 1.6); b.position.y = TOP; g.add(b);
+        if (LEVEL.bowlSauce) { const sc = mesh(new THREE.CylinderGeometry(0.4, 0.3, 0.06, 24), M('#8f2316', { roughness: 0.25 }), false); sc.position.y = TOP + 0.14; g.add(sc); }
         s3.slot.position.y = TOP + 0.12; s3.slot.scale.setScalar(1.6); g.add(s3.slot); break;
       }
       case 'blender': {

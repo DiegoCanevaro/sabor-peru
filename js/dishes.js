@@ -99,10 +99,10 @@ const DISHES = {
       kind: 'set', parts: [out, 'papa', 'choclo'],
       partName: { [out]: name, papa: 'Papa en rodajas', choclo: 'Choclo en rodajas' },
       patience: 150, meat,
-      uses: [meat, meat + '_trozos', 'salsa_anticuchera', meat + '_mar', meat + '_palito', out, 'papa_cooked', 'papa_sliced', 'choclo_cocido', 'choclo_rodajas'],
+      uses: [meat, meat + '_trozos', meat + '_mar', meat + '_palito', out, 'papa_cooked', 'papa_sliced', 'choclo_cocido', 'choclo_rodajas'],
       blend: null,
-      ticket: { slots: [{ id: meat, t: ['board', 'bowl', 'skewer', 'grill'] }, { id: 'salsa_anticuchera', t: ['bowl'] }, { id: 'papa_cooked', t: ['board'] }, { id: 'choclo_cocido', t: ['board'] }] },
-      howto: { rows: [{ ings: ['corazon', 'rachi', 'pancita'], or: true, tools: ['board'] }, { ings: ['salsa_anticuchera'], tools: [] }], merge: 'bowl', after: ['skewer', 'grill'],
+      ticket: { slots: [{ id: meat, t: ['board', 'bowl', 'skewer', 'grill'] }, { id: 'papa_cooked', t: ['board'] }, { id: 'choclo_cocido', t: ['board'] }] },
+      howto: { rows: [{ ings: ['corazon', 'rachi', 'pancita'], or: true, tools: ['board'] }], merge: 'bowl', mergeWith: 'salsa_anticuchera', after: ['skewer', 'grill'],
         extras: [{ ings: ['papa_cooked'], tools: ['board'] }, { ings: ['choclo_cocido'], tools: ['board'] }] },
       recipe: RECIPES.anticuchos
     };

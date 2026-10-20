@@ -355,8 +355,26 @@ const labelCanvas = (id, px) => iconCanvas(c => drawIngredient(c, id), px || 256
 const ingCanvas = (id, px, circle) => iconCanvas(c => drawIngredient(c, id), px, circle);
 const toolCanvas = (kind, px, circle) => iconCanvas(c => drawTool(c, kind), px, circle);
 // para el HTML (tickets): un elemento con el icono
+// Señal negra estilo Overcooked (tickets): la silueta de la herramienta en negro, con sus brillos en blanco
+function signCanvas(kind, px) {
+  const cnv = document.createElement('canvas'), dpr = Math.min(2, (typeof window !== 'undefined' && window.devicePixelRatio) || 1);
+  const n = cnv.width = cnv.height = Math.round(px * dpr), c = cnv.getContext('2d');
+  const im = TOOL_IMG[kind];
+  if (im) c.drawImage(im, 0, 0, n, n);
+  else { c.save(); c.scale(n / 256, n / 256); c.translate(128, 128); c.scale(1.2, 1.2); (TOOL_ICONS[kind] || (() => {}))(c); c.restore(); }
+  const d = c.getImageData(0, 0, n, n), a = d.data;
+  for (let i = 0; i < a.length; i += 4) {
+    if (!a[i + 3]) continue;
+    const L = (a[i] * 0.3 + a[i + 1] * 0.59 + a[i + 2] * 0.11) / 255;
+    const v = L > 0.82 ? 245 : 28;                  // solo los brillos quedan blancos
+    a[i] = a[i + 1] = a[i + 2] = v;
+    if (a[i + 3] < 200 && v === 28) a[i + 3] = Math.min(255, a[i + 3] * 1.4);
+  }
+  c.putImageData(d, 0, 0);
+  return cnv;
+}
 function iconEl(kind, id, px) {
-  const cnv = kind === 'tool' ? toolCanvas(id, px) : ingCanvas(id, px);
-  cnv.style.width = cnv.style.height = px + 'px'; cnv.className = 'icon';
+  const cnv = kind === 'tool' ? toolCanvas(id, px) : kind === 'sign' ? signCanvas(id, px) : ingCanvas(id, px);
+  cnv.style.width = cnv.style.height = px + 'px'; cnv.className = kind === 'sign' ? 'sign' : 'icon';
   return cnv;
 }
