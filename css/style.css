@@ -215,3 +215,9 @@ canvas.sign { background: none; border: 0; }
 .ticket .dish .dimg.served { opacity: .3; }
 .ticket .slots { margin: 0; border-radius: 0 8px 8px 0; flex-wrap: nowrap; align-items: flex-start; padding: 4px 5px; }
 .ticket .course { display: none; }
+
+/* ordenador: el juego se agranda hasta llenar el alto de la ventana (manteniendo la proporción 900x560) */
+body:not(.mobile) #gameWrap { width: min(98vw, calc((100vh - 175px) * 900 / 560)); max-width: none; }
+body:not(.mobile) #tickets { min-height: 0; }
+/* los tickets no se encogen ni se montan unos sobre otros: los que no caben quedan fuera */
+.ticket { flex: none; }

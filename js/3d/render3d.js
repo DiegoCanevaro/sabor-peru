@@ -21,8 +21,19 @@ const V3 = { ready: false, kk: {}, mats: {}, st: new Map(), hl: null, t: 0, last
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 
 const renderer3 = new THREE.WebGLRenderer({ canvas: V3.c3, antialias: true });
+// resolución según el tamaño real en pantalla (en ordenador el juego se agranda: así no se ve borroso)
+V3.k = 1;
+function fitRes() {
+  const k = Math.min(3, Math.max(1, (window.devicePixelRatio || 1) * (V3.c3.clientWidth || W) / W));
+  if (Math.abs(k - V3.k) < 0.05 && V3.fitted) return;
+  V3.k = k; V3.fitted = true;
+  renderer3.setPixelRatio(k); renderer3.setSize(W, H, false);
+  const c2 = document.getElementById('c'); c2.width = Math.round(W * k); c2.height = Math.round(H * k);
+}
 renderer3.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
 renderer3.setSize(W, H, false);
+window.addEventListener('resize', fitRes);
+setTimeout(fitRes, 0);
 renderer3.outputEncoding = THREE.sRGBEncoding;
 renderer3.shadowMap.enabled = true;
 renderer3.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -33,6 +44,8 @@ cam3.position.set(-0.4, 21, 19.5);
 cam3.lookAt(-0.4, 0, 1.3);
 // móvil: cámara más cerrada y centrada en la zona de juego (los objetos se ven más grandes; se recorta decoración del borde)
 if (document.body.classList.contains('mobile')) { cam3.fov = 30; cam3.updateProjectionMatrix(); cam3.lookAt(-0.5, 0, 0.4); }
+// ordenador: también un poco más cerrada para que la cocina llene la pantalla
+else { cam3.fov = 31.5; cam3.updateProjectionMatrix(); cam3.lookAt(-0.6, 0, 0.2); }
 
 scene3.add(new THREE.HemisphereLight('#fff4e0', '#7a5a3a', 0.62));
 const sun3 = new THREE.DirectionalLight('#fff0d4', 0.72);
@@ -1293,6 +1306,7 @@ function stationOverlay(s) {
   }
 }
 function drawOverlay() {
+  ctx.setTransform(V3.k, 0, 0, V3.k, 0, 0);
   ctx.clearRect(0, 0, W, H);
   if (!V3.ready) { label('Preparando la cocina…', W / 2, H / 2, '#f4e4c1', 18); return; }
   for (const s of st) stationOverlay(s);
