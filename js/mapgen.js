@@ -5,9 +5,9 @@
 // La cocina sigue siendo una cuadrícula de 13 x 8 celdas:
 //   - el perímetro son encimeras (las esquinas son solo decoración en 3D)
 //   - el interior (columnas 1-11, filas 1-6) es el piso, con islas de formas variadas
-//   - la bandeja de salida va siempre en la pared derecha (ahí está la ventanilla de PEDIDOS en 3D),
-//     pero a una altura distinta en cada cocina
-//   - los platos limpios empiezan en las mesas de abajo (regla de Sing)
+//   - la bandeja de salida puede ir en cualquier pared (en 3D se abre ahí la ventanilla de PEDIDOS)
+//   - cajas, ollas, tablas y demás estaciones van en grupos: a veces juntas, a veces repartidas por la cocina
+//   - los platos limpios empiezan en mesas al azar, juntos o separados, y vuelven a esas mismas mesas
 //
 // Cómo elegir el mapa de un nivel:
 //   - por defecto: semilla = id del nivel
@@ -95,79 +95,98 @@ const MAPGEN = (() => {
     const isFloor = (c, r) => c >= 1 && c <= COLS - 2 && r >= 1 && r <= ROWS - 2 && !island.has(key(c, r));
     const used = new Map();       // key -> spec
     const out = [];
-    const put = (sp) => { out.push(sp); for (let i = 0; i < (sp.tall || 1); i++) used.set(key(sp.c, sp.r + i), sp); };
+    const cellsOf = sp => { const o = []; for (let i = 0; i < (sp.tall || 1); i++) for (let j = 0; j < (sp.wide || 1); j++) o.push([sp.c + j, sp.r + i]); return o; };
+    const put = sp => { out.push(sp); cellsOf(sp).forEach(([c, r]) => used.set(key(c, r), sp)); };
     const frontOf = (c, r, face) => [c + DIR[face][0], r + DIR[face][1]];
-    const usable = (c, r, face) => !used.has(key(c, r)) && isFloor(...frontOf(c, r, face));
+    const usable = (c, r, face) => !!face && !used.has(key(c, r)) && isFloor(...frontOf(c, r, face));
 
-    // bandeja de salida (2 celdas) en la pared derecha, a una altura al azar
-    const cr = R.int(1, ROWS - 3);
-    if (!isFloor(COLS - 2, cr) || !isFloor(COLS - 2, cr + 1)) return null;
-    put({ kind: 'counter', c: COLS - 1, r: cr, face: 'left', tall: 2 });
+    // anillo del perímetro en sentido horario (sin esquinas): pared izquierda, fondo, pared derecha y fila de abajo
+    const ring = [];
+    for (let r = ROWS - 2; r >= 1; r--) ring.push([0, r, 'right']);
+    for (let c = 1; c <= COLS - 2; c++) ring.push([c, 0, 'down']);
+    for (let r = 1; r <= ROWS - 2; r++) ring.push([COLS - 1, r, 'left']);
+    for (let c = COLS - 2; c >= 1; c--) ring.push([c, ROWS - 1, 'up']);
 
-    // recorrido del perímetro en sentido horario (pared izquierda de abajo arriba, fondo, pared derecha hacia abajo)
-    const path = [];
-    for (let r = ROWS - 2; r >= 1; r--) path.push([0, r, 'right']);
-    for (let c = 1; c <= COLS - 2; c++) path.push([c, 0, 'down']);
-    for (let r = 1; r <= ROWS - 2; r++) path.push([COLS - 1, r, 'left']);
-    const free = () => path.filter(([c, r, f]) => usable(c, r, f));
-
-    // ¿los fuegos van en la isla? (estilo Overcooked) solo si la isla da para fuegos + preparación
-    const islandCells = [...island].map(k => k.split(',').map(Number));
-    const heatOnIsland = heat.length > 0 && islandCells.length >= heat.length + prep.length && R.chance(0.35);
-
-    // cajas y fuegos: tramos seguidos del perímetro, en orden y con huecos al azar
-    const runs = [['crate', level.crates.slice()]];
-    if (!heatOnIsland && heat.length) runs.push(['heat', heat.slice()]);
-    const order = R.chance(0.5) ? runs : runs.slice().reverse();
-    const pathIdx = p => path.findIndex(q => q[0] === p[0] && q[1] === p[1]);
-    let slackLeft = Math.max(0, free().length - order.reduce((n, [, l]) => n + l.length, 0) - 1);
-    let after = -1;        // el siguiente tramo empieza después de esta posición del recorrido
-    for (const [type, list] of order) {
-      const fp = free().filter(p => pathIdx(p) > after);
-      if (fp.length < list.length) return null;
-      const skip = Math.min(R.int(0, Math.min(slackLeft, type === 'crate' ? 5 : 4)), fp.length - list.length);
-      slackLeft -= skip;
-      const seg = fp.slice(skip, skip + list.length);
-      seg.forEach(([c, r, face], k) => put(type === 'crate' ? { kind: 'crate', item: list[k], c, r, face } : { kind: list[k], c, r, face }));
-      after = pathIdx(seg[seg.length - 1]);
-    }
-
-    // estaciones en la isla: preparación (y fuegos si toca) en un tramo seguido de la isla
+    // en la isla, cada celda mira hacia un lado libre (en islas de dos filas, hacia afuera)
     const faceFor = (c, r) => {
       const opts = ['down', 'up', 'left', 'right'].filter(f => isFloor(...frontOf(c, r, f)));
       if (!opts.length) return null;
-      // en islas de dos filas, cada fila mira hacia afuera
       if (island.has(key(c, r + 1)) && opts.includes('up')) return 'up';
       if (island.has(key(c, r - 1)) && opts.includes('down')) return 'down';
       return opts[0];
     };
-    const iorder = islandCells.slice().sort((a, b) => a[1] - b[1] || a[0] - b[0]).filter(([c, r]) => !used.has(key(c, r)) && faceFor(c, r));
-    const onIsland = (heatOnIsland ? (R.chance(0.5) ? heat.concat(prep) : prep.concat(heat)) : prep).slice();
-    const overflow = [];
-    if (onIsland.length <= iorder.length) {
-      const s0 = R.int(0, iorder.length - onIsland.length);
-      onIsland.forEach((kind, k) => { const [c, r] = iorder[s0 + k]; put({ kind, c, r, face: faceFor(c, r) }); });
-    } else {
-      iorder.forEach(([c, r], k) => put({ kind: onIsland[k], c, r, face: faceFor(c, r) }));
-      overflow.push(...onIsland.slice(iorder.length));
+    const islandCells = [...island].map(k => k.split(',').map(Number));
+    // orden de la isla: filas y columnas en recorrido "serpiente" para que los tramos seguidos queden pegados
+    const iorder = islandCells.slice().sort((a, b) => a[1] - b[1] || (a[1] % 2 ? b[0] - a[0] : a[0] - b[0])).map(([c, r]) => [c, r, faceFor(c, r)]);
+
+    // ---------- bandeja de salida (2 celdas) en cualquier pared ----------
+    const side = R.pick(['right', 'left', 'top', 'bottom']);
+    let counter;
+    if (side === 'right' || side === 'left') { const c = side === 'right' ? COLS - 1 : 0, r = R.int(1, ROWS - 3); counter = { kind: 'counter', c, r, face: side === 'right' ? 'left' : 'right', tall: 2 }; }
+    else { const r = side === 'top' ? 0 : ROWS - 1, c = R.int(1, COLS - 3); counter = { kind: 'counter', c, r, face: side === 'top' ? 'down' : 'up', wide: 2 }; }
+    if (cellsOf(counter).some(([c, r]) => !isFloor(...frontOf(c, r, counter.face)))) return null;
+    put(counter);
+
+    // ---------- grupos de estaciones (cada grupo va junto; grupos distintos van separados) ----------
+    const groups = [];
+    const G = (items, pref) => groups.push({ items, pref });
+    // cajas: 1 a 3 grupos repartidos por la cocina
+    {
+      const cr = R.shuffle(level.crates), k = Math.min(cr.length, R.pick([1, 2, 2, 3, 3]));
+      const cuts = R.shuffle(R.range(1, cr.length - 1)).slice(0, k - 1).sort((a, b) => a - b);
+      let a = 0; for (const b of cuts.concat([cr.length])) { G(cr.slice(a, b).map(it => ({ kind: 'crate', item: it })), R.chance(0.15) ? 'island' : 'wall'); a = b; }
     }
-    // lo que no cupo en la isla va al perímetro libre (primero la pared, luego la fila de abajo lejos de la salida)
-    const bottom = []; for (let c = 1; c <= COLS - 2; c++) bottom.push([c, ROWS - 1, 'up']);
-    for (const kind of overflow) {
-      const fp = free().concat(bottom.filter(([c, r, f]) => usable(c, r, f) && c < 7));
-      if (!fp.length) return null;
-      const [c, r, face] = fp[R.int(0, fp.length - 1)]; put({ kind, c, r, face });
+    // fuegos: las ollas a veces juntas, a veces separadas; sartén, wok y olla del guiso sueltos o junto a una olla
+    {
+      const pots = heat.filter(h => h === 'pot').map(kind => ({ kind })), others = heat.filter(h => h !== 'pot').map(kind => ({ kind }));
+      const hg = [];
+      if (pots.length > 1 && R.chance(0.55)) hg.push(pots); else pots.forEach(p => hg.push([p]));
+      others.forEach(o => { if (hg.length && R.chance(0.4)) R.pick(hg).push(o); else hg.push([o]); });
+      hg.forEach(g => G(g, R.chance(0.3) ? 'island' : 'any'));
+    }
+    // preparación: las tablas a veces juntas; el resto suelto o en pareja al azar
+    {
+      const boards = prep.filter(p => p === 'board').map(kind => ({ kind })), others = prep.filter(p => p !== 'board').map(kind => ({ kind }));
+      const pg = [];
+      if (boards.length > 1 && R.chance(0.5)) pg.push(boards); else boards.forEach(b => pg.push([b]));
+      R.shuffle(others).forEach(o => { if (pg.length && R.chance(0.3)) R.pick(pg).push(o); else pg.push([o]); });
+      pg.forEach(g => G(R.shuffle(g), R.chance(0.65) ? 'island' : 'any'));
+    }
+    // platos limpios: juntos o separados, en cualquier mesa
+    {
+      const n = Math.max(2, level.plates || 2), pl = Array.from({ length: n }, () => ({ kind: 'table', plates: true }));
+      if (R.chance(0.35)) G(pl, 'any'); else pl.forEach(p => G([p], 'any'));
+    }
+    G([{ kind: 'trash' }], 'wall');
+
+    // dónde cabe un grupo: tramos seguidos de celdas libres en la pared o en la isla
+    const runs = (list, n, cyclic) => {
+      const res = [], L = list.length;
+      for (let i = 0; i < (cyclic ? L : L - n + 1); i++) {
+        const seg = []; let ok = true;
+        for (let k = 0; k < n && ok; k++) {
+          const cell = list[(i + k) % L];
+          if (!usable(cell[0], cell[1], cell[2])) ok = false;
+          else if (k && Math.abs(cell[0] - seg[k - 1][0]) + Math.abs(cell[1] - seg[k - 1][1]) > 2) ok = false;    // pegadas (las esquinas cuentan)
+          seg.push(cell);
+        }
+        if (ok) res.push(seg);
+      }
+      return res;
+    };
+    // primero los grupos grandes, después los sueltos (orden al azar entre iguales)
+    for (const grp of R.shuffle(groups).sort((a, b) => b.items.length - a.items.length)) {
+      const n = grp.items.length;
+      const onWall = runs(ring, n, true), onIsland = runs(iorder, n, false);
+      let cand = grp.pref === 'island' ? (onIsland.length ? onIsland : onWall) : grp.pref === 'wall' ? (onWall.length ? onWall : onIsland) : onWall.concat(onIsland);
+      if (!cand.length) return null;
+      const seg = R.pick(cand);
+      grp.items.forEach((it, k) => put(Object.assign({}, it, { c: seg[k][0], r: seg[k][1], face: seg[k][2] })));
     }
 
-    // basura: en la pared derecha, en el fondo o en la esquina de abajo a la izquierda
-    const trashOpts = path.filter(([c, r, f]) => c === COLS - 1 && usable(c, r, f)).concat(bottom.filter(([c, r, f]) => (c === 1 || c === COLS - 2) && usable(c, r, f)));
-    if (!trashOpts.length) return null;
-    { const [c, r, face] = R.pick(trashOpts); put({ kind: 'trash', c, r, face }); }
-
-    // todo lo demás: mesas de apoyo (las de abajo pueden llevar platos limpios)
-    for (const [c, r, face] of bottom) if (!used.has(key(c, r))) put({ kind: 'table', c, r, face, plates: true });
-    for (const [c, r, face] of path) if (!used.has(key(c, r))) put({ kind: 'table', c, r, face });
-    for (const [c, r] of islandCells) if (!used.has(key(c, r))) put({ kind: 'table', c, r, face: faceFor(c, r) || 'down' });
+    // todo lo demás: mesas de apoyo
+    for (const [c, r, face] of ring) if (!used.has(key(c, r))) put({ kind: 'table', c, r, face });
+    for (const [c, r, face] of iorder) if (!used.has(key(c, r))) put({ kind: 'table', c, r, face: face || 'down' });
 
     // ---------- validación: todo lo importante se alcanza caminando desde el punto de inicio ----------
     const floorCells = [];
@@ -177,12 +196,11 @@ const MAPGEN = (() => {
     const seen = new Set([key(...spawn)]), q = [spawn];
     while (q.length) { const [c, r] = q.shift(); for (const [dx, dy] of Object.values(DIR)) { const n = [c + dx, r + dy]; if (isFloor(...n) && !seen.has(key(...n))) { seen.add(key(...n)); q.push(n); } } }
     if (seen.size !== floorCells.length) return null;                     // el piso no puede quedar partido en dos
-    const reach = sp => { for (let i = 0; i < (sp.tall || 1); i++) if (seen.has(key(...frontOf(sp.c, sp.r + i, sp.face)))) return true; return false; };
-    if (out.some(sp => sp.kind !== 'table' && !reach(sp))) return null;
+    const reach = sp => cellsOf(sp).some(([c, r]) => seen.has(key(...frontOf(c, r, sp.face))));
+    if (out.some(sp => (sp.kind !== 'table' || sp.plates) && !reach(sp))) return null;
     // mesas que quedaron tapadas por una isla o península: son encimeras de decoración (nadie llega a usarlas)
-    out.forEach(sp => { if (sp.kind === 'table' && !reach(sp)) { sp.kind = 'deco'; delete sp.plates; } });
-    if (out.filter(sp => sp.kind === 'table' && sp.plates && reach(sp)).length < Math.max(2, level.plates || 2)) return null;
-    if (out.filter(sp => sp.kind === 'table' && reach(sp)).length < 8) return null;      // regla de Sing: muchas mesas de apoyo
+    out.forEach(sp => { if (sp.kind === 'table' && !reach(sp)) sp.kind = 'deco'; });
+    if (out.filter(sp => sp.kind === 'table' && !sp.plates).length < 8) return null;      // regla de Sing: muchas mesas de apoyo
     // el ayudante aparece en otra celda libre cerca del jugador
     const helperCell = floorCells.filter(([c, r]) => !(c === spawn[0] && r === spawn[1])).sort((a, b) => Math.hypot(a[0] - spawn[0], a[1] - (spawn[1] + 1.5)) - Math.hypot(b[0] - spawn[0], b[1] - (spawn[1] + 1.5)))[0];
     return { shape: shapeName, stations: out, island: islandCells, spawn, helper: helperCell || spawn };

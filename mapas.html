@@ -53,20 +53,18 @@ function draw(cv, m) {
   x.strokeStyle = 'rgba(150,120,80,.25)'; for (let c = 1; c < 12; c++) for (let r = 1; r < 7; r++) x.strokeRect(c * C, r * C, C, C);
   x.textAlign = 'center'; x.textBaseline = 'middle';
   for (const s of m.stations) {
-    const h = (s.tall || 1) * C;
-    x.fillStyle = COL[s.kind] || '#999'; x.beginPath(); x.roundRect(s.c * C + 2, s.r * C + 2, C - 4, h - 4, 7); x.fill();
+    const h = (s.tall || 1) * C, w = (s.wide || 1) * C;
+    x.fillStyle = COL[s.kind] || '#999'; x.beginPath(); x.roundRect(s.c * C + 2, s.r * C + 2, w - 4, h - 4, 7); x.fill();
     // borde hacia donde se usa
     const fx = { down: [0, 1], up: [0, -1], left: [-1, 0], right: [1, 0] }[s.face];
     x.fillStyle = 'rgba(0,0,0,.28)';
-    if (fx[1]) x.fillRect(s.c * C + 6, s.r * C + (fx[1] > 0 ? h - 7 : 3), C - 12, 4); else x.fillRect(s.c * C + (fx[0] > 0 ? C - 7 : 3), s.r * C + 6, 4, h - 12);
+    if (fx[1]) x.fillRect(s.c * C + 6, s.r * C + (fx[1] > 0 ? h - 7 : 3), w - 12, 4); else x.fillRect(s.c * C + (fx[0] > 0 ? w - 7 : 3), s.r * C + 6, 4, h - 12);
     x.font = '20px sans-serif';
-    const t = s.kind === 'crate' ? (CRATE_INFO[s.item] || ['?'])[0] : s.plates ? '' : ICO[s.kind] || '';
-    if (t) x.fillText(t, s.c * C + C / 2, s.r * C + h / 2 + 1);
+    const t = s.kind === 'crate' ? (CRATE_INFO[s.item] || ['?'])[0] : s.kind === 'counter' ? { left: '→', right: '←', down: '↑', up: '↓' }[s.face] : s.plates ? '' : ICO[s.kind] || '';
+    if (t) x.fillText(t, s.c * C + w / 2, s.r * C + h / 2 + 1);
   }
-  // los platos empiezan en las mesas de abajo más cercanas a la salida
-  const out = m.stations.find(s => s.kind === 'counter');
-  m.stations.filter(s => s.plates).sort((a, b) => Math.hypot(a.c - out.c, a.r - out.r) - Math.hypot(b.c - out.c, b.r - out.r)).slice(0, 2)
-    .forEach(s => x.fillText('🍽️', s.c * C + C / 2, s.r * C + C / 2 + 1));
+  // mesas donde empiezan los platos limpios
+  m.stations.filter(s => s.plates).forEach(s => x.fillText('🍽️', s.c * C + C / 2, s.r * C + C / 2 + 1));
   x.font = '22px sans-serif'; x.fillText('🧑‍🍳', m.spawn[0] * C + C / 2, m.spawn[1] * C + C / 2 + 1);
 }
 

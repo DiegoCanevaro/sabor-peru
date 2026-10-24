@@ -74,7 +74,7 @@ if (LEVEL.layout === 'calle') {
   for (const sp of MAP.stations) {
     if (sp.kind === 'crate') st.push(cellSt('crate_' + sp.item, 'crate', sp.c, sp.r, sp.face, { item: sp.item, emoji: CRATE_INFO[sp.item][0], label: CRATE_INFO[sp.item][1] }));
     else if (sp.kind === 'table') st.push(cellSt('mesa' + (++mn), 'table', sp.c, sp.r, sp.face, { item: null, label: 'Mesa', plates: !!sp.plates }));
-    else if (sp.kind === 'counter') st.push(cellSt('counter', 'counter', sp.c, sp.r, sp.face, { label: 'MOSTRADOR' }, sp.tall || 1));
+    else if (sp.kind === 'counter') st.push(cellSt('counter', 'counter', sp.c, sp.r, sp.face, { label: 'MOSTRADOR' }, sp.tall || 1, sp.wide || 1));
     else if (sp.kind === 'deco') st.push(cellSt('deco' + (++mn), 'deco', sp.c, sp.r, sp.face, { label: '' }));
     else if (sp.kind === 'trash') st.push(cellSt('trash', 'trash', sp.c, sp.r, sp.face, { label: 'Basura' }));
     else st.push(cellSt(sp.kind === 'pot' ? 'pot' + (++pn) : uid(sp.kind), sp.kind, sp.c, sp.r, sp.face, stationExtra(sp.kind)));
@@ -95,7 +95,7 @@ function freePot(type) {
 }
 const potWith = type => POTS.find(p => p.slots.some(x => x.done && x.type === type));
 const potN = type => POTS.reduce((n, p) => n + p.slots.filter(x => x.type === type).length, 0);
-// Platos limpios: empiezan en las mesas de abajo más cercanas a la bandeja de salida y vuelven ahí tras servir
+// Platos limpios: empiezan en las mesas marcadas por el mapa (juntas o separadas) y vuelven a la libre más cercana a la salida
 // (en los primeros niveles no se lavan)
 function plateSpot() {
   const out = st.find(s => s.kind === 'counter');

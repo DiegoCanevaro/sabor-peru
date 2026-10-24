@@ -676,15 +676,12 @@ function buildWorld() {
     c.strokeStyle = THEME.tileLine; c.lineWidth = 3; c.strokeRect(0, 0, w, h); c.beginPath(); c.moveTo(w / 2, 0); c.lineTo(w / 2, h); c.moveTo(0, h / 2); c.lineTo(w, h / 2); c.stroke();
   }, [FW / 0.8, 2]);
   const WH = 4.2, TILE_H = 1.6;
-  const back = new THREE.Group();
-  const lower = mesh(new THREE.PlaneGeometry(FW, TILE_H), new THREE.MeshStandardMaterial({ map: tileTex, roughness: 0.4 }), false);
-  lower.position.set((X0 + X1) / 2, TILE_H / 2, Z0); back.add(lower);
-  const band = mesh(new THREE.BoxGeometry(FW, 0.16, 0.06), M(THEME.band)); band.position.set((X0 + X1) / 2, TILE_H, Z0 + 0.03); back.add(band);
-  const upper = mesh(new THREE.PlaneGeometry(FW, WH - TILE_H), M(THEME.wall, { roughness: 0.95 }), false);
-  upper.position.set((X0 + X1) / 2, TILE_H + (WH - TILE_H) / 2, Z0); back.add(upper);
-  scene3.add(back);
-  const left = back.clone(); left.children.forEach(c => { c.position.x = 0; c.position.z = 0; });
-  left.rotation.y = Math.PI / 2; left.position.set(X0, 0, (Z0 + Z1) / 2); left.scale.x = FD / FW; scene3.add(left);
+  // la bandeja de salida puede estar en cualquier pared: ahí se abre la ventanilla de PEDIDOS
+  const out = st.find(x => x.kind === 'counter');
+  const OUT_SIDE = out ? { left: 'right', right: 'left', down: 'back', up: 'front' }[out.face] : null;
+  const H0 = 0.95, H1 = 2.35;
+  const hole = !out ? null : (OUT_SIDE === 'back' || OUT_SIDE === 'front') ? [X3(out.x), X3(out.x + out.w)] : [Z3(out.y), Z3(out.y + out.h)];
+  const decoStart = scene3.children.length;      // la decoración de las paredes se agrega desde aquí
   // pizarra con el menú del día (mundo 1) o letrero lacado del chifa (mundo 2)
   const isChifa = (LEVEL.world || 1) === 2;
   const board = mesh(new THREE.PlaneGeometry(4.2, 2.6), new THREE.MeshStandardMaterial({ map: isChifa ? chifaSignTex() : menuBoardTex(), roughness: isChifa ? 0.45 : 0.9 }), false);
@@ -738,9 +735,14 @@ function buildWorld() {
     c.fillStyle = THEME.brick; c.fillRect(0, 0, w, h); c.strokeStyle = THEME.brickLine; c.lineWidth = 3;
     for (let row = 0; row < 4; row++) { const y = row * 16; c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); for (let x = (row % 2) * 16; x < w; x += 32) { c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + 16); c.stroke(); } }
   }, [(X1 - X0) / 2, 1]);
-  const lowWall = mesh(new THREE.BoxGeometry(X1 - X0 + 0.3, 1.15, 0.3), new THREE.MeshStandardMaterial({ map: brick, roughness: 0.9 }));
-  lowWall.position.set((X0 + X1) / 2, 0.575, ZF + 0.18); scene3.add(lowWall);
-  const cap = mesh(new THREE.BoxGeometry(X1 - X0 + 0.4, 0.12, 0.42), M(THEME.capCol)); cap.position.set((X0 + X1) / 2, 1.2, ZF + 0.18); scene3.add(cap);
+  const lowPiece = (a, b) => {
+    if (b - a < 0.02) return;
+    const t = brick.clone(); t.needsUpdate = true; t.repeat.set((b - a) / 2, 1);
+    const lw = mesh(new THREE.BoxGeometry(b - a, 1.15, 0.3), new THREE.MeshStandardMaterial({ map: t, roughness: 0.9 })); lw.position.set((a + b) / 2, 0.575, ZF + 0.18); scene3.add(lw);
+    const cp = mesh(new THREE.BoxGeometry(b - a + 0.1, 0.12, 0.42), M(THEME.capCol)); cp.position.set((a + b) / 2, 1.2, ZF + 0.18); scene3.add(cp);
+  };
+  // si la salida está abajo, el muro bajo deja un hueco para la cinta
+  if (OUT_SIDE === 'front') { lowPiece(X0 - 0.15, hole[0]); lowPiece(hole[1], X1 + 0.15); } else lowPiece(X0 - 0.15, X1 + 0.15);
   if (!IS_CHIFA) {
     const sh = KK('shelf_papertowel_decorated'); sh.position.set(4.6, 2.2, Z0); scene3.add(sh);
     [['kitchencabinet', 7.6], ['kitchencabinet', 9.6]].forEach(([n, x]) => { const k = KK(n); k.position.set(x, -0.6, Z0); scene3.add(k); });
@@ -754,34 +756,58 @@ function buildWorld() {
   clock3.rotation.x = Math.PI / 2; clock3.position.set(1.4, 3.1, Z0 + 0.06); scene3.add(clock3);
   const rim3 = mesh(new THREE.TorusGeometry(0.42, 0.05, 8, 24), M('#7a3b2b'), false); rim3.position.set(1.4, 3.1, Z0 + 0.1); scene3.add(rim3);
   [[0.28, 0.6], [0.2, 2.2]].forEach(([l, a]) => { const h = mesh(new THREE.BoxGeometry(0.04, l, 0.02), M('#1d1d1d'), false); h.geometry.translate(0, l / 2, 0); h.position.set(1.4, 3.1, Z0 + 0.11); h.rotation.z = -a; scene3.add(h); });
-  // pared derecha con la ventanilla por donde salen los platos (detrás de la bandeja de salida)
-  const out = st.find(x => x.kind === 'counter');
-  const zA = out ? Z3(out.y) : -1, zB = out ? Z3(out.y + out.h) : 1, H0 = 0.95, H1 = 2.35;
-  const seg = (z0, z1, y0, y1) => {
-    if (z1 - z0 < 0.01 || y1 - y0 < 0.01) return;
-    const part = (a, b, mat) => {
-      if (b - a < 0.01) return;
-      const m = mesh(new THREE.PlaneGeometry(z1 - z0, b - a), mat, false);
-      m.rotation.y = -Math.PI / 2; m.position.set(X1, (a + b) / 2, (z0 + z1) / 2); scene3.add(m);
-    };
-    const t = tileTex.clone(); t.needsUpdate = true; t.repeat.set((z1 - z0) / (IS_CHIFA ? 1.6 : 0.8), (Math.min(y1, TILE_H) - y0) / (IS_CHIFA ? 1.6 : 0.8));
-    part(y0, Math.min(y1, TILE_H), new THREE.MeshStandardMaterial({ map: t, roughness: 0.4 }));
-    part(Math.max(y0, TILE_H), y1, M(THEME.wall, { roughness: 0.95 }));
-    if (y0 < TILE_H && y1 > TILE_H) { const b = mesh(new THREE.BoxGeometry(0.06, 0.16, z1 - z0), M(THEME.band)); b.position.set(X1 - 0.03, TILE_H, (z0 + z1) / 2); scene3.add(b); }
-  };
-  seg(Z0, zA, 0, WH); seg(zB, Z1, 0, WH); seg(zA, zB, 0, H0); seg(zA, zB, H1, WH);
-  // marco de madera, interior oscuro y cartel
+  // la decoración que quedaría delante de la ventanilla se quita
+  if (out && OUT_SIDE !== 'front') {
+    const pad = 0.35, [a, b] = hole;
+    scene3.children.slice(decoStart).forEach(o => {
+      const bb = new THREE.Box3().setFromObject(o); if (bb.isEmpty()) return;
+      const near = OUT_SIDE === 'back' ? bb.min.z < Z0 + 0.9 && bb.max.x > a - pad && bb.min.x < b + pad
+        : OUT_SIDE === 'left' ? bb.min.x < X0 + 0.9 && bb.max.z > a - pad && bb.min.z < b + pad
+        : bb.max.x > X1 - 0.9 && bb.max.z > a - pad && bb.min.z < b + pad;
+      if (near && bb.max.y > H0 - 0.1 && bb.min.y < H1 + 1.3) scene3.remove(o);
+    });
+  }
   const frameM = IS_CHIFA ? GOLD() : M('#7a3b2b', { roughness: 0.7 });
-  [[zA, H0, H1], [zB, H0, H1]].forEach(([z]) => { const f = mesh(new THREE.BoxGeometry(0.3, H1 - H0 + 0.2, 0.16), frameM); f.position.set(X1, (H0 + H1) / 2, z); scene3.add(f); });
-  const top3 = mesh(new THREE.BoxGeometry(0.3, 0.16, zB - zA + 0.16), frameM); top3.position.set(X1, H1 + 0.08, (zA + zB) / 2); scene3.add(top3);
-  const inside = new THREE.Mesh(new THREE.BoxGeometry(1.4, H1 - H0, zB - zA), new THREE.MeshStandardMaterial({ color: '#3a2414', side: THREE.BackSide, roughness: 1 }));
-  inside.position.set(X1 + 0.7, (H0 + H1) / 2, (zA + zB) / 2); scene3.add(inside);
   const signTex = canvasTex(512, 128, (c, w, h) => {
     c.fillStyle = IS_CHIFA ? '#8a1a16' : '#2f6fb3'; c.fillRect(0, 0, w, h); c.strokeStyle = IS_CHIFA ? '#c9a227' : '#fbf6ea'; c.lineWidth = 8; c.strokeRect(8, 8, w - 16, h - 16);
-    c.fillStyle = IS_CHIFA ? '#f4d35e' : '#fbf6ea'; c.font = '66px Kitchen, Arial'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('PEDIDOS', w / 2 - 30, h / 2 + 4); c.font = 'bold 60px Arial'; c.fillText('➜', w - 80, h / 2 + 2);
+    c.fillStyle = IS_CHIFA ? '#f4d35e' : '#fbf6ea'; c.font = '70px Kitchen, Arial'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('PEDIDOS', w / 2, h / 2 + 4);
   });
-  const sign = mesh(new THREE.PlaneGeometry(2.6, 0.65), new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.6 }), false);
-  sign.rotation.y = -Math.PI / 2; sign.position.set(X1 - 0.04, H1 + 0.75, (zA + zB) / 2); scene3.add(sign);
+  // paredes del fondo, izquierda y derecha: cada una en su propio marco local (x a lo largo de la pared, +z hacia la cocina)
+  const TS = IS_CHIFA ? 1.6 : 0.8;
+  const WALLS = {
+    back: { x: (X0 + X1) / 2, z: Z0, len: X1 - X0, rot: 0, sgn: 1, c: (X0 + X1) / 2 },
+    left: { x: X0, z: (Z0 + Z1) / 2, len: Z1 - Z0, rot: Math.PI / 2, sgn: -1, c: (Z0 + Z1) / 2 },
+    right: { x: X1, z: (Z0 + Z1) / 2, len: Z1 - Z0, rot: -Math.PI / 2, sgn: 1, c: (Z0 + Z1) / 2 }
+  };
+  for (const [side, Wd] of Object.entries(WALLS)) {
+    const g = new THREE.Group(); g.position.set(Wd.x, 0, Wd.z); g.rotation.y = Wd.rot; scene3.add(g);
+    const L = Wd.len / 2;
+    const seg = (x0, x1, y0, y1) => {
+      if (x1 - x0 < 0.01 || y1 - y0 < 0.01) return;
+      const part = (p, q, mat) => { if (q - p < 0.01) return; const m = mesh(new THREE.PlaneGeometry(x1 - x0, q - p), mat, false); m.position.set((x0 + x1) / 2, (p + q) / 2, 0); g.add(m); };
+      const t = tileTex.clone(); t.needsUpdate = true; t.repeat.set((x1 - x0) / TS, Math.max(0.01, Math.min(y1, TILE_H) - y0) / TS);
+      part(y0, Math.min(y1, TILE_H), new THREE.MeshStandardMaterial({ map: t, roughness: 0.4 }));
+      part(Math.max(y0, TILE_H), y1, M(THEME.wall, { roughness: 0.95 }));
+      if (y0 < TILE_H && y1 > TILE_H) { const bd = mesh(new THREE.BoxGeometry(x1 - x0, 0.16, 0.06), M(THEME.band)); bd.position.set((x0 + x1) / 2, TILE_H, 0.03); g.add(bd); }
+    };
+    if (side !== OUT_SIDE) { seg(-L, L, 0, WH); continue; }
+    let a = Wd.sgn * (hole[0] - Wd.c), b = Wd.sgn * (hole[1] - Wd.c); if (a > b) [a, b] = [b, a];
+    seg(-L, a, 0, WH); seg(b, L, 0, WH); seg(a, b, 0, H0); seg(a, b, H1, WH);
+    // marco de madera, interior oscuro y cartel
+    [a, b].forEach(x => { const f = mesh(new THREE.BoxGeometry(0.16, H1 - H0 + 0.2, 0.3), frameM); f.position.set(x, (H0 + H1) / 2, 0); g.add(f); });
+    const top3 = mesh(new THREE.BoxGeometry(b - a + 0.16, 0.16, 0.3), frameM); top3.position.set((a + b) / 2, H1 + 0.08, 0); g.add(top3);
+    const inside = new THREE.Mesh(new THREE.BoxGeometry(b - a, H1 - H0, 1.4), new THREE.MeshStandardMaterial({ color: '#3a2414', side: THREE.BackSide, roughness: 1 }));
+    inside.position.set((a + b) / 2, (H0 + H1) / 2, -0.7); g.add(inside);
+    const sign = mesh(new THREE.PlaneGeometry(2.6, 0.65), new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.6 }), false);
+    sign.position.set((a + b) / 2, H1 + 0.75, 0.04); g.add(sign);
+  }
+  // salida en la fila de abajo: postes a los lados del hueco del muro bajo y el cartel inclinado hacia la cámara
+  if (OUT_SIDE === 'front') {
+    const [a, b] = hole, zf = ZF + 0.18;
+    [a, b].forEach(x => { const p = mesh(new THREE.BoxGeometry(0.18, 1.7, 0.36), frameM); p.position.set(x, 0.85, zf); scene3.add(p); });
+    const sg = mesh(new THREE.PlaneGeometry(Math.min(2.6, b - a + 0.6), 0.6), new THREE.MeshStandardMaterial({ map: signTex, roughness: 0.6 }), false);
+    sg.position.set((a + b) / 2, 1.95, zf); sg.rotation.x = -0.5; scene3.add(sg);
+  }
   buildStations();
   buildChefs();
 }
@@ -877,10 +903,13 @@ function trash3() {
   const hole = mesh(new THREE.CircleGeometry(0.5, 20), M('#141a13'), false); hole.rotation.x = -Math.PI / 2; hole.position.y = 1.0; g.add(hole);
   return g;
 }
-// Bandeja de salida (estilo Overcooked): cinta que lleva los platos a la ventanilla de la pared derecha
+// Bandeja de salida (estilo Overcooked): cinta que lleva los platos a la ventanilla de la pared donde está.
 let _beltTex = null;
-// Si el mostrador es horizontal (calle), la cinta lleva los platos hacia la vereda (hacia la cámara).
+// beltDown: la cinta corre a lo largo de z (mostrador horizontal: fondo, fila de abajo o la calle); si no, a lo largo de x.
+// beltSign: hacia dónde corre (+1 = hacia +x / hacia la cámara; -1 = hacia la pared izquierda / el fondo).
+// La cinta siempre se aleja del lado desde el que se usa la bandeja.
 const beltDown = s => s.w > s.h;
+const beltSign = s => (s.face === 'right' || s.face === 'down') ? -1 : 1;
 function bandeja3(s) {
   const g = new THREE.Group(), w = s.w / U3, d = s.h / U3, down = beltDown(s);
   const body = mesh(new THREE.BoxGeometry(w, 0.9, d), M('#5a6470', { metalness: 0.35, roughness: 0.45 })); body.position.y = 0.45; g.add(body);
@@ -896,6 +925,7 @@ function bandeja3(s) {
     if (down) { c.moveTo(24, 40); c.lineTo(64, 84); c.lineTo(104, 40); } else { c.moveTo(40, 24); c.lineTo(84, 64); c.lineTo(40, 104); }      // flecha hacia la salida
     c.stroke();
   }, down ? [(w - 0.28) / 0.9, d / 0.9] : [w / 0.9, (d - 0.28) / 0.9]);
+  if (beltSign(s) < 0) { _beltTex.center.set(0.5, 0.5); _beltTex.rotation = Math.PI; }      // flecha al revés
   const belt = mesh(down ? new THREE.BoxGeometry(w - 0.28, 0.08, d) : new THREE.BoxGeometry(w, 0.08, d - 0.28), new THREE.MeshStandardMaterial({ map: _beltTex, roughness: 0.8 })); belt.position.y = 0.93; g.add(belt);
   g.userData.down = down;
   return g;
@@ -1047,24 +1077,27 @@ serve = function (plate, noPlate) {
   if (ok && V3.ready) {
     const out = st.find(x => x.kind === 'counter'), down = beltDown(out);
     const m = noPlate ? ITEM3.chicha() : plateModel(plate.parts); m.scale.setScalar(1.3);
+    const sg = beltSign(out);
     if (down) {
       const x = Math.max(X3(out.x) + 0.5, Math.min(X3(out.x + out.w) - 0.5, X3(by ? by.x : out.x + out.w / 2)));
-      m.position.set(x, 0.98, Z3(out.y) + 0.25); m.userData.end = Z3(out.y + out.h) + 0.9;
+      m.position.set(x, 0.98, sg > 0 ? Z3(out.y) + 0.25 : Z3(out.y + out.h) - 0.25); m.userData.end = sg > 0 ? Z3(out.y + out.h) + 0.9 : Z3(out.y) - 1.2;
     } else {
       const z = Math.max(Z3(out.y) + 0.5, Math.min(Z3(out.y + out.h) - 0.5, Z3(by ? by.y : out.y + out.h / 2)));
-      m.position.set(X3(out.x) + 0.25, 0.98, z); m.userData.end = 13.2;
+      m.position.set(sg > 0 ? X3(out.x) + 0.25 : X3(out.x + out.w) - 0.25, 0.98, z); m.userData.end = sg > 0 ? X3(out.x + out.w) + 1.2 : X3(out.x) - 1.2;
     }
+    m.userData.sign = sg;
     m.userData.down = down; scene3.add(m); V3.sent.push(m);
   }
   return ok;
 };
 function updSent(dt) {
   const out = st.find(x => x.kind === 'counter');
-  if (_beltTex) { if (out && beltDown(out)) _beltTex.offset.y += dt * 0.6; else _beltTex.offset.x -= dt * 0.6; }
+  const sg = out ? beltSign(out) : 1;
+  if (_beltTex) { if (out && beltDown(out)) _beltTex.offset.y += dt * 0.6 * sg; else _beltTex.offset.x -= dt * 0.6 * sg; }
   V3.sent = V3.sent.filter(m => {
-    const k = m.userData.down ? 'z' : 'x';
-    m.position[k] += dt * 1.1;
-    if (m.position[k] > m.userData.end) { scene3.remove(m); return false; }
+    const k = m.userData.down ? 'z' : 'x', d = m.userData.sign || 1;
+    m.position[k] += dt * 1.1 * d;
+    if ((m.position[k] - m.userData.end) * d > 0) { scene3.remove(m); return false; }
     return true;
   });
 }

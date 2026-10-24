@@ -28,7 +28,7 @@ La pantalla de niveles abre las versiones 3D (`nivelX-Y-3d.html`, `kevin-*-3d.ht
 
 ## Mapas procedurales
 
-Cada nivel genera su propia cocina a partir de una semilla (por defecto, el id del nivel), así que un mismo nivel siempre se ve igual y cada nivel es distinto. Formas de isla: isla larga, islas gemelas, bloque central, isla en L, isla en T, penínsulas, carriles y columnas. Las cajas, los fuegos, la bandeja de salida y la basura cambian de sitio; los platos siguen empezando en las mesas de abajo.
+Cada nivel genera su propia cocina a partir de una semilla (por defecto, el id del nivel), así que un mismo nivel siempre se ve igual y cada nivel es distinto. Formas de isla: isla larga, islas gemelas, bloque central, isla en L, isla en T, penínsulas, carriles y columnas. La bandeja de salida puede estar en cualquier pared (en 3D se abre ahí la ventanilla de PEDIDOS y la cinta corre hacia ella). Las cajas, ollas, tablas y demás estaciones se reparten en grupos: a veces juntas (dos ollas o dos tablas seguidas), a veces separadas por la cocina. Los platos limpios empiezan en mesas al azar, juntos o separados.
 
 - **Ver y elegir mapas:** abre `mapas.html` (en Netlify o con un servidor local). Cambia la semilla o la forma y copia la línea `map: { ... }` dentro del `LEVEL` del nivel en `js/levels/`.
 - **Probar sin tocar archivos:** añade `?mapa=7` (semilla), `?forma=gemelas` o `?mapa=clasica` (la cocina de antes) a la URL del nivel.
