@@ -26,12 +26,20 @@ Juego de cocina peruana estilo Overcooked que enseña recetas reales. Se juega e
 
 La pantalla de niveles abre las versiones 3D (`nivelX-Y-3d.html`, `kevin-*-3d.html`). Las páginas 2D (`nivelX-Y.html`) usan la misma lógica y sirven para probar mecánicas.
 
+## Mapas procedurales
+
+Cada nivel genera su propia cocina a partir de una semilla (por defecto, el id del nivel), así que un mismo nivel siempre se ve igual y cada nivel es distinto. Formas de isla: isla larga, islas gemelas, bloque central, isla en L, isla en T, penínsulas, carriles y columnas. Las cajas, los fuegos, la bandeja de salida y la basura cambian de sitio; los platos siguen empezando en las mesas de abajo.
+
+- **Ver y elegir mapas:** abre `mapas.html` (en Netlify o con un servidor local). Cambia la semilla o la forma y copia la línea `map: { ... }` dentro del `LEVEL` del nivel en `js/levels/`.
+- **Probar sin tocar archivos:** añade `?mapa=7` (semilla), `?forma=gemelas` o `?mapa=clasica` (la cocina de antes) a la URL del nivel.
+
 ## Estructura
 
 - `js/config.js`: reglas globales, ingredientes y procesos de cada estación
 - `js/dishes.js`, `js/recipes-data.js`: platos (como datos) y recetas reales
 - `js/levels/`: un archivo por nivel (platos, cajas y estaciones)
-- `js/stations.js`: distribución de la cocina (perímetro + isla central)
+- `js/mapgen.js`: generador procedural de cocinas (formas de isla, zonas, validación de que todo se alcanza)
+- `js/stations.js`: convierte el mapa generado en estaciones (los Kevin mantienen su calle hecha a mano)
 - `js/interact.js`, `js/update.js`, `js/orders.js`, `js/plate.js`: lógica del juego
 - `js/helper.js`: el ayudante controlado por IA
 - `js/render.js`: dibujo 2D · `js/3d/`: dibujo 3D con Three.js (`street3d.js`: escenario de la calle de los Kevin)

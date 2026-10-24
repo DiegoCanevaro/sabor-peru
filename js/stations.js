@@ -33,6 +33,7 @@ function stationExtra(spec) {
 }
 // Carritos de la calle (layout 'calle'): el 3D los usa para poner ruedas y toldos. { c0, c1, r, side: 'top'|'bottom', awning }
 const CARTS = [];
+let MAP = null;      // cocina generada (null en la calle)
 const idCount = {};
 const uid = base => { idCount[base] = (idCount[base] || 0) + 1; return idCount[base] === 1 ? base : base + idCount[base]; };
 if (LEVEL.layout === 'calle') {
@@ -62,31 +63,24 @@ if (LEVEL.layout === 'calle') {
   for (let col = 1 + cut.length; col < 4; col++) place('table', col, 6, 'up');
   cart(8, 6, 'up', (prep.includes('bowl') ? ['bowl'] : []).concat(['plates', 'plates', 'trash']), 'blue');
 } else {
-{
-  const used = new Set(), key = (c, r) => c + ',' + r;
-  const put = (spec, kind, c, r, face, extra, tall) => { st.push(cellSt(spec, kind, c, r, face, extra, tall)); for (let i = 0; i < (tall || 1); i++) used.add(key(c, r + i)); };
-  // fila de arriba: cajas de ingredientes (en el orden del nivel)
-  LEVEL.crates.forEach((it, i) => put('crate_' + it, 'crate', 2 + i, 0, 'down', { item: it, emoji: CRATE_INFO[it][0], label: CRATE_INFO[it][1] }));
-  // fuegos en la pared izquierda; preparación en el centro de la isla
-  const specs = LEVEL.left.concat(LEVEL.right || []);
-  let pn = 0, row = 1;
-  const HEAT = ['pot', 'stew', 'pan', 'wok'];
-  specs.filter(sp => HEAT.includes(sp)).forEach(sp => { put(sp === 'pot' ? 'pot' + (++pn) : sp, sp, 0, row++, 'right', stationExtra(sp)); });
-  const prep = specs.filter(sp => !HEAT.includes(sp));
-  const c0 = Math.round((COLS - prep.length) / 2);
-  prep.forEach((sp, i) => put(uid(sp), sp, c0 + i, ISLAND_ROW, 'down', stationExtra(sp)));
-  // pared derecha: bandeja de salida (2 celdas) y basura
-  put('counter', 'counter', COLS - 1, 2, 'left', { label: 'MOSTRADOR' }, 2);
-  put('trash', 'trash', COLS - 1, ROWS - 2, 'left', { label: 'Basura' });
-  // el resto del perímetro y de la isla: mesas estándar (las esquinas no se alcanzan, son solo decoración en 3D)
-  let mn = 0;
-  const table = (c, r, face) => { if (!used.has(key(c, r))) put('mesa' + (++mn), 'table', c, r, face, { item: null, label: 'Mesa' }); };
-  for (let c = 1; c < COLS - 1; c++) table(c, ROWS - 1, 'up');           // fila de abajo
-  for (let c = 1; c < COLS - 1; c++) table(c, 0, 'down');               // fila de arriba
-  for (let r = 1; r < ROWS - 1; r++) table(0, r, 'right');              // pared izquierda
-  for (let r = 1; r < ROWS - 1; r++) table(COLS - 1, r, 'left');        // pared derecha
-  for (let c = 2; c < COLS - 2; c++) table(c, ISLAND_ROW, 'down');      // isla
-}
+  // cocina procedural (js/mapgen.js): cada nivel tiene su propia distribución, siempre la misma para ese nivel
+  // para probar: ?mapa=<semilla> y/o ?forma=<forma> (?mapa=clasica = la cocina de antes)
+  const qs = new URLSearchParams(location.search), qm = qs.get('mapa'), qf = qs.get('forma'), opt = {};
+  if (qm != null && qm !== '') { if (MAPGEN.SHAPES.includes(qm) || qm === 'clasica') opt.shape = qm; else opt.seed = /^\d+$/.test(qm) ? +qm : qm; }
+  if (qf) opt.shape = qf;
+  MAP = MAPGEN.generate(LEVEL, opt);
+  console.log('Cocina:', MAP.name, '· semilla', MAP.seed);
+  let pn = 0, mn = 0;
+  for (const sp of MAP.stations) {
+    if (sp.kind === 'crate') st.push(cellSt('crate_' + sp.item, 'crate', sp.c, sp.r, sp.face, { item: sp.item, emoji: CRATE_INFO[sp.item][0], label: CRATE_INFO[sp.item][1] }));
+    else if (sp.kind === 'table') st.push(cellSt('mesa' + (++mn), 'table', sp.c, sp.r, sp.face, { item: null, label: 'Mesa', plates: !!sp.plates }));
+    else if (sp.kind === 'counter') st.push(cellSt('counter', 'counter', sp.c, sp.r, sp.face, { label: 'MOSTRADOR' }, sp.tall || 1));
+    else if (sp.kind === 'deco') st.push(cellSt('deco' + (++mn), 'deco', sp.c, sp.r, sp.face, { label: '' }));
+    else if (sp.kind === 'trash') st.push(cellSt('trash', 'trash', sp.c, sp.r, sp.face, { label: 'Basura' }));
+    else st.push(cellSt(sp.kind === 'pot' ? 'pot' + (++pn) : uid(sp.kind), sp.kind, sp.c, sp.r, sp.face, stationExtra(sp.kind)));
+  }
+  // el jugador empieza en el centro libre de la cocina (ya no puede aparecer dentro de una isla)
+  player.x = cellX(MAP.spawn[0]) + CS / 2; player.y = cellY(MAP.spawn[1]) + CS / 2;
 }
 
 const g = id => st.find(s => s.id === id);
@@ -105,7 +99,7 @@ const potN = type => POTS.reduce((n, p) => n + p.slots.filter(x => x.type === ty
 // (en los primeros niveles no se lavan)
 function plateSpot() {
   const out = st.find(s => s.kind === 'counter');
-  return st.filter(s => s.kind === 'table' && !s.item && (LEVEL.layout === 'calle' ? s.plates : s.row === ROWS - 1))
+  return st.filter(s => s.kind === 'table' && !s.item && s.plates)
     .sort((a, b) => Math.hypot(a.sx - out.sx, a.sy - out.sy) - Math.hypot(b.sx - out.sx, b.sy - out.sy))[0] || null;
 }
 for (let i = 0; i < (LEVEL.plates || 2); i++) { const t = plateSpot(); if (t) t.item = { type: 'plate', parts: [] }; }

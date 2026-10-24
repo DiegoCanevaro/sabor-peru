@@ -32,7 +32,10 @@ function planTable(D) {
   }
   return best;
 }
-const buildSpot = () => freeTableNear(cellX(COLS / 2), cellY(ISLAND_ROW) + CS + STAND);      // dónde empieza un plato nuevo: la isla, cerca de las estaciones
+// dónde empieza un plato nuevo: una mesa libre cerca de las estaciones de preparación
+const PREP_CENTER = (() => { const ps = st.filter(s => ['board', 'bowl', 'blender', 'pan', 'wok', 'fryer'].includes(s.kind)); if (!ps.length) return { x: W / 2, y: H / 2 };
+  return { x: ps.reduce((a, s) => a + s.sx, 0) / ps.length, y: ps.reduce((a, s) => a + s.sy, 0) / ps.length }; })();
+const buildSpot = () => freeTableNear(PREP_CENTER.x, PREP_CENTER.y);
 const parkSpot = () => freeTableNear(helper.x, helper.y);
 
 // ¿Sirve este objeto para ese pedido? (si no, va a la basura)
@@ -457,7 +460,8 @@ function botStep(dt) {
 }
 function setBot(v) {
   bot = v;
-  helper = bot ? { x: 450, y: 400, held: null, timer: 0, idle: 0, trashNext: false, work: null } : null;
+  const hs = MAP ? [cellX(MAP.helper[0]) + CS / 2, cellY(MAP.helper[1]) + CS / 2] : [450, 400];
+  helper = bot ? { x: hs[0], y: hs[1], held: null, timer: 0, idle: 0, trashNext: false, work: null } : null;
   const b = document.getElementById('botBtn');
   b.textContent = '🤖 Ayudante: ' + (bot ? 'ON' : 'OFF') + keyHint('B');
   b.classList.toggle('on', bot);

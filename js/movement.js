@@ -8,8 +8,27 @@ function collides(px, py) {
   return false;
 }
 function tryMove(p, dx, dy) {
-  if (!collides(p.x + dx, p.y)) p.x += dx;
-  if (!collides(p.x, p.y + dy)) p.y += dy;
+  const mx = !collides(p.x + dx, p.y); if (mx) p.x += dx;
+  const my = !collides(p.x, p.y + dy); if (my) p.y += dy;
+  // Esquinas: si el eje principal choca contra la punta de una mesa y casi no hubo avance, el chef resbala
+  // por el borde (como en Overcooked) en vez de quedarse trabado. Importa sobre todo con islas y penínsulas.
+  const want = Math.hypot(dx, dy), got = Math.hypot(mx ? dx : 0, my ? dy : 0);
+  if (want > 0 && got < want * 0.4) {
+    if (!mx && Math.abs(dx) >= Math.abs(dy)) slide(p, dx, 'x');
+    else if (!my) slide(p, dy, 'y');
+  }
+}
+function slide(p, d, axis) {
+  const n = Math.abs(d);
+  for (let k = 1; k <= Math.ceil(n * 1.6); k++) for (const sgn of [1, -1]) {
+    const ox = axis === 'x' ? d : sgn * k, oy = axis === 'x' ? sgn * k : d;
+    if (!collides(p.x + ox, p.y + oy)) {
+      const step = Math.min(k, n);
+      if (axis === 'x') { if (!collides(p.x, p.y + sgn * step)) p.y += sgn * step; }
+      else if (!collides(p.x + sgn * step, p.y)) p.x += sgn * step;
+      return;
+    }
+  }
 }
 function distToStation(s, p) {
   const cx = Math.max(s.x, Math.min(p.x, s.x + s.w)), cy = Math.max(s.y, Math.min(p.y, s.y + s.h));
@@ -17,7 +36,7 @@ function distToStation(s, p) {
 }
 function nearestStation(p) {
   let best = null, bd = REACH;
-  for (const s of st) { const d = distToStation(s, p); if (d < bd) { bd = d; best = s; } }
+  for (const s of st) { if (s.kind === 'deco') continue; const d = distToStation(s, p); if (d < bd) { bd = d; best = s; } }
   return best;
 }
 

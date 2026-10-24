@@ -25,7 +25,7 @@ function drawItem(it, x, y, size) {
     if (LABELED.includes(it.type)) label(NAME[it.type] + (it.n > 1 ? ' ×' + it.n : ''), x, y + size * .62, '#fff', 9);
   }
 }
-const COL = { stew: '#5a6470', fryer: '#8a8f96', skewer: '#c9a46a', grill: '#3a3030', cups: '#7aa7c9', balde: '#6a2c8a', wok: '#3a2a2a', crate: '#8a5a2b', plates: '#9aa5ad', trash: '#4a4f55', pot: '#5a6470', board: '#b98a4f', bowl: '#c98a4a', blender: '#6b4f7a', pan: '#4a4a52', table: '#a07a45', counter: '#7a3b2b' };
+const COL = { stew: '#5a6470', fryer: '#8a8f96', skewer: '#c9a46a', grill: '#3a3030', cups: '#7aa7c9', balde: '#6a2c8a', wok: '#3a2a2a', crate: '#8a5a2b', plates: '#9aa5ad', trash: '#4a4f55', pot: '#5a6470', board: '#b98a4f', bowl: '#c98a4a', blender: '#6b4f7a', pan: '#4a4a52', table: '#a07a45', deco: '#8a6a3e', counter: '#7a3b2b' };
 
 function drawStation(s) {
   const cx = s.x + s.w / 2, cy = s.y + s.h / 2;
