@@ -24,5 +24,7 @@ const DISH_IMAGES = {
 };
 // el cebiche sin ají usa la misma ilustración
 DISH_IMAGES.cebiche_sin = DISH_IMAGES.cebiche_pota;
+// variantes que usan la ilustración de otro plato (p. ej. los cebiches con sus agregados)
+if (typeof DISHES !== 'undefined') Object.values(DISHES).forEach(D => { if (D.img && DISH_IMAGES[D.img]) DISH_IMAGES[D.id] = DISH_IMAGES[D.img]; });
 const DISH_IMG = {};
 const DISH_READY = Promise.all(Object.entries(DISH_IMAGES).map(([k, src]) => new Promise(res => { const im = new Image(); im.onload = () => { DISH_IMG[k] = im; res(); }; im.onerror = res; im.src = src; })));

@@ -62,10 +62,8 @@ function drawStation(s) {
       break;
     case 'blender': {
       base('🥤');
-      const m = s.state === 'idle' && blendMatch(s.items);
-      if (s.state === 'idle') s.items.forEach((it, i) => emoji(ICON[it], s.x + 12 + i * 15, s.y + 11, 12));
-      if (m) { bar(s.x + 4, s.y + 4, s.w - 8, s.wait / BLEND_WAIT, '#9aa5ad', 8); label('¿algo más?', cx, s.y + 18, '#f4e04c', 9); }   // espera por si llega otro ingrediente
-      if (s.state === 'blending') { emoji(ICON[s.out], cx + 20, cy + 2, 18); bar(s.x + 4, s.y + 4, s.w - 8, s.t / T.blend, '#f4b83c', 8); }
+      if (s.state !== 'done') s.items.forEach((it, i) => emoji(ICON[it], s.x + 12 + i * 15, s.y + 11, 12));
+      if (s.state === 'blending') { bar(s.x + 4, s.y + 4, s.w - 8, s.t / blendTime(s.items), '#f4b83c', 8); if (s.t >= blendTime(s.items)) label('¿falta algo?', cx, s.y + 18, '#f4e04c', 9); }
       if (s.state === 'done') { emoji(ICON[s.out], cx + 20, cy + 2, 20); label('¡lista!', cx, s.y + 12, '#8fe39a', 11); }
       break;
     }

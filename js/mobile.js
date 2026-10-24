@@ -26,7 +26,7 @@
     if (!wrap) return;
     // la cocina ocupa el alto de la pantalla y queda centrada en el espacio a la derecha de la columna de pedidos
     const natW = 900, natH = (document.getElementById('c3d') || document.getElementById('c') || wrap).offsetHeight || 566;
-    const colW = Math.round(Math.min(150, Math.max(104, window.innerWidth * 0.15)));
+    const colW = Math.round(Math.min(230, Math.max(180, window.innerWidth * 0.24)));
     const s = Math.min((window.innerWidth - colW) / natW, window.innerHeight / natH);
     wrap.style.setProperty('--s', s);
     body.style.setProperty('--colW', colW + 'px');

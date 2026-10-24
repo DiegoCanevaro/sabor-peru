@@ -40,15 +40,13 @@ body.mobile #tickets {
   min-height: 0; padding: 0; background: transparent; border: none; pointer-events: none;
   display: flex; flex-direction: column; gap: 6px; overflow: visible;
 }
-body.mobile .ticket { width: 100%; min-width: 0; transition: opacity .25s; }
+body.mobile .ticket { width: max-content; max-width: 100%; min-width: 0; transition: opacity .25s; }
 body.mobile .ticket.upcoming, body.mobile .ticket[data-rank=""], body.mobile .ticket[data-rank="3"], body.mobile .ticket[data-rank="4"], body.mobile .ticket[data-rank="5"] { display: none !important; }
-body.mobile .ticket[data-rank="1"], body.mobile .ticket[data-rank="2"] { opacity: .55; }
-body.mobile .ticket .dish { padding: 2px 4px 0; }
-body.mobile .ticket .slots { flex-wrap: wrap; justify-content: center; margin: 0 3px; }
-/* los siguientes, compactos: solo el plato y su barra de espera */
-body.mobile .ticket[data-rank="1"] .slots, body.mobile .ticket[data-rank="2"] .slots { display: none; }
-body.mobile .ticket[data-rank="1"] .dish canvas, body.mobile .ticket[data-rank="2"] .dish canvas { width: 38px !important; height: 38px !important; }
-body.mobile .ticket[data-rank="1"] .course, body.mobile .ticket[data-rank="2"] .course { display: none; }
+/* el más urgente opaco; los siguientes semitransparentes y un poco más chicos */
+body.mobile .ticket[data-rank="1"], body.mobile .ticket[data-rank="2"], body.mobile .ticket[data-rank="3"] { opacity: .6; transform: scale(.9); transform-origin: top left; margin-bottom: -6px; }
+body.mobile .ticket .dish { padding: 2px 4px; }
+body.mobile .ticket .chip { width: 22px; height: 22px; }
+body.mobile .ticket .slots { padding: 3px 4px; }
 
 /* pantallas de inicio y fin del nivel: letra más grande (todo se ve escalado) */
 body.mobile .overlay h1 { font-size: 40px; }

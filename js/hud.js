@@ -26,22 +26,34 @@ function ticketSlots(D) {
   });
   return box;
 }
-// la etiqueta Entrada / Segundo solo hace falta si en el nivel se mezclan (las entradas salen antes)
-const MIXED_COURSES = ['entrada', 'segundo'].every(k => LEVEL.dishes.some(d => DISHES[d].course === k));
+// Ticket horizontal: a la izquierda el plato (o 'entrada + segundo' en los pedidos combinados) con su barra de espera;
+// a la derecha una fila de ingredientes y debajo sus señales. En los combinados se muestran los ingredientes del plato
+// que toca ahora (primero la entrada; al entregarla, el segundo).
+function dishBox(o) {
+  const box = document.createElement('div'); box.className = 'dish';
+  const ds = o.split('+');
+  ds.forEach((id, k) => {
+    if (k) { const p = document.createElement('span'); p.className = 'plus'; p.textContent = '+'; box.appendChild(p); }
+    const D = DISHES[id], w = document.createElement('span'); w.className = 'dimg'; w.title = D.name;
+    if (typeof dishIcon === 'function' && hasDishIcon(id)) w.appendChild(dishIcon(id, ds.length > 1 ? 36 : 44)); else w.textContent = D.icon;
+    box.appendChild(w);
+  });
+  return box;
+}
 function buildTickets() {
   const box = document.getElementById('tickets');
   box.innerHTML = ''; tickEls.length = 0;
   for (let i = 0; i < TOTAL_CUSTOMERS; i++) {
-    const D = DISHES[ORDERS[i]];
+    const o = ORDERS[i], first = DISHES[o.split('+')[0]];
     const d = document.createElement('div');
-    d.className = 'ticket upcoming';
-    const img = typeof dishIcon === 'function' && hasDishIcon(D.id);
-    d.innerHTML = '<div class="card"><div class="tbar"><i></i></div><div class="dish" title="' + D.name + '">' + (img ? '' : D.icon) + '</div>' +
-      (MIXED_COURSES ? '<div class="course ' + D.course + '">' + ({ entrada: 'Entrada', segundo: 'Segundo', plato: 'Plato', bebida: 'Bebida' }[D.course] || '') + '</div>' : '') + '</div>';
-    d.appendChild(ticketSlots(D));
-    if (img) d.querySelector('.dish').appendChild(dishIcon(D.id, 46));
+    d.className = 'ticket upcoming' + (o.includes('+') ? ' combo' : '');
+    const card = document.createElement('div'); card.className = 'card';
+    card.innerHTML = '<div class="tbar"><i></i></div>';
+    card.appendChild(dishBox(o));
+    d.appendChild(card);
+    d.appendChild(ticketSlots(first));
     box.appendChild(d);
-    tickEls.push({ el: d, bar: d.querySelector('.tbar i'), cls: '', w: -1, col: '' });
+    tickEls.push({ el: d, bar: d.querySelector('.tbar i'), cls: '', w: -1, col: '', step: 0 });
   }
 }
 // reloj del turno en el HUD (rojo y latiendo en los últimos 30 s)
@@ -56,6 +68,11 @@ updateClock();
 function updateTickets() {
   tickEls.forEach((t, i) => {
     const c = customers[i]; if (!c) return;
+    if (c.combo && t.step !== c.step) {        // entregada la entrada: ahora los ingredientes del segundo
+      t.step = c.step;
+      t.el.replaceChild(ticketSlots(c.dish), t.el.querySelector('.slots'));
+      t.el.querySelectorAll('.dimg').forEach((w, k) => w.classList.toggle('served', k < c.step));
+    }
     if ((c.state === 'happy' || c.state === 'angry') && clock - c.doneAt > 1.5) { if (t.cls !== 'gone') { t.el.style.display = 'none'; t.cls = 'gone'; } return; }
     let pct = 1, cls = 'ticket upcoming';
     if (c.state === 'waiting') { pct = Math.max(0, c.patience / c.max); cls = 'ticket' + (pct < 0.2 ? ' urgent' : '') + (servable(c) ? '' : ' hold'); }

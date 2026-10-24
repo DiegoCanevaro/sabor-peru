@@ -38,17 +38,12 @@ function update(dt) {
         if (s.state === 'idle' && s.worked) { const m = bowlMatch(s.items); if (m) { s.state = 'mashing'; s.t = 0; s.out = m.out; s.portions = m.n; } }
         if (s.state === 'mashing' && s.worked) { s.t += dt; if (s.t >= T.bowl) { s.state = 'done'; s.n = s.portions || 1; } } break;
       // automática: arranca sola cuando el contenido es una receta (el contenido decide qué sale)
-      case 'blender': {
-        if (s.state === 'idle') {
-          const m = blendMatch(s.items);
-          if (m) {
-            s.wait = (s.wait || 0) + dt;
-            if (!blendCanGrow(s.items) || s.wait >= BLEND_WAIT) { s.state = 'blending'; s.t = 0; s.out = m.out; s.wait = 0; }
-          } else s.wait = 0;
+      case 'blender':      // licúa sola desde que se le echa el ají; termina cuando el contenido es una receta
+        if (s.state === 'blending') {
+          s.t = Math.min(s.t + dt, blendTime(s.items));
+          if (s.t >= blendTime(s.items)) { const m = blendMatch(s.items); if (m) { s.state = 'done'; s.out = m.out; } }
         }
-        if (s.state === 'blending') { s.t += dt; if (s.t >= T.blend) s.state = 'done'; }
         break;
-      }
     }
   }
 
@@ -56,7 +51,7 @@ function update(dt) {
   // llegada de pedidos (escalonada; si no hay nadie esperando, el siguiente llega enseguida)
   const nq = nextQueued();
   if (nq && (clock >= nq.arriveAt || (!waitingList().length && clock - lastResolve >= 2))) {
-    nq.state = 'waiting'; nq.patience = nq.max = nq.dish.patience;
+    nq.state = 'waiting'; nq.patience = nq.max = nq.dish.patience * (LEVEL.patience || 1);
   }
   // paciencia
   for (const c of waitingList()) {

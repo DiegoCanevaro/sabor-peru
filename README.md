@@ -18,10 +18,11 @@ Juego de cocina peruana estilo Overcooked que enseña recetas reales. Se juega e
 | | 1-3 | Ají de Gallina |
 | | 1-4 | Pollo al Ají |
 | | 1-5 | Lomo Saltado (wok y freidora) |
-| 2 · Chifa | 2-1 | Entradas de chifa: Sopa Wantán y Wantán Frito |
+| | 1-6 | Menú completo: cada cliente pide entrada + segundo |
+| 2 · Chifa | 2-1 | Wantán Frito |
 | | 2-2 | Arroz Chaufa |
 | | 2-3 | Tallarín Saltado |
-| Kevin · Comida de la calle (carretilla cebichera) | K-9 | Cebiche de Pota con o sin ají + Chicha Morada |
+| Kevin · Comida de la calle (carretilla cebichera) | K-9 | Cebiche de Pota con o sin ají, choclo, cancha y camote + Chicha Morada |
 | | K-10 | Anticuchos, rachi y pancita (carretilla de noche: tabla → bowl con salsa anticuchera → palitos → parrilla) |
 
 Los niveles 3D están en la carpeta `niveles-3d/` y las versiones 2D (misma lógica, para probar mecánicas) en `niveles-2d/`. La portada (`index.html#niveles`) y `niveles.html` abren los 3D; al final de la lista hay enlaces a los 2D. Todas las páginas de nivel vuelven a `index.html#niveles`.

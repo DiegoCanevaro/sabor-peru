@@ -205,3 +205,13 @@ canvas.sign { background: none; border: 0; }
 #timeDisplay { font-variant-numeric: tabular-nums; }
 #timeDisplay.low { color: #ff6b5a; animation: tlow .5s infinite alternate; }
 @keyframes tlow { from { opacity: 1; } to { opacity: .45; } }
+
+/* tickets horizontales: plato a la izquierda, ingredientes (1 fila) y señales (1 fila) a la derecha */
+.ticket { flex-direction: row; align-items: stretch; }
+.ticket .card { border-radius: 8px 0 0 8px; display: flex; flex-direction: column; flex: none; }
+.ticket .dish { display: flex; align-items: center; justify-content: center; gap: 1px; padding: 3px 6px; flex: 1; }
+.ticket .dish .plus { font-weight: bold; color: #6b5a45; font-size: 14px; }
+.ticket .dish .dimg { display: block; line-height: 0; }
+.ticket .dish .dimg.served { opacity: .3; }
+.ticket .slots { margin: 0; border-radius: 0 8px 8px 0; flex-wrap: nowrap; align-items: flex-start; padding: 4px 5px; }
+.ticket .course { display: none; }

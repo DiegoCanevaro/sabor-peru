@@ -66,7 +66,8 @@ if (LEVEL.layout === 'calle') {
   const used = new Set(), key = (c, r) => c + ',' + r;
   const put = (spec, kind, c, r, face, extra, tall) => { st.push(cellSt(spec, kind, c, r, face, extra, tall)); for (let i = 0; i < (tall || 1); i++) used.add(key(c, r + i)); };
   // fila de arriba: cajas de ingredientes (en el orden del nivel)
-  LEVEL.crates.forEach((it, i) => put('crate_' + it, 'crate', 2 + i, 0, 'down', { item: it, emoji: CRATE_INFO[it][0], label: CRATE_INFO[it][1] }));
+  const c0crate = LEVEL.crates.length > 10 ? 1 : 2;       // con muchas cajas se empieza una columna antes
+  LEVEL.crates.forEach((it, i) => put('crate_' + it, 'crate', c0crate + i, 0, 'down', { item: it, emoji: CRATE_INFO[it][0], label: CRATE_INFO[it][1] }));
   // fuegos en la pared izquierda; preparación en el centro de la isla
   const specs = LEVEL.left.concat(LEVEL.right || []);
   let pn = 0, row = 1;

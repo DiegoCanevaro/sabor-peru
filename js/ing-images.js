@@ -33,3 +33,4 @@ const ING_IMAGES = {
 ING_IMAGES.camote_cocido = ING_IMAGES.camote;
 ING_IMAGES.papa_cooked = ING_IMAGES.papa_raw;      // papas sancochadas (carretilla de anticuchos)
 ING_IMAGES.choclo_cocido = ING_IMAGES.choclo;
+ING_IMAGES.choclo_desgranado = ING_IMAGES.choclo;      // provisional: falta la ilustración del choclo desgranado

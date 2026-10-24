@@ -190,6 +190,9 @@ const ITEM3 = {
   rachi_crudo: () => { const g = new THREE.Group(); curls(g, 9, 0.02, 0.13, '#b8513a'); return g; },
   pancita_cruda: () => { const g = new THREE.Group(); curls(g, 9, 0.02, 0.13, '#c26a4a'); return g; },
   salsa_anticuchera: () => { const g = new THREE.Group(); const j = mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.3, 16), M('#8f2316', { roughness: 0.25 })); j.position.y = 0.15; g.add(j); const l = mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.06, 16), M('#3b3b3b')); l.position.y = 0.33; g.add(l); return g; },
+  // agregados del cebiche
+  choclo_desgranado: () => { const g = new THREE.Group(); kernels(g, 22, 0.02, 0.13, '#f3e3a0', 0.028); return g; },
+  cancha: () => { const g = new THREE.Group(); kernels(g, 18, 0.02, 0.13, '#d38a2e', 0.032); return g; },
   // chifa: wantanes y tallarines
   wantan: () => { const g = new THREE.Group(); for (let i = 0; i < 5; i++) { const s = mesh(new THREE.BoxGeometry(0.3, 0.012, 0.3), M('#f3df9e', { roughness: 0.7 })); s.position.y = 0.01 + i * 0.014; s.rotation.y = i * 0.18; g.add(s); } return g; },
   cerdo: () => { const g = new THREE.Group(); const p = lumpy(0.2, 1.4, 0.55, 1, '#f0a6a0', 0.05); p.position.y = 0.1; g.add(p); const f = mesh(new THREE.BoxGeometry(0.45, 0.03, 0.08), M('#fbeee6')); f.position.set(0, 0.17, -0.04); g.add(f); return g; },
@@ -403,6 +406,10 @@ function saltadoMix(g, y, r) {
   strips(g, 5, y + 0.02, r * 0.8, '#e0402e', 0.035);
   strips(g, 6, y + 0.02, r * 0.8, '#a8376b', 0.018);
 }
+// granos sueltos (choclo desgranado, cancha)
+function kernels(g, n, y, spread, col, r) {
+  for (let i = 0; i < n; i++) { const k = mesh(new THREE.SphereGeometry(r, 6, 5), M(col, { roughness: 0.6 }), false); k.scale.set(1, 0.8, 1.2); k.position.set(rnd(-spread, spread), y + r + rnd(0, 0.03), rnd(-spread * 0.7, spread * 0.7)); g.add(k); }
+}
 // wantanes: pañuelitos de masa con el relleno al centro
 function wantanes(g, n, y, col) {
   for (let i = 0; i < n; i++) {
@@ -489,6 +496,8 @@ function plateModel(parts) {
     const juice = mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.02, 20), M('#efe9da', { roughness: 0.2 })); juice.position.set(-0.06, y0 + 0.01, 0); g.add(juice);
     cebicheMound(g, y0 + 0.03, 0.15, has('cebiche_aji'));
   }
+  if (has('choclo_d')) { const k = new THREE.Group(); kernels(k, 14, y0, 0.07, '#f3e3a0', 0.026); k.position.set(0.2, 0, -0.14); g.add(k); }
+  if (has('cancha')) { const k = new THREE.Group(); kernels(k, 12, y0, 0.07, '#d38a2e', 0.03); k.position.set(-0.22, 0, 0.18); g.add(k); }
   if (has('camote')) {
     for (let i = 0; i < 2; i++) { const s3 = mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.05, 16), [M('#8a3a4a'), M('#f08a2a'), M('#f08a2a')]); s3.position.set(0.2, y0 + 0.03 + i * 0.03, 0.12 - i * 0.07); s3.rotation.z = -0.2; g.add(s3); }
   }
@@ -1249,10 +1258,8 @@ function stationOverlay(s) {
     case 'balde': if (s.state === 'filling') bar(bx, c.y - 5, 56, s.t / T.balde, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'blender': {
       const c2 = proj(X3(s.x + s.w / 2), 3.0, Z3(s.y + s.h / 2)), b2 = c2.x - 28;
-      const m = s.state === 'idle' && blendMatch(s.items);
-      // la licuadora va sola; si la mezcla aún puede crecer hacia otra receta, espera un momento por si llega algo más
-      if (m) { bar(b2, c2.y - 5, 56, (s.wait || 0) / BLEND_WAIT, '#9aa5ad', 9); pill('¿algo más?', c2.x, c2.y - 18, 'rgba(30,15,5,.85)', '#f4e04c', 10); }
-      if (s.state === 'blending') bar(b2, c2.y - 5, 56, s.t / T.blend, '#f4b83c', 9);
+      // licúa sola desde que se echa el ají; cada ingrediente extra alarga la barra. Llena y sin receta: falta algo
+      if (s.state === 'blending') { bar(b2, c2.y - 5, 56, s.t / blendTime(s.items), '#f4b83c', 9); if (s.t >= blendTime(s.items)) pill('¿falta algo?', c2.x, c2.y - 18, 'rgba(30,15,5,.85)', '#f4e04c', 10); }
       if (s.state === 'done') pill('¡LISTO!', c2.x, c2.y, '#2f8a3b', '#ffffff', 11);
       break;
     }

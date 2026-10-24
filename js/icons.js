@@ -120,6 +120,17 @@ const LABEL_ICONS = {
     lblShape(c, '#3b3b3b', c => c.rect(-58, -66, 116, 28), 7);
     lblShine(c, -44, 10, 6, 22, 0);
   },
+  // cancha serrana (provisional, hasta tener la ilustración): granos de maíz tostado, dorados y con la punta oscura
+  cancha(c) {
+    lblShadow(c, 66, 78);
+    [[-40, 30], [0, 34], [40, 30], [-22, 2], [20, 4], [-52, -4], [52, -2], [0, -24], [-30, -34], [30, -30]].forEach(([x, y], i) => {
+      c.save(); c.translate(x, y); c.rotate(i * 0.7);
+      lblShape(c, i % 3 ? '#d9952f' : '#c7792a', c => c.ellipse(0, 0, 18, 14, 0, 0, 7), 6);
+      lblShape(c, '#6b3a1c', c => c.ellipse(-12, 0, 5, 7, 0, 0, 7), 0);
+      lblShine(c, 4, -5, 6, 3, 0);
+      c.restore();
+    });
+  },
   limon(c) {
     lblShadow(c, 64, 76);
     lblShape(c, '#5c9b2e', c => c.ellipse(-26, 6, 46, 40, -0.2, 0, 7));

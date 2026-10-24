@@ -28,7 +28,7 @@ const ICON = {
   corazon_trozos: '🫀', rachi_trozos: '🥩', pancita_trozos: '🥩', corazon_mar: '🥣', rachi_mar: '🥣', pancita_mar: '🥣',
   corazon_palito: '🍢', anticucho: '🍢', rachi_asado: '🥩', pancita_asada: '🥩',
   wantan: '🥟', cerdo: '🥩', cerdo_picado: '🥩', wantan_crudo: '🥟', wantan_frito: '🥟', sopa: '🍜',
-  tallarines: '🍜', tallarin_cocido: '🍜', tallarin_saltado: '🍝'
+  tallarines: '🍜', tallarin_cocido: '🍜', tallarin_saltado: '🍝', choclo_desgranado: '🌽', cancha: '🌰'
 };
 const NAME = {
   papa_raw: 'papa', papa_cooked: 'cocida', papa_sliced: 'rodajas', pollo_raw: 'pollo', pollo_cooked: 'cocido', pollo_shred: 'desmenuz.',
@@ -42,7 +42,7 @@ const NAME = {
   corazon_trozos: 'trozos', rachi_trozos: 'trozos', pancita_trozos: 'trozos', corazon_mar: 'macerado', rachi_mar: 'macerado', pancita_mar: 'macerado',
   corazon_palito: 'palito', anticucho: 'anticucho', rachi_asado: 'rachi', pancita_asada: 'pancita',
   wantan: 'masa', cerdo: 'cerdo', cerdo_picado: 'picado', wantan_crudo: 'wantanes', wantan_frito: 'frito', sopa: 'sopa',
-  tallarines: 'tallarín', tallarin_cocido: 'cocido', tallarin_saltado: 'saltado'
+  tallarines: 'tallarín', tallarin_cocido: 'cocido', tallarin_saltado: 'saltado', choclo_desgranado: 'choclo', cancha: 'cancha'
 };
 const LABELED = ['papa_cooked', 'papa_sliced', 'pollo_cooked', 'pollo_shred', 'arroz_cooked', 'palta_sliced', 'salsa', 'salsa_aji', 'masa', 'guiso', 'cebolla_picada', 'chaufa', 'pollo_cuadros', 'pota_cortada', 'cebolla_pluma', 'aji_limo_picado', 'camote_cocido', 'cebiche', 'cebiche_aji', 'cebolla_cuadros', 'chicha', 'pollo_aji', 'carne_cubos', 'papa_baston', 'papas_fritas', 'tomate_juliana', 'cebolla_juliana', 'saltado',
   'choclo_rodajas', 'corazon_trozos', 'rachi_trozos', 'pancita_trozos', 'corazon_mar', 'rachi_mar', 'pancita_mar', 'corazon_palito', 'anticucho', 'cerdo_picado', 'wantan_crudo', 'wantan_frito', 'sopa', 'tallarin_cocido', 'tallarin_saltado', 'rachi_asado', 'pancita_asada'];
@@ -53,15 +53,16 @@ const CRATE_INFO = {
   pota: ['🦑', 'Pota'], limon: ['🍋', 'Limones'], cebolla_roja: ['🧅', 'Cebolla'], aji_limo: ['🌶️', 'Ají limo'], camote: ['🍠', 'Camote'],
   pota_cortada: ['🦑', 'Pota'], camote_cocido: ['🍠', 'Camote'], carne: ['🥩', 'Carne'], tomate: ['🍅', 'Tomates'],
   corazon: ['🫀', 'Corazón'], rachi: ['🥩', 'Rachi'], pancita: ['🥩', 'Pancita'], papa_cooked: ['🥔', 'Papas cocidas'], choclo_cocido: ['🌽', 'Choclo'],
-  salsa_anticuchera: ['🥫', 'Salsa anticuchera'], wantan: ['🥟', 'Masa de wantán'], cerdo: ['🥩', 'Cerdo'], tallarines: ['🍜', 'Tallarines']
+  salsa_anticuchera: ['🥫', 'Salsa anticuchera'], wantan: ['🥟', 'Masa de wantán'], cerdo: ['🥩', 'Cerdo'], tallarines: ['🍜', 'Tallarines'],
+  choclo_desgranado: ['🌽', 'Choclo desgranado'], cancha: ['🌰', 'Cancha']
 };
 // lo que se puede poner sobre el plato (producto -> parte) y cómo se dibuja cada parte
 const PART_OF_ITEM = { papa_sliced: 'papa', salsa: 'salsa', arroz_cooked: 'arroz', guiso: 'guiso', masa: 'masa', pollo_shred: 'relleno', palta_sliced: 'palta', chaufa: 'chaufa', cebiche: 'cebiche', cebiche_aji: 'cebiche_aji', camote_cocido: 'camote', pollo_aji: 'pollo_aji', papas_fritas: 'papas_fritas', saltado: 'saltado',
   anticucho: 'anticucho', rachi_asado: 'rachi_asado', pancita_asada: 'pancita_asada', choclo_rodajas: 'choclo',
-  wantan_frito: 'wantan_frito', sopa: 'sopa', tallarin_saltado: 'tallarin_saltado' };
-const PART_EMOJI = { papa: '🥔', salsa: '🥣', arroz: '🍚', guiso: '🍛', chaufa: '🍛', cebiche: '🦑', cebiche_aji: '🦑', camote: '🍠', pollo_aji: '🍛', papas_fritas: '🍟', saltado: '🥘', anticucho: '🍢', rachi_asado: '🍢', pancita_asada: '🍢', choclo: '🌽', wantan_frito: '🥟', sopa: '🍜', tallarin_saltado: '🍝' };
+  wantan_frito: 'wantan_frito', sopa: 'sopa', tallarin_saltado: 'tallarin_saltado', choclo_desgranado: 'choclo_d', cancha: 'cancha' };
+const PART_EMOJI = { papa: '🥔', salsa: '🥣', arroz: '🍚', guiso: '🍛', chaufa: '🍛', cebiche: '🦑', cebiche_aji: '🦑', camote: '🍠', pollo_aji: '🍛', papas_fritas: '🍟', saltado: '🥘', anticucho: '🍢', rachi_asado: '🍢', pancita_asada: '🍢', choclo: '🌽', wantan_frito: '🥟', sopa: '🍜', tallarin_saltado: '🍝', choclo_d: '🌽', cancha: '🌰' };
 const PART_POS = { arroz: [-.22, -.12], papa: [.22, -.12], salsa: [0, .1], guiso: [0, .1], chaufa: [0, 0], cebiche: [-.1, 0], cebiche_aji: [-.1, 0], camote: [.26, .1], pollo_aji: [0, .12], papas_fritas: [.22, -.12], saltado: [0, .12],
-  anticucho: [-.1, .08], rachi_asado: [-.1, .08], pancita_asada: [-.1, .08], choclo: [.24, .1], wantan_frito: [0, 0], sopa: [0, 0], tallarin_saltado: [0, 0] };
+  anticucho: [-.1, .08], rachi_asado: [-.1, .08], pancita_asada: [-.1, .08], choclo: [.24, .1], wantan_frito: [0, 0], sopa: [0, 0], tallarin_saltado: [0, 0], choclo_d: [.24, -.14], cancha: [-.26, .16] };
 const LAYER_COL = { masa: '#f2c94c', relleno: '#d99a6c', palta: '#7fb54a' };
 const LAYER_NAME = { masa: 'Masa', relleno: 'Relleno', palta: 'Palta' };
 
@@ -70,7 +71,7 @@ const POT_OUT = { papa_raw: 'papa_cooked', pollo_raw: 'pollo_cooked', arroz_raw:
 const CHOP = { papa_cooked: 'papa_sliced', pollo_cooked: 'pollo_shred', palta: 'palta_sliced', cebolla_china: 'cebolla_picada', pollo_raw: 'pollo_cuadros',
   cebolla_roja: ['cebolla_cuadros', 'cebolla_juliana'], aji_limo: 'aji_limo_picado',      // carretillero: la pota y el camote ya vienen listos
   carne: 'carne_cubos', papa_raw: 'papa_baston', tomate: 'tomate_juliana',                   // lomo saltado
-  corazon: 'corazon_trozos', rachi: 'rachi_trozos', pancita: 'pancita_trozos', choclo_cocido: 'choclo_rodajas',   // anticuchos
+  corazon: 'corazon_trozos', choclo_cocido: 'choclo_rodajas',                                       // anticuchos (rachi y pancita no se cortan)
   cerdo: 'cerdo_picado' };                                                                                         // wantán
 // La tabla solo corta lo que algún plato del nivel necesita (p. ej. el pollo crudo en cuadros solo en el chifa).
 // Si algo se puede cortar de varias formas (cebolla en cuadros o en juliana), decide el pedido: el del ayudante (D)
@@ -109,8 +110,8 @@ const BOWL_RECIPES = [
   // wantanes: la masa se rellena con el cerdo picado
   { need: { wantan: 1, cerdo_picado: 1 }, out: 'wantan_crudo', n: 1 },
   { need: { corazon_trozos: 1 }, out: 'corazon_mar', n: 1 },
-  { need: { rachi_trozos: 1 }, out: 'rachi_mar', n: 1 },
-  { need: { pancita_trozos: 1 }, out: 'pancita_mar', n: 1 }
+  { need: { rachi: 1 }, out: 'rachi_mar', n: 1 },
+  { need: { pancita: 1 }, out: 'pancita_mar', n: 1 }
 ];
 const activeBowls = () => BOWL_RECIPES.filter(r => LEVEL.dishes.some(d => DISHES[d].uses.includes(r.out)));
 const bowlAccepts = (items, t) => activeBowls().some(r => (r.need[t] || 0) > nOf(items, t) && items.every(i => r.need[i]));
@@ -157,9 +158,11 @@ function subMulti(items, full) {      // ¿items cabe dentro de full (contando r
   for (const it of items) { const i = rest.indexOf(it); if (i < 0) return false; rest.splice(i, 1); }
   return true;
 }
-const BLEND_WAIT = 2;
+// La licuadora arranca sola en cuanto se le echa ají amarillo. Se pueden seguir echando ingredientes mientras licúa:
+// cada uno alarga un poco el tiempo. Solo termina cuando el contenido es una receta completa.
+const BLEND_EXTRA = 1.2;
+const blendTime = items => T.blend + BLEND_EXTRA * Math.max(0, items.length - 1);
 // solo cuentan las recetas cuyo resultado usa algún plato del nivel
 const activeBlends = () => BLEND_RECIPES.filter(r => LEVEL.dishes.some(d => DISHES[d].uses.includes(r.out)));
 const blendOK = items => activeBlends().some(r => subMulti(items, r.in));
 const blendMatch = items => activeBlends().find(r => sortKey(r.in) === sortKey(items));
-const blendCanGrow = items => activeBlends().some(r => r.in.length > items.length && subMulti(items, r.in));

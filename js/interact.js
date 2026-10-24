@@ -76,12 +76,15 @@ function interact(s, p, want) {
       if (!h && s.state === 'done') { p.held = { type: s.out, n: s.n }; s.state = 'idle'; s.items = []; s.n = 0; return true; }
       return false;
     case 'blender':  // hold: se licúa manteniendo la acción cuando el contenido coincide con una receta
-      if (h && BLEND_ACCEPT.includes(h.type) && s.state === 'idle' && blendOK(s.items.concat(h.type))) {
-        s.items.push(h.type); s.wait = 0; p.held = null; return true;
+      if (h && BLEND_ACCEPT.includes(h.type) && (s.state === 'idle' || s.state === 'blending') && blendOK(s.items.concat(h.type))) {
+        s.items.push(h.type); p.held = null;
+        if (s.state === 'idle' && s.items.includes('aji')) { s.state = 'blending'; s.t = 0; }      // el ají la enciende
+        const m = blendMatch(s.items); s.out = m ? m.out : null;
+        return true;
       }
       if (!h && s.state === 'done') { p.held = { type: s.out }; s.state = 'idle'; s.items = []; s.out = null; return true; }
       // con las manos vacías y una mezcla que no es ninguna receta: recupera el último ingrediente (deshacer)
-      if (!h && s.state === 'idle' && s.items.length && !blendMatch(s.items)) { p.held = { type: s.items.pop() }; return true; }
+      if (!h && s.state === 'idle' && s.items.length) { p.held = { type: s.items.pop() }; return true; }
       return false;
     case 'wok':      // automática: arranca sola cuando tiene todo lo de una receta (chaufa o lomo saltado)
       if (h && s.state === 'idle' && wokAccepts(s.items, h.type)) {
@@ -153,7 +156,6 @@ function interact(s, p, want) {
 function workable(s) {
   if (s.kind === 'board' || s.kind === 'skewer') return s.state === 'chopping';
   if (s.kind === 'bowl') return s.state === 'mashing' || (s.state === 'idle' && !!bowlMatch(s.items));
-  if (s.kind === 'blender') return s.state === 'blending' || (s.state === 'idle' && !!blendMatch(s.items));
   return false;
 }
 

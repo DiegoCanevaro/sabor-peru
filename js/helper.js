@@ -15,7 +15,14 @@ function everyHeld() {
 function cnt(...types) { return everyHeld().filter(it => types.includes(it.type)).length; }
 // puede haber más de una tabla (p. ej. en los carritos cebicheros)
 const boards = () => st.filter(s => s.kind === 'board');
-const freeBoard = () => boards().find(b => b.state === 'empty');
+// estación que el jugador está trabajando ahora (mantiene la acción en una tabla, bowl o palitos):
+// el ayudante no la toca ni la usa para no interrumpirlo
+function playerBusy() {
+  if (!keys.act || !started) return null;
+  const n = nearestStation(player);
+  return n && HOLD_KINDS.includes(n.kind) ? n : null;
+}
+const freeBoard = () => { const busy = playerBusy(); return boards().find(b => b.state === 'empty' && b !== busy); };
 const boardHas = p => boards().filter(b => b.product === p && b.state !== 'empty').length;
 // ¿al bowl le falta este ingrediente para la receta que se está armando?
 const bowlNeeds = t => { const Bw = byKind('bowl'); return !!Bw && Bw.state === 'idle' && bowlAccepts(Bw.items, t); };
@@ -55,7 +62,8 @@ function usable(D, h) {
     case 'carne': case 'tomate': return !!freeBoard();
     case 'carne_cubos': case 'tomate_juliana': case 'cebolla_juliana': return wokNeeds(h.type);
     case 'papa_baston': return !!Fr && Fr.state === 'idle';
-    case 'corazon': case 'rachi': case 'pancita': case 'choclo_cocido': return !!freeBoard();
+    case 'corazon': case 'choclo_cocido': return !!freeBoard();
+    case 'rachi': case 'pancita': return bowlNeeds(h.type);
     case 'corazon_trozos': case 'rachi_trozos': case 'pancita_trozos': return bowlNeeds(h.type);
     case 'corazon_mar': return !!byKind('skewer') && byKind('skewer').state === 'empty';
     case 'corazon_palito': return !!freeGrill();
@@ -71,8 +79,9 @@ function usable(D, h) {
     case 'arroz_cooked': if (D.id === 'chaufa') return wokNeeds('arroz_cooked'); return inPlate();
     case 'aji':
       if (D.id === 'causa') return Bw.state === 'idle' && !Bw.items.includes('aji');
-      return !!D.blend && Bl.state === 'idle' && subMulti(Bl.items.concat('aji'), D.blend);
-    case 'queso': case 'leche': case 'galleta': return !!D.blend && Bl.state === 'idle' && subMulti(Bl.items.concat(h.type), D.blend);
+      // el ají enciende la licuadora: va al final, cuando ya está todo lo demás de la receta
+      return !!D.blend && Bl.state === 'idle' && subMulti(Bl.items.concat('aji'), D.blend) && subMulti(D.blend.filter(x => x !== 'aji'), Bl.items);
+    case 'queso': case 'leche': case 'galleta': return !!D.blend && (Bl.state === 'idle' || Bl.state === 'blending') && subMulti(Bl.items.concat(h.type), D.blend);
     case 'pollo_shred':
       if (D.id === 'chaufa') return wokNeeds('pollo_shred');
       return D.id === 'causa' ? inPlate() : (Pn.state === 'idle' && !Pn.items.includes('pollo_shred'));
@@ -93,7 +102,8 @@ function destination(D, h) {
     case 'carne': case 'tomate': return freeBoard() || g('board');
     case 'carne_cubos': case 'tomate_juliana': case 'cebolla_juliana': return byKind('wok');
     case 'papa_baston': return byKind('fryer');
-    case 'corazon': case 'rachi': case 'pancita': case 'choclo_cocido': return freeBoard() || g('board');
+    case 'corazon': case 'choclo_cocido': return freeBoard() || g('board');
+    case 'rachi': case 'pancita': return byKind('bowl');
     case 'corazon_trozos': case 'rachi_trozos': case 'pancita_trozos': return byKind('bowl');
     case 'corazon_mar': return byKind('skewer');
     case 'corazon_palito': case 'rachi_mar': case 'pancita_mar': return freeGrill() || byKind('grill');
@@ -139,8 +149,8 @@ const PLANS = {
     const papaSec = (has('papa') ? 1 : 0) + cnt('papa_sliced') + boardHas('papa_sliced') + cnt('papa_cooked') + potN('papa_raw') + cnt('papa_raw');
     if (papaSec < 1 && freePot('papa_raw')) return { s: g('crate_papa_raw') };
     const salsaSec = (has('salsa') ? 1 : 0) + cnt('salsa') + ((Bl.state === 'blending' || Bl.state === 'done') && Bl.out === 'salsa' ? 1 : 0);
-    if (salsaSec < 1 && Bl.state === 'idle') {
-      const need = D.blend.slice();                       // ingredientes que ya están dentro de la licuadora
+    if (salsaSec < 1 && (Bl.state === 'idle' || Bl.state === 'blending')) {
+      const need = D.blend.filter(x => x !== 'aji').concat('aji');      // el ají al final: enciende la licuadora                       // ingredientes que ya están dentro de la licuadora
       Bl.items.forEach(i => need.splice(need.indexOf(i), 1));
       everyHeld().map(it => it.type).forEach(i => { const k = need.indexOf(i); if (k >= 0) need.splice(k, 1); });   // y los que alguien lleva en la mano
       if (need.length) return { s: g('crate_' + need[0]) };
@@ -254,7 +264,7 @@ PLANS.lomo_saltado = function (D) {
 const grills = () => st.filter(s => s.kind === 'grill');
 const freeGrill = () => grills().find(g => g.slots.length < GRILL_CAP);
 function parrillaPlan(D) {
-  const meat = D.meat, cut = meat + '_trozos', mar = meat + '_mar', gin = grillIn(meat), out = GRILL_OUT[gin], part = PART_OF_ITEM[out], palito = gin !== mar;
+  const meat = D.meat, cut = meat === 'corazon' ? 'corazon_trozos' : meat, mar = meat + '_mar', gin = grillIn(meat), out = GRILL_OUT[gin], part = PART_OF_ITEM[out], palito = gin !== mar;
   const A = planTable(D), Bw = byKind('bowl'), Sk = byKind('skewer'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
   const Gd = grills().find(g => g.slots.some(x => x.done && x.type === gin));
   if (pl && !has(part) && Gd) return { s: Gd, want: gin };
@@ -270,8 +280,8 @@ function parrillaPlan(D) {
   const inBowl = (Bw.state === 'idle' && Bw.items.includes(cut)) || (Bw.state !== 'idle' && Bw.out === mar);
   const onGrill = grills().reduce((n, g) => n + g.slots.filter(x => x.type === gin).length, 0);
   const meatSec = (has(part) ? 1 : 0) + cnt(out) + onGrill + (palito ? cnt(gin) + (Sk.state !== 'empty' && Sk.product === gin ? 1 : 0) : 0)
-    + cnt(mar) + (inBowl ? 1 : 0) + cnt(cut) + boardHas(cut) + cnt(meat);
-  if (meatSec < 1 && freeBoard() && Bw.state === 'idle' && !Bw.items.some(i => i.endsWith('_trozos'))) return { s: g('crate_' + meat) };
+    + cnt(mar) + (inBowl ? 1 : 0) + (cut !== meat ? cnt(cut) + boardHas(cut) : 0) + cnt(meat);
+  if (meatSec < 1 && (cut === meat || freeBoard()) && Bw.state === 'idle' && !Bw.items.length) return { s: g('crate_' + meat) };
   const papa = (has('papa') ? 1 : 0) + cnt('papa_sliced') + boardHas('papa_sliced') + cnt('papa_cooked');
   if (papa < 1 && freeBoard()) return { s: g('crate_papa_cooked') };
   const choclo = (has('choclo') ? 1 : 0) + cnt('choclo_rodajas') + boardHas('choclo_rodajas') + cnt('choclo_cocido');
@@ -350,13 +360,15 @@ PLANS.chaufa = function (D) {
 // Cebiche de pota carretillero: la pota ya viene en cuadros; la cebolla (en cuadros) y el ají limo se pican en las tablas.
 // Todo va al bowl con el limón (el ají solo si el pedido es con ají) y se mezcla. Al plato: el cebiche y el camote (ya cocido).
 function cebichePlan(D, aji) {
+  if (D.ceb) aji = D.ceb.aji;
   const out = aji ? 'cebiche_aji' : 'cebiche';
   const A = planTable(D), Bw = byKind('bowl'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
   if (Bw.state === 'done' && Bw.out === out && pl && !has(out)) return { s: Bw };
   const need = aji ? ['cebolla_cuadros', 'aji_limo_picado'] : ['cebolla_cuadros'];
   const bd = boards().find(b => b.state === 'done' && need.includes(b.product) && bowlNeeds(b.product));
   if (bd) return { s: bd };
-  if (pl && !has('camote') && cnt('camote_cocido') < 1) return { s: g('crate_camote_cocido') };
+  // agregados que pidió el cliente (camote, choclo desgranado, cancha): directo al plato
+  for (const it of (D.ceb ? D.ceb.extras : ['camote_cocido'])) if (pl && !has(PART_OF_ITEM[it]) && cnt(it) < 1) return { s: g('crate_' + it) };
   if (Bw.state !== 'idle' || has(out) || cnt(out) > 0) return null;      // ya hay un cebiche en camino
   const inB = x => Bw.items.includes(x) ? 1 : 0;
   if (inB('pota_cortada') + cnt('pota_cortada') < 1) return { s: g('crate_pota_cortada') };
@@ -367,6 +379,7 @@ function cebichePlan(D, aji) {
 }
 PLANS.cebiche_pota = D => cebichePlan(D, true);
 PLANS.cebiche_sin = D => cebichePlan(D, false);
+Object.keys(DISHES).filter(k => DISHES[k].ceb).forEach(k => { PLANS[k] = D => cebichePlan(D); });
 // Chicha morada: vaso vacío -> balde chichero (se llena solo) -> mostrador
 PLANS.chicha = function (D) {
   const B = byKind('balde');
@@ -432,12 +445,13 @@ function unblockPlan(idle) {
 function botStep(dt) {
   helper.work = null;
   let plan = helperPlan();
+  if (plan && plan.s && plan.s === playerBusy()) plan = null;      // no interrumpir al jugador
   if (plan || helper.held) helper.idle = 0;
   else {
     helper.idle += dt;
     if (helper.idle > 4 && waitingList().length) plan = unblockPlan(helper.idle);
   }
-  if (!plan) return;
+  if (!plan || plan.s === playerBusy()) return;      // tampoco al destrabar
   const t = plan.s;
   const dx = t.sx - helper.x, dy = t.sy - helper.y, d = Math.hypot(dx, dy);
   if (d > 6) {

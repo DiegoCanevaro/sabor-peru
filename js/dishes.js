@@ -13,8 +13,8 @@ const DISHES = {
     patience: 90,
     uses: ['papa_raw', 'papa_cooked', 'papa_sliced', 'queso', 'aji', 'leche', 'galleta', 'salsa'],
     blend: ['queso', 'aji', 'leche', 'galleta'],
-    ticket: { slots: [{ id: 'papa_raw', t: ['pot', 'board'] }, { g: ['queso', 'aji', 'leche', 'galleta'], t: 'blender' }] },
-    howto: { rows: [{ ings: ['papa_raw'], tools: ['pot', 'board'] }, { ings: ['queso', 'aji', 'leche', 'galleta'], tools: ['blender'] }] },
+    ticket: { slots: [{ id: 'papa_raw', t: ['pot', 'board'] }, { g: ['queso', 'leche', 'galleta', 'aji'], t: 'blender' }] },
+    howto: { rows: [{ ings: ['papa_raw'], tools: ['pot', 'board'] }, { ings: ['queso', 'leche', 'galleta', 'aji'], tools: ['blender'] }] },
     recipe: RECIPES.huancaina
   },
   causa: {
@@ -99,16 +99,40 @@ const DISHES = {
       kind: 'set', parts: [out, 'papa', 'choclo'],
       partName: { [out]: name, papa: 'Papa en rodajas', choclo: 'Choclo en rodajas' },
       patience: 150, meat,
-      uses: [meat, meat + '_trozos', meat + '_mar'].concat(meat === 'corazon' ? ['corazon_palito'] : []).concat([out, 'papa_cooked', 'papa_sliced', 'choclo_cocido', 'choclo_rodajas']),
+      uses: [meat, meat + '_mar'].concat(meat === 'corazon' ? ['corazon_trozos'] : []).concat(meat === 'corazon' ? ['corazon_palito'] : []).concat([out, 'papa_cooked', 'papa_sliced', 'choclo_cocido', 'choclo_rodajas']),
       blend: null,
-      ticket: { slots: [{ id: meat, t: meat === 'corazon' ? ['board', 'bowl', 'skewer', 'grill'] : ['board', 'bowl', 'grill'] }, { id: 'papa_cooked', t: ['board'] }, { id: 'choclo_cocido', t: ['board'] }] },
-      howto: { rows: [meat === 'corazon' ? { ings: ['corazon'], tools: ['board'] } : { ings: ['rachi', 'pancita'], or: true, tools: ['board'] }], merge: 'bowl', mergeWith: 'salsa_anticuchera',
+      ticket: { slots: [{ id: meat, t: meat === 'corazon' ? ['board', 'bowl', 'skewer', 'grill'] : ['bowl', 'grill'] }, { id: 'papa_cooked', t: ['board'] }, { id: 'choclo_cocido', t: ['board'] }] },
+      howto: { rows: [meat === 'corazon' ? { ings: ['corazon'], tools: ['board'] } : { ings: ['rachi', 'pancita'], or: true, tools: [] }], merge: 'bowl', mergeWith: 'salsa_anticuchera',
         after: meat === 'corazon' ? ['skewer', 'grill'] : ['grill'],
         extras: [{ ings: ['papa_cooked'], tools: ['board'] }, { ings: ['choclo_cocido'], tools: ['board'] }] },
       recipe: RECIPES.anticuchos
     };
     return o;
   }, {}),
+  // Cebiche de pota con agregados a elección del cliente: con o sin ají, choclo, cancha y camote (16 combinaciones).
+  // id: cebiche_ + letras de lo que lleva (a = ají, c = choclo, k = cancha, m = camote); cebiche_solo = sin nada.
+  ...(() => {
+    const o = {}, OPT = [['a', 'aji'], ['c', 'choclo'], ['k', 'cancha'], ['m', 'camote']];
+    for (let mask = 0; mask < 16; mask++) {
+      const has = k => !!(mask & (1 << OPT.findIndex(x => x[1] === k)));
+      const id = 'cebiche_' + (OPT.filter((x, i) => mask & (1 << i)).map(x => x[0]).join('') || 'solo');
+      const base = has('aji') ? 'cebiche_aji' : 'cebiche';
+      const extras = [['camote', 'camote_cocido', 'camote'], ['choclo', 'choclo_desgranado', 'choclo_d'], ['cancha', 'cancha', 'cancha']].filter(e => has(e[0]));
+      o[id] = {
+        id, level: 0, img: 'cebiche_pota', name: 'Cebiche de Pota', short: 'Cebiche', icon: '🦑', course: 'plato',
+        kind: 'set', parts: [base].concat(extras.map(e => e[2])), ceb: { aji: has('aji'), extras: extras.map(e => e[1]) },
+        partName: { [base]: has('aji') ? 'Cebiche con ají' : 'Cebiche sin ají', camote: 'Camote', choclo_d: 'Choclo', cancha: 'Cancha' },
+        patience: 115,
+        uses: ['pota_cortada', 'limon', 'cebolla_roja', 'cebolla_cuadros', base].concat(has('aji') ? ['aji_limo', 'aji_limo_picado'] : []).concat(extras.map(e => e[1])),
+        blend: null,
+        ticket: { slots: [{ g: ['pota_cortada', 'cebolla_roja', 'limon'].concat(has('aji') ? ['aji_limo'] : []), t: 'bowl' }].concat(extras.map(e => ({ id: e[1], t: [] }))) },
+        howto: { rows: [{ ings: ['pota_cortada', 'limon'], tools: [] }, { ings: ['cebolla_roja'], tools: ['board'] }, { ings: ['aji_limo'], tools: ['board'], optional: 'con ají' }], merge: 'bowl',
+          extras: [{ ings: ['camote_cocido', 'choclo_desgranado', 'cancha'], tools: [], optional: 'con camote, choclo o cancha' }] },
+        recipe: RECIPES.cebiche_pota
+      };
+    }
+    return o;
+  })(),
   // bebida: se entrega en su vaso, sin plato
   chicha: {
     id: 'chicha', level: 0, name: 'Chicha Morada', short: 'Chicha', icon: '🍇', course: 'bebida',
