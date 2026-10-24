@@ -5,5 +5,5 @@ const LEVEL = {
   id: '1-5', title: 'Nivel 1-5: Lomo Saltado',
   own: 'lomo_saltado', dishes: ['lomo_saltado', 'pollo_aji', 'aji'],
   crates: ['carne', 'papa_raw', 'tomate', 'cebolla_roja', 'arroz_raw', 'sillao', 'pollo_raw', 'aji'],
-  left: ['pot', 'pot', 'pot', 'stew', 'pan', 'wok', 'board', 'board', 'blender', 'fryer'], right: [], customers: 5, arrival: 40, time: 300      // el lomo tiene muchos pasos: pedidos más espaciados y 5 minutos de turno
+  left: ['pot', 'pot', 'pot', 'pot', 'pan', 'wok', 'board', 'board', 'blender', 'fryer'], right: [], customers: 5, arrival: 40, time: 300      // el lomo tiene muchos pasos: pedidos más espaciados y 5 minutos de turno
 };

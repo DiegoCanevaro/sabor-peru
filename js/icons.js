@@ -271,6 +271,13 @@ const TOOL_ICONS = {
     lblShape(c, 'rgba(255,230,190,.55)', c => { c.moveTo(-74, 14); c.quadraticCurveTo(0, 30, 74, 14); c.lineTo(72, 22); c.quadraticCurveTo(0, 38, -72, 22); c.closePath(); }, 0);
     lblShine(c, -40, 20, 8, 18, 0.2);
   },
+  tap(c) {        // grifo: caño curvo de acero con su llave y una gota
+    lblShadow(c, 60, 86);
+    lblShape(c, '#b9c0c6', c => { c.moveTo(-70, 70); c.lineTo(-70, -50); c.quadraticCurveTo(-70, -84, -30, -84); c.lineTo(40, -84); c.quadraticCurveTo(70, -84, 70, -50); c.lineTo(70, -20); c.lineTo(46, -20); c.lineTo(46, -50); c.quadraticCurveTo(46, -60, 36, -60); c.lineTo(-36, -60); c.quadraticCurveTo(-46, -60, -46, -50); c.lineTo(-46, 70); c.closePath(); });
+    lblShape(c, '#3d7fd6', c => c.ellipse(-58, -96, 26, 10, 0, 0, 7), 5);
+    lblShape(c, '#6fc0f0', c => { c.moveTo(58, 2); c.quadraticCurveTo(80, 36, 58, 46); c.quadraticCurveTo(36, 36, 58, 2); c.closePath(); }, 5);
+    lblShine(c, -60, 0, 5, 40, 0.3);
+  },
   grill(c) {      // parrilla de carretilla: bandeja de fierro con brasas y rejilla
     lblShadow(c, 70, 86);
     lblShape(c, '#4a4f55', c => { c.moveTo(-88, -20); c.lineTo(88, -20); c.lineTo(76, 56); c.lineTo(-76, 56); c.closePath(); });

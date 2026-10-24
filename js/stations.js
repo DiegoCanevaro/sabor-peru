@@ -15,14 +15,21 @@ function cellSt(id, kind, c, r, face, extra, cellsTall, cellsWide) {
   const sp = { down: [cx, y + h + STAND], up: [cx, y - STAND], right: [x + w + STAND, cy], left: [x - STAND, cy] }[face];
   return S(id, kind, x, y, w, h, sp[0], sp[1], Object.assign({ face, col: c, row: r }, extra || {}));
 }
+// Contenido de una olla: lo que se sancocha solo (slots: arroz, papa, pollo, tallarines), una receta (items: guiso o sopa)
+// y el agua (0..1) que se llena en el grifo
+const POT_EMPTY = () => ({ slots: [], items: [], state: 'idle', t: 0, out: null, water: 0 });
+const POT_KEYS = Object.keys(POT_EMPTY());
+function potTake(s) { const o = {}; POT_KEYS.forEach(k => { o[k] = s[k]; }); Object.assign(s, POT_EMPTY()); s.hasPot = false; return o; }
+function potPut(s, o) { Object.assign(s, o); s.hasPot = true; }
+const potBare = o => !o.slots.length && !o.items.length && o.state === 'idle';      // sin comida (puede tener agua)
 function stationExtra(spec) {
   switch (spec) {
-    case 'pot': return { slots: [], label: 'Olla' };
+    case 'pot': return Object.assign({ hasPot: true, label: 'Olla' }, POT_EMPTY());     // fuego con su olla (la olla se puede llevar)
+    case 'tap': return Object.assign({ hasPot: false, label: 'Grifo' }, POT_EMPTY());   // grifo: llena de agua la olla que se deja debajo
     case 'board': return { state: 'empty', t: 0, product: null, label: 'Tabla' };
     case 'bowl': return { state: 'idle', t: 0, items: [], label: 'Bowl' };
     case 'pan': return { state: 'idle', t: 0, items: [], label: 'Sartén' };
     case 'wok': return { state: 'idle', t: 0, items: [], label: 'Wok' };
-    case 'stew': return { state: 'idle', t: 0, items: [], label: 'Olla' };      // olla del guiso (pollo al ají)
     case 'fryer': return { state: 'idle', t: 0, item: null, label: 'Freidora' };   // papas fritas
     case 'skewer': return { state: 'empty', t: 0, product: null, label: 'Palitos' };    // ensartar anticuchos (mantener)
     case 'grill': return { slots: [], label: 'Parrilla' };                            // anticuchos (automática, 3 palitos)
@@ -51,7 +58,7 @@ if (LEVEL.layout === 'calle') {
   //   arriba a la izquierda: los ingredientes · arriba a la derecha: fuegos (si hay), balde chichero y vasos
   //   abajo a la izquierda: tablas de picar y el mostrador (entre las tablas y el cruce) · abajo a la derecha: bowl, platos y basura
   const specs = LEVEL.left.concat(LEVEL.right || []);
-  const heat = specs.filter(sp => sp === 'pot' || sp === 'pan' || sp === 'wok' || sp === 'stew' || sp === 'grill'), prep = specs.filter(sp => !heat.includes(sp));
+  const heat = specs.filter(sp => sp === 'pot' || sp === 'tap' || sp === 'pan' || sp === 'wok' || sp === 'grill'), prep = specs.filter(sp => !heat.includes(sp));
   const pad = (list, n) => list.concat(Array(Math.max(0, n - list.length)).fill('table'));
   cart(1, 1, 'down', LEVEL.crates.map(it => 'crate:' + it), 'blue');
   cart(8, 1, 'down', pad(heat.concat(LEVEL.drinks || []), 4), 'blue');
@@ -71,7 +78,7 @@ if (LEVEL.layout === 'calle') {
   // fuegos en la pared izquierda; preparación en el centro de la isla
   const specs = LEVEL.left.concat(LEVEL.right || []);
   let pn = 0, row = 1;
-  const HEAT = ['pot', 'stew', 'pan', 'wok'];
+  const HEAT = ['pot', 'tap', 'pan', 'wok'];
   specs.filter(sp => HEAT.includes(sp)).forEach(sp => { put(sp === 'pot' ? 'pot' + (++pn) : sp, sp, 0, row++, 'right', stationExtra(sp)); });
   const prep = specs.filter(sp => !HEAT.includes(sp));
   const c0 = Math.round((COLS - prep.length) / 2);
@@ -96,12 +103,21 @@ const POTS = st.filter(s => s.kind === 'pot');
 const TABLES = st.filter(s => s.kind === 'table');
 const BL = () => byKind('blender');
 // olla libre para un ingrediente: primero una que ya cuece ese mismo ingrediente y aún tiene sitio, si no una vacía
+// (las ollas con agua quedan para la sopa mientras haya otra libre)
 function freePot(type) {
-  if (type) { const same = POTS.find(p => p.slots.length && p.slots.length < potCap(type) && p.slots.every(x => x.type === type)); if (same) return same; }
-  return POTS.find(p => !p.slots.length);
+  const on = POTS.filter(p => p.hasPot && !p.items.length && p.state === 'idle');
+  if (type) { const same = on.find(p => p.slots.length && p.slots.length < potCap(type) && p.slots.every(x => x.type === type)); if (same) return same; }
+  return on.find(p => !p.slots.length && p.water < 1) || on.find(p => !p.slots.length);
 }
-const potWith = type => POTS.find(p => p.slots.some(x => x.done && x.type === type));
-const potN = type => POTS.reduce((n, p) => n + p.slots.filter(x => x.type === type).length, 0);
+const potWith = type => POTS.find(p => p.hasPot && p.slots.some(x => x.done && x.type === type));
+const potN = type => POTS.reduce((n, p) => n + (p.hasPot ? p.slots.filter(x => x.type === type).length : 0), 0);
+// olla de una receta (guiso o sopa): la que ya la tiene en marcha, o una libre que sirva (con agua si es sopa)
+function stewPot(out) {
+  const r = STEW_RECIPES.find(x => x.out === out);
+  return POTS.find(p => p.hasPot && p.state !== 'idle' && p.out === out)
+    || POTS.find(p => p.hasPot && p.state === 'idle' && p.items.length && p.items.every(i => r.in.includes(i)))
+    || POTS.find(p => p.hasPot && potBare(p) && (r.broth ? p.water >= 1 : p.water < 1));
+}
 // Platos limpios: empiezan en las mesas de abajo más cercanas a la bandeja de salida y vuelven ahí tras servir
 // (en los primeros niveles no se lavan)
 function plateSpot() {

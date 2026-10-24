@@ -350,7 +350,9 @@ Object.assign(ITEM3, {
   },
   // vaso de plástico vacío y vaso de chicha morada (con cañita)
   vaso: () => plasticCup(null),
-  chicha: () => plasticCup('#4a1342')
+  chicha: () => plasticCup('#4a1342'),
+  // olla en la mano (vacía, con agua o con comida)
+  olla: () => ollaMano(null), olla_agua: () => ollaMano('#a9cbd6'), olla_llena: () => ollaMano('#c9a46a')
 });
 function plasticCup(fill) {
   const g = new THREE.Group();
@@ -549,7 +551,7 @@ function itemModel(key) {
   if (ITEM3[key]) return ITEM3[key]();
   const g = new THREE.Group(); const s = mesh(new THREE.SphereGeometry(0.15, 10, 8), M('#999')); s.position.y = 0.15; g.add(s); return g;
 }
-const itemKey = it => !it ? null : it.type === 'plate' ? 'plate|' + it.parts.join(',') : (it.type === 'masa' && it.n === 1) ? 'masa1' : it.type;
+const itemKey = it => !it ? null : it.type === 'olla' ? (potBare(it.pot) ? (it.pot.water > 0 ? 'olla_agua' : 'olla') : 'olla_llena') : it.type === 'plate' ? 'plate|' + it.parts.join(',') : (it.type === 'masa' && it.n === 1) ? 'masa1' : it.type;
 function setSlot(holder, key) {                       // cambia el modelo de un "hueco" solo si cambió lo que contiene
   if (holder.userData.key === key) return;
   holder.userData.key = key;
@@ -823,12 +825,34 @@ function wok3() {
   return g;
 }
 // olla del guiso (pollo al ají): la misma olla de las demás, con la salsa de ají adentro
-function ollaGuiso3(s) {
+function ollaMano(col) {
+  const g = new THREE.Group();
+  const p = KK('pot_large', 0.5); g.add(p);
+  if (col) { const w = mesh(new THREE.CylinderGeometry(0.27, 0.27, 0.02, 20), new THREE.MeshStandardMaterial({ color: col, roughness: 0.2 }), false); w.position.y = 0.33; g.add(w); }
+  return g;
+}
+// olla del fuego / del grifo: la olla KayKit con un disco de líquido (agua, salsa del guiso o caldo) de color y nivel variables
+function olla3(s) {
   const g = new THREE.Group();
   const p = KK('pot_large', 0.95); p.rotation.y = facingOf(s); g.add(p);
-  const sauce = mesh(new THREE.CylinderGeometry(0.53, 0.53, 0.03, 24), new THREE.MeshStandardMaterial({ color: '#f0a52a', roughness: 0.3 }), false);
-  sauce.position.y = 0.64; sauce.visible = false; g.add(sauce);
-  g.userData.sauce = sauce;
+  const liq = mesh(new THREE.CylinderGeometry(0.53, 0.53, 0.03, 24), new THREE.MeshStandardMaterial({ color: '#a9cbd6', roughness: 0.2 }), false);
+  liq.position.y = 0.64; liq.visible = false; g.add(liq);
+  g.userData.liq = liq;
+  return g;
+}
+// grifo: lavadero de acero sobre la encimera con un caño curvo; la olla se deja debajo
+function tap3(s) {
+  const g = new THREE.Group(), steel = M('#c7ccd1', { metalness: 0.7, roughness: 0.3 });
+  const sink = mesh(new THREE.BoxGeometry(1.5, 0.06, 1.5), steel); sink.position.y = TOP + 0.03; g.add(sink);
+  const back = new THREE.Group(); back.rotation.y = facingOf(s); g.add(back);
+  const post = mesh(new THREE.CylinderGeometry(0.1, 0.12, 1.5, 12), steel); post.position.set(0, TOP + 0.75, -0.62); back.add(post);
+  const arm = mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.66, 12), steel); arm.rotation.x = Math.PI / 2; arm.position.set(0, TOP + 1.47, -0.32); back.add(arm);
+  const mouth = mesh(new THREE.CylinderGeometry(0.09, 0.06, 0.2, 12), steel); mouth.position.set(0, TOP + 1.37, -0.02); back.add(mouth);
+  [-1, 1].forEach(k => { const h = mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.08, 10), M(k < 0 ? '#d64545' : '#3d7fd6')); h.position.set(k * 0.22, TOP + 1.1, -0.62); back.add(h); });
+  // chorro de agua (visible mientras llena)
+  const jet = mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.9, 8), new THREE.MeshStandardMaterial({ color: '#bfe6ff', transparent: true, opacity: 0.75 }), false);
+  jet.position.set(0, TOP + 0.85, -0.02); jet.visible = false; back.add(jet);
+  g.userData.jet = jet;
   return g;
 }
 // parrilla de carretilla a tamaño de mesa: cajón de fierro negro sobre patas, brasas encendidas y rejilla a la altura
@@ -934,20 +958,18 @@ function buildStations() {
       case 'table': g.add(counter3(s, 'kitchencounter_straight_B')); s3.slot.scale.setScalar(1.9); g.add(s3.slot); break;
       case 'pot': {
         g.add(counter3(s)); g.add(stove3(s));
-        const p = KK('pot_large', 0.95); p.position.y = 1.21; p.rotation.y = facingOf(s); g.add(p);
-        const water = mesh(new THREE.CylinderGeometry(0.53, 0.53, 0.03, 24), M('#a9cbd6', { roughness: 0.15 }), false);
-        water.position.y = 1.85; water.visible = false; g.add(water); s3.extra.water = water;
+        const o = olla3(s); o.position.y = 1.21; g.add(o); s3.extra.olla = o;
         s3.slot.position.y = 1.8; s3.slot.scale.setScalar(1.2); g.add(s3.slot); break;
+      }
+      case 'tap': {
+        g.add(counter3(s)); const t = tap3(s); g.add(t); s3.extra.jet = t.userData.jet;
+        const o = olla3(s); o.position.y = TOP + 0.06; g.add(o); s3.extra.olla = o;
+        s3.slot.position.y = 1.7; g.add(s3.slot); break;
       }
       case 'pan': {
         g.add(counter3(s)); g.add(stove3(s));
         const p = KK('pan_A', 1.0); p.position.y = 1.21; p.rotation.y = facingOf(s) + Math.PI; g.add(p);
         s3.slot.position.y = 1.3; s3.slot.scale.setScalar(1.3); g.add(s3.slot); break;
-      }
-      case 'stew': {        // olla del guiso sobre el fuego
-        g.add(counter3(s)); g.add(stove3(s));
-        const o = ollaGuiso3(s); o.position.y = 1.21; g.add(o); s3.extra.olla = o;
-        s3.slot.position.y = 1.8; s3.slot.scale.setScalar(1.15); g.add(s3.slot); break;
       }
       case 'skewer': {     // tabla de palitos: un atado de cañas al costado
         g.add(counter3(s));
@@ -1129,13 +1151,30 @@ function updStations(dt) {
     const { g } = s3;
     switch (s.kind) {
       case 'table': setSlot(s3.slot, itemKey(s.item)); break;
-      case 'pot': {
+      case 'pot': case 'tap': {
+        const O = s3.extra.olla, liq = O.userData.liq;
+        O.visible = s.hasPot;
+        if (s3.extra.jet) s3.extra.jet.visible = s.hasPot && s.water < 1;
+        // receta (guiso o sopa): la que se está cocinando o la que se está armando
+        const r = s.out ? STEW_RECIPES.find(x => x.out === s.out) : s.items.length ? activeStews().find(x => s.items.every(i => x.in.includes(i))) : null;
         const list = s.slots.map(x => x.done ? POT_OUT[x.type] : x.type), any = list.length > 0;
         const allDone = any && s.slots.every(x => x.done);
-        setSlot(s3.slot, !any ? null : list.length === 1 ? list[0] : 'set|' + list.join(','));
-        s3.extra.water.visible = any;
-        s3.slot.position.y = 1.8 + (any && !allDone ? Math.sin(V3.t * 6) * 0.025 : 0);
-        if (any && Math.random() < dt * (allDone ? 7 : 4)) puff(g.position.x, 1.95, g.position.z, allDone);
+        let col = null, lvl = 1;
+        if (r && (r.broth || s.state !== 'idle' || s.items.includes('salsa_aji'))) col = r.broth ? '#e9d39a' : '#f0a52a';
+        else if (any || s.water > 0) { col = '#a9cbd6'; lvl = any ? 1 : s.water; }
+        liq.visible = s.hasPot && !!col;
+        if (col) { liq.material.color.set(col); liq.position.y = 0.2 + 0.44 * lvl; }
+        const idleItems = s.state === 'idle' ? s.items.filter(x => x !== 'salsa_aji') : [];
+        const shown = !s.hasPot ? [] : list.concat(idleItems);
+        setSlot(s3.slot, !shown.length ? null : shown.length === 1 ? shown[0] : 'set|' + shown.join(','));
+        s3.slot.position.y = (s.kind === 'tap' ? 1.7 : 1.8) + (any && !allDone ? Math.sin(V3.t * 6) * 0.025 : 0);
+        const key = s.hasPot && s.state !== 'idle' ? s.out : null;
+        if (s3.extra.oKey !== key) {
+          if (s3.extra.oPiece) g.remove(s3.extra.oPiece);
+          s3.extra.oPiece = null; s3.extra.oKey = key;
+          if (key) { const o = new THREE.Group(); if (key === 'sopa') wantanes(o, 4, 0, '#f3e3b0'); else polloAjiPieces(o, 0, 0.16); o.position.y = 1.86; o.scale.setScalar(1.3); g.add(o); s3.extra.oPiece = o; }
+        }
+        if (s.hasPot && s.kind === 'pot' && (any || s.state === 'cooking' || s.state === 'done') && Math.random() < dt * (allDone || s.state === 'done' ? 7 : 4)) puff(g.position.x, 1.95, g.position.z, allDone);
         break;
       }
       case 'board':
@@ -1146,21 +1185,6 @@ function updStations(dt) {
         setSlot(s3.slot, s.state === 'done' ? (s.out === 'masa' ? (s.n === 1 ? 'masa1' : 'masa') : s.out) : s.items.length ? 'set|' + s.items.join(',') : null);
         s3.slot.rotation.y += s.state === 'mashing' && s.worked ? dt * 6 : 0;
         break;
-      case 'stew': {
-        const sauce = s3.extra.olla.userData.sauce, broth = activeStews().some(r => r.broth);
-        // la olla de la sopa ya tiene caldo; la del pollo al ají se pone amarilla con el ají molido
-        sauce.visible = broth || s.state !== 'idle' || s.items.includes('salsa_aji');
-        sauce.material.color.set(broth ? '#e9d39a' : '#f0a52a');
-        setSlot(s3.slot, s.state === 'idle' && s.items.length ? 'set|' + s.items.filter(x => x !== 'salsa_aji').join(',') : null);
-        const key = s.state === 'idle' ? null : s.out;
-        if (s3.extra.oKey !== key) {
-          if (s3.extra.oPiece) g.remove(s3.extra.oPiece);
-          s3.extra.oPiece = null; s3.extra.oKey = key;
-          if (key) { const o = new THREE.Group(); if (key === 'sopa') wantanes(o, 4, 0, '#f3e3b0'); else polloAjiPieces(o, 0, 0.16); o.position.y = 1.86; o.scale.setScalar(1.3); g.add(o); s3.extra.oPiece = o; }
-        }
-        if (s.state === 'cooking' && Math.random() < dt * 6) puff(g.position.x, 1.95, g.position.z);
-        break;
-      }
       case 'skewer':
         setSlot(s3.slot, s.state === 'chopping' ? s.input : s.state === 'done' ? s.product : null);
         if (s.state === 'chopping' && s.worked) s3.slot.rotation.y = Math.sin(V3.t * 18) * 0.06;
@@ -1233,17 +1257,20 @@ function stationOverlay(s) {
   const ready = () => pill('¡LISTO!', c.x, c.y, '#2f8a3b', '#ffffff', 11);
   switch (s.kind) {
     case 'pot': {
-      if (!s.slots.length) break;
+      if (!s.hasPot) { if (Math.floor(Date.now() / 600) % 2) pill('SIN OLLA', c.x, c.y, 'rgba(30,15,5,.85)', '#f4e04c', 10); break; }
+      if (s.state === 'cooking') { bar(bx, c.y - 5, 56, s.t / T.stew, '#f4b83c', 9); break; }
+      if (s.state === 'done') { ready(); break; }
+      if (!s.slots.length) { if (s.water >= 1 && !s.items.length) pill('💧 AGUA', c.x, c.y, '#2b6f9e', '#ffffff', 10); break; }
       const cooking = s.slots.filter(x => !x.done), done = s.slots.length - cooking.length;
       if (!cooking.length) { pill(s.slots.length > 1 ? '¡LISTO! ×' + s.slots.length : '¡LISTO!', c.x, c.y, '#2f8a3b', '#ffffff', 11); break; }
       bar(bx, c.y - 5, 56, Math.min(...cooking.map(x => x.t)) / T.cook, '#f4b83c', 9);
       if (done) pill(done + ' lista', c.x, c.y - 18, '#2f8a3b', '#ffffff', 9);
       break;
     }
+    case 'tap': if (s.hasPot) { if (s.water < 1) bar(bx, c.y - 5, 56, s.water, '#4aa8e8', 9); else pill('¡LLENA!', c.x, c.y, '#2b6f9e', '#ffffff', 11); } break;
     case 'board': if (s.state === 'chopping') { prog(s.t / T.board); hint(); } if (s.state === 'done') ready(); break;
     case 'bowl': if (s.state === 'idle' && bowlMatch(s.items)) { prog(0); hint(); } if (s.state === 'mashing') { prog(s.t / T.bowl); hint(); } if (s.state === 'done') pill(s.out === 'masa' ? '¡LISTO! ×' + s.n + (s.n === 1 ? ' capa' : ' capas') : '¡LISTO!', c.x, c.y, '#2f8a3b', '#ffffff', 11); break;
     case 'pan': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.pan, '#f4b83c', 9); if (s.state === 'done') ready(); break;
-    case 'stew': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.stew, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'wok': if (s.state === 'cooking') bar(bx, c.y - 5, 56, s.t / T.wok, '#f4b83c', 9); if (s.state === 'done') ready(); break;
     case 'skewer': if (s.state === 'chopping') { prog(s.t / T.skewer); hint(); } if (s.state === 'done') ready(); break;
     case 'grill': {

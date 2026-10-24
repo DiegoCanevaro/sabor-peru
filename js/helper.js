@@ -27,8 +27,9 @@ const boardHas = p => boards().filter(b => b.product === p && b.state !== 'empty
 // ¿al bowl le falta este ingrediente para la receta que se está armando?
 const bowlNeeds = t => { const Bw = byKind('bowl'); return !!Bw && Bw.state === 'idle' && bowlAccepts(Bw.items, t); };
 const count = (arr, x) => arr.filter(y => y === x).length;
-// ¿a la olla del guiso le falta este ingrediente?
-const stewNeeds = t => { const S = byKind('stew'); return !!S && S.state === 'idle' && stewAccepts(S.items, t); };
+// ¿a la olla de esta receta (guiso o sopa) le falta este ingrediente? (el pollo crudo espera a que la receta empiece:
+// solo en una olla vacía se sancocharía)
+const stewNeeds = (t, out) => { const S = stewPot(out); return !!S && S.state === 'idle' && !(POT_OUT[t] && !S.items.length) && potAccepts(S, stewKey(t)); };
 
 // ---- Mesa donde se arma el plato del pedido: la que ya tiene un plato compatible (la más avanzada)
 function planTable(D) {
@@ -52,12 +53,12 @@ function usable(D, h) {
   const Fr = byKind('fryer');
   const inPlate = () => { const A = planTable(D); return !!A && canAdd(D, A.item, PART_OF_ITEM[h.type]); };
   switch (h.type) {
-    case 'pollo_raw': if (D.id === 'chaufa') return Bd.state === 'empty'; if (D.id === 'pollo_aji') return stewNeeds('pollo_raw'); return !!freePot(h.type);      // chaufa: el pollo se corta crudo
+    case 'pollo_raw': if (D.id === 'chaufa') return Bd.state === 'empty'; if (D.id === 'pollo_aji') return stewNeeds('pollo_raw', 'pollo_aji'); return !!freePot(h.type);      // chaufa: el pollo se corta crudo
     case 'papa_raw': if (D.id === 'lomo_saltado') return !!freeBoard(); return !!freePot(h.type);
     case 'arroz_raw': case 'tallarines': return !!freePot(h.type);
     case 'cerdo': return !!freeBoard();
     case 'cerdo_picado': case 'wantan': return bowlNeeds(h.type);
-    case 'wantan_crudo': return D.id === 'wantan_frito' ? (!!Fr && Fr.state === 'idle') : stewNeeds('wantan_crudo');
+    case 'wantan_crudo': return D.id === 'wantan_frito' ? (!!Fr && Fr.state === 'idle') : stewNeeds('wantan_crudo', 'sopa');
     case 'tallarin_cocido': return wokNeeds(h.type);
     case 'carne': case 'tomate': return !!freeBoard();
     case 'carne_cubos': case 'tomate_juliana': case 'cebolla_juliana': return wokNeeds(h.type);
@@ -70,11 +71,11 @@ function usable(D, h) {
     case 'rachi_mar': case 'pancita_mar': return !!freeGrill();
     case 'papa_cooked': return D.id === 'causa' ? (Bw.state === 'idle' && nOf(Bw.items, h.type) < BOWL_NEED.papa_cooked) : Bd.state === 'empty';
     case 'pollo_cooked': case 'palta': case 'cebolla_china': case 'cebolla_roja': case 'aji_limo': return !!freeBoard();
-    case 'cebolla_cuadros': if (D.id === 'pollo_aji') return stewNeeds(h.type); return bowlNeeds(h.type);
+    case 'cebolla_cuadros': if (D.id === 'pollo_aji') return stewNeeds(h.type, 'pollo_aji'); return bowlNeeds(h.type);
     case 'pota_cortada': case 'aji_limo_picado': case 'limon': return bowlNeeds(h.type);
     case 'vaso': return !!byKind('balde') && byKind('balde').state === 'idle';
     case 'chicha': return true;
-    case 'cebolla_picada': if (D.id === 'sopa_wantan') return stewNeeds(h.type); return wokNeeds(h.type);
+    case 'cebolla_picada': if (D.id === 'sopa_wantan') return stewNeeds(h.type, 'sopa'); return wokNeeds(h.type);
     case 'sillao': case 'huevo': case 'pollo_cuadros': return wokNeeds(h.type);
     case 'arroz_cooked': if (D.id === 'chaufa') return wokNeeds('arroz_cooked'); return inPlate();
     case 'aji':
@@ -85,19 +86,19 @@ function usable(D, h) {
     case 'pollo_shred':
       if (D.id === 'chaufa') return wokNeeds('pollo_shred');
       return D.id === 'causa' ? inPlate() : (Pn.state === 'idle' && !Pn.items.includes('pollo_shred'));
-    case 'salsa_aji': if (D.id === 'pollo_aji') return stewNeeds('salsa_aji'); return Pn.state === 'idle' && !Pn.items.includes('salsa_aji');
+    case 'salsa_aji': if (D.id === 'pollo_aji') return stewNeeds('salsa_aji', 'pollo_aji'); return Pn.state === 'idle' && !Pn.items.includes('salsa_aji');
     case 'plate': return plateDone(h) || (fits(D, h) && !planTable(D));
     default: return inPlate();      // papa_sliced, arroz_cooked, guiso, salsa, masa, palta_sliced
   }
 }
 function destination(D, h) {
   switch (h.type) {
-    case 'pollo_raw': if (D.id === 'chaufa') return g('board'); if (D.id === 'pollo_aji') return byKind('stew'); return freePot(h.type) || POTS[0];
+    case 'pollo_raw': if (D.id === 'chaufa') return g('board'); if (D.id === 'pollo_aji') return stewPot('pollo_aji'); return freePot(h.type) || POTS[0];
     case 'papa_raw': if (D.id === 'lomo_saltado') return freeBoard() || g('board'); return freePot(h.type) || POTS[0];
     case 'arroz_raw': case 'tallarines': return freePot(h.type) || POTS[0];
     case 'cerdo': return freeBoard() || g('board');
     case 'cerdo_picado': case 'wantan': return byKind('bowl');
-    case 'wantan_crudo': return D.id === 'wantan_frito' ? byKind('fryer') : byKind('stew');
+    case 'wantan_crudo': return D.id === 'wantan_frito' ? byKind('fryer') : stewPot('sopa');
     case 'tallarin_cocido': return byKind('wok');
     case 'carne': case 'tomate': return freeBoard() || g('board');
     case 'carne_cubos': case 'tomate_juliana': case 'cebolla_juliana': return byKind('wok');
@@ -109,17 +110,17 @@ function destination(D, h) {
     case 'corazon_palito': case 'rachi_mar': case 'pancita_mar': return freeGrill() || byKind('grill');
     case 'papa_cooked': return D.id === 'causa' ? byKind('bowl') : freeBoard() || g('board');
     case 'pollo_cooked': case 'palta': case 'cebolla_china': case 'cebolla_roja': case 'aji_limo': return freeBoard() || g('board');
-    case 'cebolla_cuadros': return D.id === 'pollo_aji' ? byKind('stew') : byKind('bowl');
+    case 'cebolla_cuadros': return D.id === 'pollo_aji' ? stewPot('pollo_aji') : byKind('bowl');
     case 'pota_cortada': case 'aji_limo_picado': case 'limon': return byKind('bowl');
     case 'vaso': return byKind('balde');
     case 'chicha': return g('counter');
-    case 'cebolla_picada': return D.id === 'sopa_wantan' ? byKind('stew') : byKind('wok');
+    case 'cebolla_picada': return D.id === 'sopa_wantan' ? stewPot('sopa') : byKind('wok');
     case 'sillao': case 'huevo': case 'pollo_cuadros': return byKind('wok');
     case 'arroz_cooked': return D.id === 'chaufa' ? byKind('wok') : planTable(D);
     case 'aji': return D.id === 'causa' ? byKind('bowl') : BL();
     case 'queso': case 'leche': case 'galleta': return BL();
     case 'pollo_shred': return D.id === 'chaufa' ? byKind('wok') : D.id === 'causa' ? planTable(D) : byKind('pan');
-    case 'salsa_aji': return D.id === 'pollo_aji' ? byKind('stew') : byKind('pan');
+    case 'salsa_aji': return D.id === 'pollo_aji' ? stewPot('pollo_aji') : byKind('pan');
     case 'plate': return plateDone(h) ? g('counter') : (buildSpot() || g('trash'));
     default: return planTable(D);
   }
@@ -208,17 +209,17 @@ const PLANS = {
 // Pollo al ají: pollo crudo, cebolla en cuadros (tabla) y ají molido (licuadora) van a la olla del guiso.
 // Al plato: arroz (olla), papa sancochada en rodajas (olla + tabla) y el pollo al ají.
 PLANS.pollo_aji = function (D) {
-  const A = planTable(D), Bd = freeBoard() || g('board'), Bl = BL(), S = byKind('stew'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
-  if (S.state === 'done' && pl && !has('pollo_aji')) return { s: S };
-  if (Bl.state === 'done' && Bl.out === 'salsa_aji' && stewNeeds('salsa_aji')) return { s: Bl };
+  const A = planTable(D), Bd = freeBoard() || g('board'), Bl = BL(), S = stewPot('pollo_aji'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
+  if (S && S.state === 'done' && pl && !has('pollo_aji')) return { s: S };
+  if (Bl.state === 'done' && Bl.out === 'salsa_aji' && stewNeeds('salsa_aji', 'pollo_aji')) return { s: Bl };
   const bd = boards().find(b => b.state === 'done' && b.product === 'cebolla_cuadros');
-  if (bd && stewNeeds('cebolla_cuadros')) return { s: bd };
+  if (bd && stewNeeds('cebolla_cuadros', 'pollo_aji')) return { s: bd };
   const pb = boards().find(b => b.state === 'done' && b.product === 'papa_sliced');
   if (pb && pl && !has('papa')) return { s: pb };
   const arrozDone = potWith('arroz_raw'), papaDone = potWith('papa_raw');
   if (arrozDone && pl && !has('arroz')) return { s: arrozDone, want: 'arroz_raw' };
   if (papaDone && freeBoard()) return { s: papaDone, want: 'papa_raw' };
-  const inS = x => S.items.includes(x) ? 1 : 0, stewOn = S.state !== 'idle' || has('pollo_aji') || cnt('pollo_aji') > 0;
+  const inS = x => S && S.items.includes(x) ? 1 : 0, stewOn = (S && S.state !== 'idle') || has('pollo_aji') || cnt('pollo_aji') > 0;
   const arroz = (has('arroz') ? 1 : 0) + cnt('arroz_cooked') + potN('arroz_raw') + cnt('arroz_raw');
   const papa = (has('papa') ? 1 : 0) + cnt('papa_sliced') + boardHas('papa_sliced') + cnt('papa_cooked') + potN('papa_raw') + cnt('papa_raw');
   if (arroz < 1 && freePot('arroz_raw')) return { s: g('crate_arroz_raw') };
@@ -294,23 +295,29 @@ PLANS.anticuchos = parrillaPlan; PLANS.rachi = parrillaPlan; PLANS.pancita = par
 // con la cebolla china picada.
 function wantanPlan(D) {
   const frito = D.id === 'wantan_frito', part = frito ? 'wantan_frito' : 'sopa';
-  const A = planTable(D), Bw = byKind('bowl'), S = byKind('stew'), Fr = byKind('fryer'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
+  const A = planTable(D), Bw = byKind('bowl'), S = frito ? null : stewPot('sopa'), Fr = byKind('fryer'), pl = A ? A.item : null, has = p => !!pl && pl.parts.includes(p);
   if (frito && Fr.state === 'done' && Fr.item === 'wantan_crudo' && pl && !has(part)) return { s: Fr };
-  if (!frito && S.state === 'done' && S.out === 'sopa' && pl && !has(part)) return { s: S };
-  if (Bw.state === 'done' && Bw.out === 'wantan_crudo' && (frito ? Fr.state === 'idle' : stewNeeds('wantan_crudo'))) return { s: Bw };
+  if (S && S.state === 'done' && pl && !has(part)) return { s: S };
+  if (Bw.state === 'done' && Bw.out === 'wantan_crudo' && (frito ? Fr.state === 'idle' : stewNeeds('wantan_crudo', 'sopa'))) return { s: Bw };
   const bd = boards().find(b => b.state === 'done' && b.product === 'cerdo_picado' && bowlNeeds('cerdo_picado'));
   if (bd) return { s: bd };
-  if (!frito) { const cb = boards().find(b => b.state === 'done' && b.product === 'cebolla_picada' && stewNeeds('cebolla_picada')); if (cb) return { s: cb }; }
-  const cooking = frito ? (Fr.state !== 'idle' && Fr.item === 'wantan_crudo') : (S.state !== 'idle' && S.out === 'sopa');
+  if (!frito) { const cb = boards().find(b => b.state === 'done' && b.product === 'cebolla_picada' && stewNeeds('cebolla_picada', 'sopa')); if (cb) return { s: cb }; }
+  const cooking = frito ? (Fr.state !== 'idle' && Fr.item === 'wantan_crudo') : (!!S && S.state !== 'idle');
   if (has(part) || cnt(part) > 0 || cooking) return null;
-  const wan = cnt('wantan_crudo') + (Bw.state !== 'idle' && Bw.out === 'wantan_crudo' ? 1 : 0) + (!frito && S.state === 'idle' && S.items.includes('wantan_crudo') ? 1 : 0);
+  // la sopa necesita una olla con agua: se lleva una olla vacía al grifo y, ya llena, de vuelta a un fuego
+  if (!frito && !S && cnt('olla') < 1) {
+    const tap = byKind('tap');
+    if (tap && tap.hasPot) { if (tap.water >= 1 && POTS.some(p => !p.hasPot)) return { s: tap, want: 'olla' }; }
+    else if (tap) { const e = POTS.find(p => p.hasPot && potBare(p)); if (e) return { s: e, want: 'olla' }; }
+  }
+  const wan = cnt('wantan_crudo') + (Bw.state !== 'idle' && Bw.out === 'wantan_crudo' ? 1 : 0) + (S && S.items.includes('wantan_crudo') ? 1 : 0);
   if (wan < 1 && Bw.state === 'idle') {
     const inB = x => Bw.items.includes(x);
     if (!inB('cerdo_picado') && cnt('cerdo_picado') + boardHas('cerdo_picado') + cnt('cerdo') < 1 && freeBoard()) return { s: g('crate_cerdo') };
     if (!inB('wantan') && cnt('wantan') < 1) return { s: g('crate_wantan') };
   }
   if (!frito) {
-    const ceb = (S.state === 'idle' && S.items.includes('cebolla_picada') ? 1 : 0) + cnt('cebolla_picada') + boardHas('cebolla_picada') + cnt('cebolla_china');
+    const ceb = (S && S.items.includes('cebolla_picada') ? 1 : 0) + cnt('cebolla_picada') + boardHas('cebolla_picada') + cnt('cebolla_china');
     if (ceb < 1 && freeBoard()) return { s: g('crate_cebolla_china') };
   }
   return null;
@@ -391,6 +398,11 @@ PLANS.chicha = function (D) {
 function helperPlan() {
   const D = targetDish(), h = helper.held;
   if (!h) helper.trashNext = false;
+  if (h && h.type === 'olla') {       // la olla vacía va al grifo si hace falta agua para una sopa; si no, a un fuego libre
+    const tap = byKind('tap'), stove = POTS.find(p => !p.hasPot);
+    if (tap && !tap.hasPot && potBare(h.pot) && h.pot.water < 1 && openDishes().some(d => d.id === 'sopa_wantan')) return { s: tap };
+    return { s: stove || tap };
+  }
   if (h) {
     if (helper.trashNext || !D) return { s: g('trash') };
     if (h.type === 'chicha') return { s: servableList().some(c => c.dish.id === 'chicha') ? g('counter') : (parkSpot() || g('trash')) };
@@ -426,8 +438,8 @@ function unblockPlan(idle) {
   for (const s of st) {
     if ((s.kind === 'board' || s.kind === 'skewer') && s.state === 'done') return { s };
     if (s.kind === 'grill' && s.slots.some(x => x.done)) return { s };
-    if (s.kind === 'pot' && s.slots.some(x => x.done)) return { s };
-    if ((s.kind === 'bowl' || s.kind === 'blender' || s.kind === 'pan' || s.kind === 'wok' || s.kind === 'stew' || s.kind === 'fryer') && s.state === 'done') return { s };
+    if (s.kind === 'pot' && s.hasPot && (s.slots.some(x => x.done) || s.state === 'done')) return { s };
+    if ((s.kind === 'bowl' || s.kind === 'blender' || s.kind === 'pan' || s.kind === 'wok' || s.kind === 'fryer') && s.state === 'done') return { s };
   }
   // proceso a medias que nadie sigue (p. ej. una mezcla que no sirve): terminarlo manteniendo, luego se retira y se tira
   for (const s of st) {
@@ -436,7 +448,7 @@ function unblockPlan(idle) {
     if (s.kind === 'balde' && s.state === 'done') return { s };
   }
   for (const t of TABLES) {
-    if (!t.item) continue;
+    if (!t.item || t.item.type === 'olla') continue;
     const keep = relevantAny(t.item);
     if (!keep || (idle > 10 && t.item.type !== 'plate')) return { s: t, thenTrash: true };
   }

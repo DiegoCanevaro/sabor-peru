@@ -167,7 +167,7 @@ const DISHES = {
     uses: ['wantan', 'cerdo', 'cerdo_picado', 'wantan_crudo', 'cebolla_china', 'cebolla_picada', 'sopa'],
     blend: null,
     ticket: { slots: [{ id: 'wantan', t: ['bowl', 'stew'] }, { id: 'cerdo', t: ['board', 'bowl', 'stew'] }, { id: 'cebolla_china', t: ['board', 'stew'] }] },
-    howto: { rows: [{ ings: ['cerdo'], tools: ['board'] }, { ings: ['wantan'], tools: [] }], merge: 'bowl', after: ['stew'], afterWith: { ings: ['cebolla_china'], tools: ['board'] } },
+    howto: { rows: [{ ings: ['cerdo'], tools: ['board'] }, { ings: ['wantan'], tools: [] }], merge: 'bowl', after: ['stew'], afterBadge: ['tap'], afterWith: { ings: ['cebolla_china'], tools: ['board'] } },
     recipe: RECIPES.wantan
   },
   // Nivel 2-3: tallarín saltado: tallarines cocidos (olla) + carne, cebolla y tomate (tabla) + sillao, todo al wok

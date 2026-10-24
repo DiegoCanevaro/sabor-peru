@@ -5,7 +5,7 @@ const R = 14;                 // radio del jugador
 const REACH = 42;             // alcance de interacción
 // cantidad de clientes por nivel: 3 salvo que el nivel diga otra cosa (LEVEL.customers, se aplica en orders.js)
 let TOTAL_CUSTOMERS = 3;
-const T = { cook: 6, board: 3, blend: 4, bowl: 4, pan: 5, wok: 5, balde: 1.5, stew: 7, fry: 5, skewer: 2.5, grill: 6 };   // segundos de trabajo (se muestran como barras)
+const T = { cook: 6, board: 3, blend: 4, bowl: 4, pan: 5, wok: 5, balde: 1.5, stew: 7, fry: 5, skewer: 2.5, grill: 6, tap: 3 };   // segundos de trabajo (se muestran como barras)
 const PLATE_RETURN = 6;        // segundos que tarda en volver un plato limpio después de servir (sin lavar en los primeros niveles)
 const POT_SLOTS = 1;          // regla global: 1 ingrediente por olla (salvo que la receta pida más)
 // Cuántas unidades del mismo ingrediente caben en una olla: 1, salvo que algún plato del nivel pida más
@@ -17,6 +17,7 @@ const HOLD_KINDS = ['board', 'bowl', 'skewer'];
 
 // ================= INGREDIENTES, PRODUCTOS Y PARTES DEL PLATO =================
 const ICON = {
+  olla: '🍲',
   papa_raw: '🥔', papa_cooked: '🥔', papa_sliced: '🥔', pollo_raw: '🍗', pollo_cooked: '🍗', pollo_shred: '🍗',
   arroz_raw: '🍚', arroz_cooked: '🍚', aji: '🌶️', palta: '🥑', palta_sliced: '🥑', queso: '🧀', leche: '🥛', galleta: '🍘',
   salsa: '🥣', salsa_aji: '🟠', masa: '🟨', guiso: '🍛', plate: '🍽️',
@@ -31,6 +32,7 @@ const ICON = {
   tallarines: '🍜', tallarin_cocido: '🍜', tallarin_saltado: '🍝', choclo_desgranado: '🌽', cancha: '🌰'
 };
 const NAME = {
+  olla: 'olla',
   papa_raw: 'papa', papa_cooked: 'cocida', papa_sliced: 'rodajas', pollo_raw: 'pollo', pollo_cooked: 'cocido', pollo_shred: 'desmenuz.',
   arroz_raw: 'arroz', arroz_cooked: 'cocido', aji: 'ají', palta: 'palta', palta_sliced: 'láminas', queso: 'queso', leche: 'leche',
   galleta: 'galleta', salsa: 'salsa', salsa_aji: 'ají molido', masa: 'masa', guiso: 'guiso', plate: 'plato',
@@ -130,6 +132,9 @@ const activeStews = () => STEW_RECIPES.filter(r => LEVEL.dishes.some(d => DISHES
 const stewAccepts = (items, t) => !items.includes(t) && activeStews().some(r => r.in.includes(t) && items.every(i => r.in.includes(i)));
 const stewMatch = items => activeStews().find(r => r.in.length === items.length && r.in.every(i => items.includes(i)));
 const stewKey = t => t === 'pollo_cooked' ? 'pollo_raw' : t;      // si el pollo ya se coció en otra olla, también vale
+// ¿la olla (en su fuego) acepta este ingrediente para una receta? las de caldo (sopa) necesitan la olla llena de agua
+const potAccepts = (pot, t) => !pot.items.includes(t) && activeStews().some(r => r.in.includes(t) && pot.items.every(i => r.in.includes(i)) && (!r.broth || pot.water >= 1));
+const needsWater = t => activeStews().some(r => r.broth && r.in.includes(t));
 // wok del chifa (automático): arroz cocido + pollo crudo en cuadros + cebolla china picada + huevo + sillao (salsa de soya) -> arroz chaufa
 // el pollo se cocina en el mismo wok, por eso se corta crudo
 const WOK_IN = ['arroz_cooked', 'pollo_cuadros', 'cebolla_picada', 'huevo', 'sillao'];

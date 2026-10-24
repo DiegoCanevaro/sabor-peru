@@ -35,7 +35,8 @@ function makeOrders() {
 // orden estable: entradas primero, segundos después
 const byCourse = list => list.some(d => d.includes('+')) ? list : list.filter(d => DISHES[d].course !== 'segundo').concat(list.filter(d => DISHES[d].course === 'segundo'));
 
-let customers = [], clock = 0, lastResolve = -9, endTimer = -1;
+let customers = [], clock = 0, lastResolve = -9, endTimer = -1, lastArrival = -9;
+const MIN_WAITING = LEVEL.minWaiting || 2;      // pedidos que se ven a la vez como mínimo
 const plateReturns = [];        // momentos en que vuelve un plato limpio a una mesa cerca de la salida
 function returnPlates() {
   for (let i = plateReturns.length - 1; i >= 0; i--) {
@@ -47,7 +48,7 @@ function returnPlates() {
 }
 function initCustomers() {
   customers = ORDERS.map((d, i) => ({ idx: i, dish: comboOf(d)[0], combo: d.includes('+') ? comboOf(d) : null, step: 0, state: 'queued', arriveAt: i * ARRIVAL, patience: 0, max: 0, doneAt: 0 }));
-  clock = 0; lastResolve = -9; endTimer = -1;
+  clock = 0; lastResolve = -9; endTimer = -1; lastArrival = -9;
 }
 function startRound() { initCustomers(); timeLeft = TURN_TIME; timeUp = false; started = true; }
 function setOrders(list) { ORDERS.length = 0; list.forEach(d => ORDERS.push(d)); initCustomers(); buildTickets(); }

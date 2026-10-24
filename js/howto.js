@@ -103,7 +103,12 @@
       if (h.mergeWith) c.drawImage(ingCanvas(h.mergeWith, 32, true), xMerge + 16, yRowsMid + 12, 32, 32);      // la herramienta ya trae esto (p. ej. el bowl con salsa)
       // pasos después de juntar (p. ej. ensartar y asar los anticuchos)
       let xa = xMerge + 46;
-      after.forEach((t, i) => { const xt = xMerge + 100 + i * 90; arrow(xa, yRowsMid, xt - 34, yRowsMid); tool(t, xt, yRowsMid); xa = xt + 34; });
+      after.forEach((t, i) => {
+        const xt = xMerge + 100 + i * 90; arrow(xa, yRowsMid, xt - 34, yRowsMid); tool(t, xt, yRowsMid); xa = xt + 34;
+        // insignia: la herramienta necesita algo antes (p. ej. la olla de la sopa, llena de agua en el grifo)
+        const b = (h.afterBadge || [])[i];
+        if (b) { c.save(); c.fillStyle = '#2f3d38'; c.beginPath(); c.arc(xt - 30, yRowsMid - 30, 21, 0, 7); c.fill(); c.restore(); chalkCircle(xt - 30, yRowsMid - 30, 21); c.drawImage(toolCanvas(b, 32), xt - 46, yRowsMid - 46, 32, 32); }
+      });
       // un ingrediente que se echa directo en el último paso (p. ej. la cebolla china en la olla de la sopa)
       if (h.afterWith) { const y = yc(rows.length), xe = chain(h.afterWith, y); arrow(xe + 4, y, xa - 50, yRowsMid + 26); }
       arrow(xa, yRowsMid, xDish - 70, yDish);

@@ -5,7 +5,7 @@ const LEVEL = {
   own: 'pollo_aji', dishes: ['huancaina', 'causa', 'aji', 'pollo_aji'],
   combos: { entradas: ['huancaina', 'causa'], segundos: ['aji', 'pollo_aji'] },
   crates: ['papa_raw', 'aji', 'queso', 'leche', 'galleta', 'pollo_raw', 'palta', 'arroz_raw', 'cebolla_roja'],
-  left: ['pot', 'pot', 'pot', 'stew', 'pan', 'board', 'board', 'bowl', 'blender'], right: [],
+  left: ['pot', 'pot', 'pot', 'pot', 'pan', 'board', 'board', 'bowl', 'blender'], right: [],
   customers: 4, arrival: 65, time: 420, patience: 1.4,      // dos platos por cliente: más paciencia
   intro: ['huancaina', 'pollo_aji']
 };

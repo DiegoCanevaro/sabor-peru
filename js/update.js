@@ -24,9 +24,13 @@ function update(dt) {
     s.worked = worked.has(s);
     switch (s.kind) {
       // automáticas: avanzan solas al colocar los ingredientes
-      case 'pot': s.slots.forEach(sl => { if (!sl.done) { sl.t += dt; if (sl.t >= T.cook) sl.done = true; } }); break;
+      case 'pot':
+        if (!s.hasPot) break;
+        s.slots.forEach(sl => { if (!sl.done) { sl.t += dt; if (sl.t >= T.cook) sl.done = true; } });
+        if (s.state === 'cooking') { s.t += dt; if (s.t >= T.stew) s.state = 'done'; }
+        break;
+      case 'tap': if (s.hasPot && s.water < 1) s.water = Math.min(1, s.water + dt / T.tap); break;
       case 'pan': if (s.state === 'cooking') { s.t += dt; if (s.t >= T.pan) s.state = 'done'; } break;
-      case 'stew': if (s.state === 'cooking') { s.t += dt; if (s.t >= T.stew) s.state = 'done'; } break;
       case 'wok': if (s.state === 'cooking') { s.t += dt; if (s.t >= T.wok) s.state = 'done'; } break;
       case 'skewer': if (s.state === 'chopping' && s.worked) { s.t += dt; if (s.t >= T.skewer) s.state = 'done'; } break;
       case 'grill': s.slots.forEach(sl => { if (!sl.done) { sl.t += dt; if (sl.t >= T.grill) sl.done = true; } }); break;
@@ -50,7 +54,10 @@ function update(dt) {
   returnPlates();
   // llegada de pedidos (escalonada; si no hay nadie esperando, el siguiente llega enseguida)
   const nq = nextQueued();
-  if (nq && (clock >= nq.arriveAt || (!waitingList().length && clock - lastResolve >= 2))) {
+  // llega a su hora, o antes si hay pocos pedidos a la vista (siempre se ven al menos MIN_WAITING, salvo el primero)
+  const few = waitingList().length < MIN_WAITING && clock - lastArrival >= (waitingList().length ? 6 : 2);
+  if (nq && (clock >= nq.arriveAt || few)) {
+    lastArrival = clock;
     nq.state = 'waiting'; nq.patience = nq.max = nq.dish.patience * (LEVEL.patience || 1);
   }
   // paciencia

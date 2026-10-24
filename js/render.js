@@ -25,7 +25,7 @@ function drawItem(it, x, y, size) {
     if (LABELED.includes(it.type)) label(NAME[it.type] + (it.n > 1 ? ' ×' + it.n : ''), x, y + size * .62, '#fff', 9);
   }
 }
-const COL = { stew: '#5a6470', fryer: '#8a8f96', skewer: '#c9a46a', grill: '#3a3030', cups: '#7aa7c9', balde: '#6a2c8a', wok: '#3a2a2a', crate: '#8a5a2b', plates: '#9aa5ad', trash: '#4a4f55', pot: '#5a6470', board: '#b98a4f', bowl: '#c98a4a', blender: '#6b4f7a', pan: '#4a4a52', table: '#a07a45', counter: '#7a3b2b' };
+const COL = { tap: '#6f8fa3', fryer: '#8a8f96', skewer: '#c9a46a', grill: '#3a3030', cups: '#7aa7c9', balde: '#6a2c8a', wok: '#3a2a2a', crate: '#8a5a2b', plates: '#9aa5ad', trash: '#4a4f55', pot: '#5a6470', board: '#b98a4f', bowl: '#c98a4a', blender: '#6b4f7a', pan: '#4a4a52', table: '#a07a45', counter: '#7a3b2b' };
 
 function drawStation(s) {
   const cx = s.x + s.w / 2, cy = s.y + s.h / 2;
@@ -43,11 +43,20 @@ function drawStation(s) {
       if (s.item) drawItem(s.item, cx, cy - 8, 30);
       break;
     case 'pot': {
-      const sl = s.slots[0];
+      if (!s.hasPot) { base('🔥'); label('sin olla', cx, s.y + 12, '#f4e04c', 10); break; }
       base('🍲');
+      if (s.water >= 1 && potBare(s)) label('💧 agua', cx + 14, s.y + 12, '#bfe6ff', 10);
+      const sl = s.slots[0];
       if (sl) { emoji(ICON[sl.type], cx + 20, cy + 2, 18); bar(s.x + 4, s.y + 4, s.w - 8, sl.t / T.cook, sl.done ? '#5ec26a' : '#f4b83c', 8); }
+      if (s.state === 'idle') s.items.forEach((it, i) => emoji(ICON[it], s.x + 40 + i * 14, cy + 2, 13));
+      if (s.state === 'cooking') prog(s.t / T.stew);
+      if (s.state === 'done') { emoji(ICON[s.out] || '🍛', cx + 20, cy + 2, 20); label('¡listo!', cx, s.y + 12, '#8fe39a', 11); }
       break;
     }
+    case 'tap':
+      base('🚰');
+      if (s.hasPot) { emoji('🍲', cx + 20, cy + 2, 18); bar(s.x + 4, s.y + 4, s.w - 8, s.water, s.water >= 1 ? '#5ec26a' : '#4aa8e8', 8); if (s.water >= 1) label('¡llena!', cx, s.y + 18, '#8fe39a', 10); }
+      break;
     case 'board':
       base('🔪');
       if (s.state === 'chopping') { emoji(ICON[s.product], cx + 20, cy + 2, 18); prog(s.t / T.board); hint(); }
@@ -71,12 +80,6 @@ function drawStation(s) {
       base('🍳');
       s.items.forEach((it, i) => emoji(ICON[it], s.x + 56 + i * 16, cy + 2, 14));
       if (s.state === 'cooking') prog(s.t / T.pan);
-      if (s.state === 'done') { emoji('🍛', cx + 20, cy + 2, 20); label('¡listo!', cx, s.y + 12, '#8fe39a', 11); }
-      break;
-    case 'stew':
-      base('🍲');
-      s.items.forEach((it, i) => emoji(ICON[it], s.x + 40 + i * 14, cy + 2, 13));
-      if (s.state === 'cooking') prog(s.t / T.stew);
       if (s.state === 'done') { emoji('🍛', cx + 20, cy + 2, 20); label('¡listo!', cx, s.y + 12, '#8fe39a', 11); }
       break;
     case 'cups': base('🥤'); break;

@@ -13,7 +13,8 @@ function interact(s, p, want) {
       if (!h) { p.held = { type: s.item }; return true; } return false;
     case 'plates':
       if (!h) { p.held = { type: 'plate', parts: [] }; return true; } return false;
-    case 'trash':      // la comida se tira, pero el plato se conserva (vacío)
+    case 'trash':      // la comida se tira, pero el plato se conserva (vacío); de la olla se vacía todo (también el agua)
+      if (h && h.type === 'olla') { if (potBare(h.pot) && !h.pot.water) return false; h.pot = POT_EMPTY(); return true; }
       if (h && h.type === 'plate') { if (!h.parts.length) return false; h.parts = []; return true; }
       if (h) { p.held = null; return true; } return false;
     case 'table': {
@@ -38,18 +39,23 @@ function interact(s, p, want) {
       if (!h && it) { p.held = it; s.item = null; return true; }
       return false;
     }
-    case 'pot':      // automática: arranca sola al colocar el ingrediente
-      if (h && POT_OUT[h.type] && s.slots.length < potCap(h.type) && s.slots.every(x => x.type === h.type)) {
-        s.slots.push({ type: h.type, t: 0, done: false }); p.held = null; return true;
-      }
+    case 'pot':      // automática: lo que se echa decide qué hace (sancochar arroz/papa/pollo/tallarines, o una receta)
+    case 'tap': {    // grifo: la olla se llena sola de agua
+      if (h && h.type === 'olla') { if (s.hasPot) return false; potPut(s, h.pot); p.held = null; return true; }
+      if (!s.hasPot) return false;
+      if (h && s.kind === 'pot' && potAdd(s, h.type)) { p.held = null; return true; }
+      if (h && s.kind === 'pot' && p === player && s.water < 1 && potBare(s) && needsWater(stewKey(h.type))) showToast('🚰 Primero llena la olla de agua en el grifo');
+      // con un plato en la mano: la receta se sirve directamente de la olla
+      if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, PART_OF_ITEM[s.out])) { h.parts.push(PART_OF_ITEM[s.out]); potServed(s); return true; }
       if (!h) {
         const i = s.slots.findIndex(x => x.done && (!want || x.type === want));
-        if (i < 0) return false;
-        const sl = s.slots.splice(i, 1)[0];
-        p.held = { type: POT_OUT[sl.type] };
-        return true;
+        if (i >= 0) { const sl = s.slots.splice(i, 1)[0]; p.held = { type: POT_OUT[sl.type] }; return true; }
+        if (s.state === 'done' && (!want || want === s.out)) { p.held = { type: s.out }; potServed(s); return true; }
+        // si no hay nada listo, se lleva la olla entera (p. ej. al grifo)
+        if (p === player || want === 'olla') { p.held = { type: 'olla', pot: potTake(s) }; return true; }
       }
       return false;
+    }
     case 'board':    // hold: se coloca con un toque y se pica manteniendo la acción
       if (h && s.state === 'empty' && chopOut(h.type, p === helper ? targetDish() : null)) {
         s.state = 'chopping'; s.t = 0; s.input = h.type; s.product = chopOut(h.type, p === helper ? targetDish() : null); p.held = null; return true;
@@ -127,17 +133,6 @@ function interact(s, p, want) {
       }
       if (!h && s.state === 'done') { p.held = { type: 'guiso' }; s.state = 'idle'; s.items = []; return true; }
       return false;
-    case 'stew':     // olla del guiso (automática): arranca sola con pollo crudo + cebolla en cuadros + ají molido
-      if (h && s.state === 'idle' && stewAccepts(s.items, stewKey(h.type))) {
-        s.items.push(stewKey(h.type)); p.held = null;
-        const m = stewMatch(s.items);
-        if (m) { s.state = 'cooking'; s.t = 0; s.out = m.out; }
-        return true;
-      }
-      // con un plato en la mano: se sirve directamente de la olla
-      if (h && h.type === 'plate' && s.state === 'done' && canPlace(h, PART_OF_ITEM[s.out])) { h.parts.push(PART_OF_ITEM[s.out]); s.state = 'idle'; s.items = []; return true; }
-      if (!h && s.state === 'done') { p.held = { type: s.out || 'pollo_aji' }; s.state = 'idle'; s.items = []; return true; }
-      return false;
     case 'cups':     // vasos de plástico vacíos
       if (!h) { p.held = { type: 'vaso' }; return true; } return false;
     case 'balde':    // automático: se deja el vaso bajo el caño y se llena solo
@@ -151,6 +146,27 @@ function interact(s, p, want) {
   }
   return false;
 }
+
+// echar un ingrediente a la olla (en su fuego)
+function potAdd(s, t) {
+  if (s.state !== 'idle') return false;
+  const k = stewKey(t);
+  if (s.items.length) {                                   // ya hay una receta empezada
+    if (!potAccepts(s, k)) return false;
+  } else if (s.slots.length) {
+    // el pollo que se está sancochando pasa a ser la base del guiso si se le echa la cebolla o el ají
+    if (s.slots.length === 1 && s.slots[0].type === 'pollo_raw' && !POT_OUT[t] && potAccepts({ items: ['pollo_raw'], water: s.water }, k)) { s.slots = []; s.items = ['pollo_raw']; }
+    else if (POT_OUT[t] && s.slots.length < potCap(t) && s.slots.every(x => x.type === t)) { s.slots.push({ type: t, t: 0, done: false }); return true; }
+    else return false;
+  } else if (POT_OUT[t]) { s.slots.push({ type: t, t: 0, done: false }); return true; }     // olla vacía: se sancocha
+  else if (!potAccepts(s, k)) return false;
+  s.items.push(k);
+  const m = stewMatch(s.items);
+  if (m) { s.state = 'cooking'; s.t = 0; s.out = m.out; }
+  return true;
+}
+// se sacó la receta de la olla: queda vacía (la sopa se lleva el caldo)
+function potServed(s) { const r = STEW_RECIPES.find(x => x.out === s.out); if (r && r.broth) s.water = 0; s.state = 'idle'; s.items = []; s.out = null; s.t = 0; }
 
 // ¿Hay algo que "mantener" en esta estación ahora mismo?
 function workable(s) {
