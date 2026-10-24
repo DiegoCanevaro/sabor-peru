@@ -18,23 +18,37 @@ body.mobile.portrait { overflow: hidden; }
 #rotateBlock .phone::after { content: ''; position: absolute; left: 50%; bottom: 6px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: #f7e9d0; }
 @keyframes girar { 0%, 25% { transform: rotate(0); } 55%, 85% { transform: rotate(-90deg); } 100% { transform: rotate(0); } }
 body.mobile #gameWrap {
-  position: fixed; left: 50%; top: 50%; width: 900px; max-width: none;
+  position: fixed; left: var(--cx, 50%); top: 50%; width: 900px; max-width: none;
   transform: translate(-50%, -50%) scale(var(--s, 1)); transform-origin: center;
 }
 body.mobile canvas, body.mobile #stage { border: none; }
 body.mobile #hint { display: none; }
 
-/* HUD abajo al centro y tickets arriba a la izquierda, encima de la cocina */
+/* HUD arriba a la derecha: puntos, reloj, atendidos y los botones como iconos */
 body.mobile #hud {
-  position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 6;
-  background: rgba(43, 24, 11, .62); border: none; border-radius: 10px; padding: 6px 14px; gap: 18px; font-size: 18px; white-space: nowrap;
+  position: fixed; right: max(8px, env(safe-area-inset-right)); top: 6px; left: auto; bottom: auto; transform: none; z-index: 6; width: auto; max-width: none;
+  background: rgba(43, 24, 11, .7); border: none; border-radius: 10px; padding: 4px 8px; gap: 10px; font-size: 15px; white-space: nowrap;
+  display: flex; align-items: center;
 }
-body.mobile #hud button.small { font-size: 16px; padding: 8px 14px; }
+body.mobile #hud button.small { font-size: 16px; padding: 4px 8px; min-width: 34px; }
+body.mobile #timeDisplay { font-size: 17px; font-weight: bold; }
+
+/* pedidos: columna vertical en el margen izquierdo, fuera de la cocina; arriba el más urgente (opaco),
+   debajo los siguientes semitransparentes; los que aún no llegan no se muestran */
 body.mobile #tickets {
-  position: absolute; top: 4px; left: 4px; z-index: 5; min-height: 0; padding: 0;
-  background: transparent; border: none; transform: scale(.82); transform-origin: top left; pointer-events: none;
+  position: fixed; top: 6px; left: max(6px, env(safe-area-inset-left)); z-index: 5; width: calc(var(--colW, 120px) - 10px);
+  min-height: 0; padding: 0; background: transparent; border: none; pointer-events: none;
+  display: flex; flex-direction: column; gap: 6px; overflow: visible;
 }
-body.mobile .ticket .card { opacity: .93; }
+body.mobile .ticket { width: 100%; min-width: 0; transition: opacity .25s; }
+body.mobile .ticket.upcoming, body.mobile .ticket[data-rank=""], body.mobile .ticket[data-rank="3"], body.mobile .ticket[data-rank="4"], body.mobile .ticket[data-rank="5"] { display: none !important; }
+body.mobile .ticket[data-rank="1"], body.mobile .ticket[data-rank="2"] { opacity: .55; }
+body.mobile .ticket .dish { padding: 2px 4px 0; }
+body.mobile .ticket .slots { flex-wrap: wrap; justify-content: center; margin: 0 3px; }
+/* los siguientes, compactos: solo el plato y su barra de espera */
+body.mobile .ticket[data-rank="1"] .slots, body.mobile .ticket[data-rank="2"] .slots { display: none; }
+body.mobile .ticket[data-rank="1"] .dish canvas, body.mobile .ticket[data-rank="2"] .dish canvas { width: 38px !important; height: 38px !important; }
+body.mobile .ticket[data-rank="1"] .course, body.mobile .ticket[data-rank="2"] .course { display: none; }
 
 /* pantallas de inicio y fin del nivel: letra más grande (todo se ve escalado) */
 body.mobile .overlay h1 { font-size: 40px; }

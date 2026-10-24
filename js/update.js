@@ -66,8 +66,12 @@ function update(dt) {
       showToast('Un cliente se fue enojado (-30)');
     }
   }
+  // reloj del turno: al llegar a cero se acaba el nivel (los pedidos pendientes no cuentan)
+  timeLeft = Math.max(0, timeLeft - dt);
+  if (timeLeft <= 0 && !timeUp) { timeUp = true; showToast('¡Se acabó el tiempo!'); endTimer = 1.2; }
+  if (timeUp) { endTimer -= dt; if (endTimer <= 0) { endGame(); return; } }
   // fin de partida: todos atendidos o perdidos
-  if (customers.every(c => c.state === 'happy' || c.state === 'angry')) {
+  if (!timeUp && customers.every(c => c.state === 'happy' || c.state === 'angry')) {
     if (endTimer < 0) endTimer = 2;
     endTimer -= dt;
     if (endTimer <= 0) { endGame(); return; }
@@ -75,5 +79,6 @@ function update(dt) {
   if (toast.t > 0) toast.t -= dt;
   updateTickets();
   document.getElementById('scoreDisplay').textContent = '⭐ ' + score;
-  document.getElementById('customerDisplay').textContent = 'Atendidos ' + served + ' / ' + TOTAL_CUSTOMERS + ' · En espera: ' + waitingList().length;
+  document.getElementById('customerDisplay').textContent = IS_TOUCH ? '👥 ' + served + '/' + TOTAL_CUSTOMERS : 'Atendidos ' + served + ' / ' + TOTAL_CUSTOMERS + ' · En espera: ' + waitingList().length;
+  updateClock();
 }

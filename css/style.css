@@ -200,3 +200,8 @@ canvas.sign { background: none; border: 0; }
 .lv2d { margin-top: 22px; font-size: 13px; color: #c9b48a; text-align: left; }
 .lv2d summary { cursor: pointer; }
 .lv2d a { display: inline-block; margin: 6px 12px 0 0; color: #f4d35e; }
+
+/* reloj del turno */
+#timeDisplay { font-variant-numeric: tabular-nums; }
+#timeDisplay.low { color: #ff6b5a; animation: tlow .5s infinite alternate; }
+@keyframes tlow { from { opacity: 1; } to { opacity: .45; } }

@@ -44,6 +44,15 @@ function buildTickets() {
     tickEls.push({ el: d, bar: d.querySelector('.tbar i'), cls: '', w: -1, col: '' });
   }
 }
+// reloj del turno en el HUD (rojo y latiendo en los últimos 30 s)
+const clockEl = document.createElement('span'); clockEl.id = 'timeDisplay';
+document.getElementById('hud').insertBefore(clockEl, document.getElementById('customerDisplay'));
+let clockTxt = '';
+function updateClock() {
+  const t = Math.ceil(timeLeft), txt = '⏱ ' + Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0');
+  if (txt !== clockTxt) { clockEl.textContent = txt; clockTxt = txt; clockEl.classList.toggle('low', t <= 30); }
+}
+updateClock();
 function updateTickets() {
   tickEls.forEach((t, i) => {
     const c = customers[i]; if (!c) return;
@@ -58,13 +67,19 @@ function updateTickets() {
     if (t.w !== w) { t.bar.style.width = w + '%'; t.w = w; }
     if (t.col !== col) { t.bar.style.background = col; t.col = col; }
   });
+  // orden en pantalla (móvil): 0 = el más urgente (el que más tiempo lleva esperando), luego los demás; máximo 3
+  let k = 0;
+  tickEls.forEach((t, i) => {
+    const c = customers[i], r = c && c.state === 'waiting' ? String(k++) : '';
+    if (t.el.dataset.rank !== r) t.el.dataset.rank = r;
+  });
 }
 
 // Al terminar solo se ofrece la receta real del plato del nivel, oculta tras un botón.
 function endGame() {
   gameOver = true;
   document.body.classList.remove('playing');
-  document.getElementById('overlayTitle').textContent = served > 0 ? '¡' + (LEVEL.world === 'kevin' ? 'Nivel ' + LEVEL.id : LEVEL.title.split(':')[0]) + ' completado! 🎉' : 'Fin del turno';
+  document.getElementById('overlayTitle').textContent = timeUp && served < TOTAL_CUSTOMERS ? '¡Se acabó el tiempo!' : served > 0 ? '¡' + (LEVEL.world === 'kevin' ? 'Nivel ' + LEVEL.id : LEVEL.title.split(':')[0]) + ' completado! 🎉' : 'Fin del turno';
   const record = served > 0 && saveBest(LEVEL.id, score);
   document.getElementById('overlaySubtitle').textContent = 'Puntaje final: ' + score + ' ⭐ — ' + served + ' de ' + TOTAL_CUSTOMERS + ' clientes atendidos' + (record ? ' · ¡Nuevo récord!' : '');
   document.getElementById('recipeCard').innerHTML = DISHES[LEVEL.own].recipe;

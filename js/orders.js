@@ -5,6 +5,9 @@
 // Para probar: añade ?pedidos=causa,huancaina,aji a la dirección de la página.
 if (LEVEL.customers) TOTAL_CUSTOMERS = LEVEL.customers;
 const ARRIVAL = LEVEL.arrival || 30;   // segundos entre la llegada de un pedido y el siguiente
+// reloj del turno: lo que tarda en llegar el último cliente + 1:30 (redondeado a 15 s). LEVEL.time lo fija a mano.
+const TURN_TIME = LEVEL.time || Math.ceil(((TOTAL_CUSTOMERS - 1) * ARRIVAL + 90) / 15) * 15;
+let timeLeft = TURN_TIME, timeUp = false;
 const ORDERS = [];
 function makeOrders() {
   ORDERS.length = 0;
@@ -37,7 +40,7 @@ function initCustomers() {
   customers = ORDERS.map((d, i) => ({ idx: i, dish: DISHES[d], state: 'queued', arriveAt: i * ARRIVAL, patience: 0, max: 0, doneAt: 0 }));
   clock = 0; lastResolve = -9; endTimer = -1;
 }
-function startRound() { initCustomers(); started = true; }
+function startRound() { initCustomers(); timeLeft = TURN_TIME; timeUp = false; started = true; }
 function setOrders(list) { ORDERS.length = 0; list.forEach(d => ORDERS.push(d)); initCustomers(); buildTickets(); }
 const waitingList = () => customers.filter(c => c.state === 'waiting');
 const nextQueued = () => customers.find(c => c.state === 'queued');

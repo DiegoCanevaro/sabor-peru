@@ -24,8 +24,13 @@
     body.classList.toggle('portrait', portrait);
     if (portrait && typeof setPaused === 'function' && typeof started !== 'undefined' && started && !gameOver && !paused) setPaused(true);
     if (!wrap) return;
-    const natW = 900, natH = wrap.offsetHeight || 566;          // el HUD y los tickets van encima: solo cuenta la cocina
-    wrap.style.setProperty('--s', Math.min(window.innerWidth / natW, window.innerHeight / natH));
+    // la cocina ocupa el alto de la pantalla y queda centrada en el espacio a la derecha de la columna de pedidos
+    const natW = 900, natH = (document.getElementById('c3d') || document.getElementById('c') || wrap).offsetHeight || 566;
+    const colW = Math.round(Math.min(150, Math.max(104, window.innerWidth * 0.15)));
+    const s = Math.min((window.innerWidth - colW) / natW, window.innerHeight / natH);
+    wrap.style.setProperty('--s', s);
+    body.style.setProperty('--colW', colW + 'px');
+    wrap.style.setProperty('--cx', (colW + (window.innerWidth - colW) / 2) + 'px');
     body.classList.toggle('menuOpen', !!document.querySelector('.overlay.show'));
   }
   window.addEventListener('resize', fit);
@@ -39,8 +44,13 @@
 
   if (!wrap) return;          // portada y pantalla de niveles: solo orientación
 
+  // pedidos (columna izquierda) y HUD (arriba a la derecha) fuera de la cocina escalada: tamaño de pantalla real
+  ['tickets', 'hud'].forEach(id => { const el = document.getElementById(id); if (el) body.appendChild(el); });
+  fit();
+
   // sin teclado: fuera los atajos "(B)", "(P)" de los botones
   document.querySelectorAll('#hud button').forEach(b => { b.textContent = b.textContent.replace(/\s*\([A-Z]\)\s*$/, ''); });
+  const bb = document.getElementById('botBtn'); if (bb) { bb.textContent = '🤖'; bb.title = 'Ayudante'; }
 
   // ---- joystick virtual ----
   const zone = document.getElementById('joyZone'), base = document.getElementById('joyBase'), knob = document.getElementById('joyKnob');

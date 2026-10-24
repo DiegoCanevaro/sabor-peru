@@ -31,6 +31,8 @@ scene3.background = new THREE.Color('#2b180b');
 const cam3 = new THREE.PerspectiveCamera(35, W / H, 0.5, 200);
 cam3.position.set(-0.4, 21, 19.5);
 cam3.lookAt(-0.4, 0, 1.3);
+// móvil: cámara más cerrada y centrada en la zona de juego (los objetos se ven más grandes; se recorta decoración del borde)
+if (document.body.classList.contains('mobile')) { cam3.fov = 30; cam3.updateProjectionMatrix(); cam3.lookAt(-0.5, 0, 0.4); }
 
 scene3.add(new THREE.HemisphereLight('#fff4e0', '#7a5a3a', 0.62));
 const sun3 = new THREE.DirectionalLight('#fff0d4', 0.72);
