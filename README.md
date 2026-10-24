@@ -24,7 +24,7 @@ Juego de cocina peruana estilo Overcooked que enseña recetas reales. Se juega e
 | Kevin · Comida de la calle (carretilla cebichera) | K-9 | Cebiche de Pota con o sin ají + Chicha Morada |
 | | K-10 | Anticuchos, rachi y pancita (carretilla de noche: tabla → bowl con salsa anticuchera → palitos → parrilla) |
 
-La pantalla de niveles abre las versiones 3D (`nivelX-Y-3d.html`, `kevin-*-3d.html`). Las páginas 2D (`nivelX-Y.html`) usan la misma lógica y sirven para probar mecánicas.
+Los niveles 3D están en la carpeta `niveles-3d/` y las versiones 2D (misma lógica, para probar mecánicas) en `niveles-2d/`. La portada (`index.html#niveles`) y `niveles.html` abren los 3D; al final de la lista hay enlaces a los 2D. Todas las páginas de nivel vuelven a `index.html#niveles`.
 
 ## Estructura
 

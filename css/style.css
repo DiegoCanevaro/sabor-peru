@@ -195,3 +195,8 @@ body.shell > *:not(#shellFrame) { display: none !important; }
 .ticket .tsign { display: flex; justify-content: center; align-self: stretch; background: #b9d6e6; border-radius: 0 0 7px 7px; padding: 2px 3px 1px; margin-top: 1px; }
 .ticket .tsign canvas.sign { display: block; background: none; border: 0; }
 canvas.sign { background: none; border: 0; }
+
+/* enlaces a las versiones 2D (pruebas), al final de la lista de niveles */
+.lv2d { margin-top: 22px; font-size: 13px; color: #c9b48a; text-align: left; }
+.lv2d summary { cursor: pointer; }
+.lv2d a { display: inline-block; margin: 6px 12px 0 0; color: #f4d35e; }

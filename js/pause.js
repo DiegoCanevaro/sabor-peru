@@ -10,7 +10,7 @@
   const ov = document.createElement('div');
   ov.id = 'pauseOverlay'; ov.className = 'overlay';
   ov.innerHTML = '<h1>Pausa</h1><p>El tiempo de los pedidos está detenido.</p>' +
-    '<div class="btnRow"><a class="gamebtn alt" href="index.html#niveles">Elegir nivel</a>' +
+    '<div class="btnRow"><a class="gamebtn alt" href="' + (/\/niveles-[23]d\//.test(location.pathname) ? '../' : '') + 'index.html#niveles">Elegir nivel</a>' +
     '<button id="pauseRestart" class="gamebtn alt">Reiniciar</button>' +
     '<button id="pauseResume" class="gamebtn">▶ Continuar</button></div>';
   wrap.appendChild(ov);

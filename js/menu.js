@@ -1,26 +1,26 @@
 // ================= MENÚ: LISTA DE NIVELES Y PROGRESO =================
 // Datos que usan la pantalla de inicio y la de selección de niveles (no cargan el motor del juego).
-// Los niveles se juegan en 3D; las páginas 2D (nivelX-Y.html) quedan solo para probar mecánicas.
+// Los niveles se juegan en 3D (carpeta niveles-3d/); las páginas 2D (niveles-2d/) quedan solo para probar mecánicas.
 const LEVEL_LIST = [
-  { id: '1-1', file: 'nivel1-1-3d.html', icon: '🥔', dish: 'huancaina', servesDish: ['huancaina'], name: 'Papa a la Huancaína',
+  { id: '1-1', file: 'niveles-3d/nivel1-1.html', icon: '🥔', dish: 'huancaina', servesDish: ['huancaina'], name: 'Papa a la Huancaína',
     desc: 'Papa en rodajas con salsa huancaína licuada.', serves: ['🥔'] },
-  { id: '1-2', file: 'nivel1-2-3d.html', icon: '🍰', dish: 'causa', servesDish: ['causa', 'huancaina'], name: 'Causa Limeña',
+  { id: '1-2', file: 'niveles-3d/nivel1-2.html', icon: '🍰', dish: 'causa', servesDish: ['causa', 'huancaina'], name: 'Causa Limeña',
     desc: 'Capas en orden: masa, relleno de pollo, masa y palta.', serves: ['🍰', '🥔'] },
-  { id: '1-3', file: 'nivel1-3-3d.html', icon: '🍛', dish: 'aji', servesDish: ['aji', 'causa', 'huancaina'], name: 'Ají de Gallina',
+  { id: '1-3', file: 'niveles-3d/nivel1-3.html', icon: '🍛', dish: 'aji', servesDish: ['aji', 'causa', 'huancaina'], name: 'Ají de Gallina',
     desc: 'Arroz, papa y ají de gallina hecho en la sartén.', serves: ['🍛', '🍰', '🥔'] },
-  { id: '1-4', file: 'nivel1-4-3d.html', icon: '🍗', dish: 'pollo_aji', servesDish: ['pollo_aji', 'aji', 'huancaina'], name: 'Pollo al Ají',
+  { id: '1-4', file: 'niveles-3d/nivel1-4.html', icon: '🍗', dish: 'pollo_aji', servesDish: ['pollo_aji', 'aji', 'huancaina'], name: 'Pollo al Ají',
     desc: 'Pollo, cebolla en cuadros y ají molido en la olla; con papa en rodajas y arroz.', serves: ['🍗', '🍛', '🥔'] },
-  { id: '1-5', file: 'nivel1-5-3d.html', icon: '🥩', dish: 'lomo_saltado', servesDish: ['lomo_saltado', 'pollo_aji', 'aji'], name: 'Lomo Saltado',
+  { id: '1-5', file: 'niveles-3d/nivel1-5.html', icon: '🥩', dish: 'lomo_saltado', servesDish: ['lomo_saltado', 'pollo_aji', 'aji'], name: 'Lomo Saltado',
     desc: 'Carne, tomate y cebolla salteados en el wok con sillao; con arroz y papas fritas.', serves: ['🥩', '🍗', '🍛'] },
-  { id: '2-1', world: 2, file: 'nivel2-1-3d.html', icon: '🥟', dish: 'wantan_frito', servesDish: ['wantan_frito', 'sopa_wantan'], name: 'Entradas de chifa',
+  { id: '2-1', world: 2, file: 'niveles-3d/nivel2-1.html', icon: '🥟', dish: 'wantan_frito', servesDish: ['wantan_frito', 'sopa_wantan'], name: 'Entradas de chifa',
     desc: 'Wantanes de cerdo armados en el bowl: fritos en la freidora o en sopa con cebolla china.', serves: ['🥟', '🍜'] },
-  { id: '2-2', world: 2, file: 'nivel2-2-3d.html', icon: '🍛', dish: 'chaufa', servesDish: ['chaufa', 'sopa_wantan', 'wantan_frito'], name: 'Arroz Chaufa',
+  { id: '2-2', world: 2, file: 'niveles-3d/nivel2-2.html', icon: '🍛', dish: 'chaufa', servesDish: ['chaufa', 'sopa_wantan', 'wantan_frito'], name: 'Arroz Chaufa',
     desc: 'Arroz, pollo en cuadros, huevo, cebolla china y sillao salteados en el wok.', serves: ['🍛'] },
-  { id: '2-3', world: 2, file: 'nivel2-3-3d.html', icon: '🍝', dish: 'tallarin_saltado', servesDish: ['tallarin_saltado', 'sopa_wantan', 'wantan_frito'], name: 'Tallarín Saltado',
+  { id: '2-3', world: 2, file: 'niveles-3d/nivel2-3.html', icon: '🍝', dish: 'tallarin_saltado', servesDish: ['tallarin_saltado', 'sopa_wantan', 'wantan_frito'], name: 'Tallarín Saltado',
     desc: 'Tallarines, carne, cebolla y tomate salteados en el wok con sillao.', serves: ['🍝'] },
-  { id: 'K-9', world: 'kevin', file: 'kevin-pota-3d.html', icon: '🦑', dish: 'cebiche_pota', servesDish: ['cebiche_pota', 'cebiche_sin', 'chicha'], name: 'Cebiche de Pota',
+  { id: 'K-9', world: 'kevin', file: 'niveles-3d/kevin-pota.html', icon: '🦑', dish: 'cebiche_pota', servesDish: ['cebiche_pota', 'cebiche_sin', 'chicha'], name: 'Cebiche de Pota',
     desc: 'Carretilla cebichera: cebiche con o sin ají, con camote, y chicha morada del balde.', serves: ['🦑', '🍇'] },
-  { id: 'K-10', world: 'kevin', file: 'kevin-anticuchos-3d.html', icon: '🍢', dish: 'anticuchos', servesDish: ['anticuchos', 'rachi', 'pancita'], name: 'Anticuchos',
+  { id: 'K-10', world: 'kevin', file: 'niveles-3d/kevin-anticuchos.html', icon: '🍢', dish: 'anticuchos', servesDish: ['anticuchos', 'rachi', 'pancita'], name: 'Anticuchos',
     desc: 'Carretilla de noche: corazón, rachi o pancita macerados, en palito y a la parrilla; con papa y choclo.', serves: ['🍢'] }
 ];
 
@@ -65,4 +65,9 @@ function renderLevels(box) {
     }
     grids[w].appendChild(a);
   });
+  // las versiones 2D (carpeta niveles-2d/) sirven para probar mecánicas: enlaces discretos al final
+  const d = document.createElement('details'); d.className = 'lv2d';
+  d.innerHTML = '<summary>Versiones 2D (para probar mecánicas)</summary>' +
+    LEVEL_LIST.map(L => '<a href="' + L.file.replace('niveles-3d/', 'niveles-2d/') + '">' + L.id + ' · ' + L.name + '</a>').join('');
+  box.appendChild(d);
 }
